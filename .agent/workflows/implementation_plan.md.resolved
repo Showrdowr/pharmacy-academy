@@ -1,0 +1,151 @@
+# SOLID Code Cleanup Plan
+
+## Problem Summary
+
+จากการวิเคราะห์ codebase พบปัญหาหลักที่ละเมิดหลักการ SOLID:
+
+| หลักการ | ปัญหาที่พบ | ตัวอย่างไฟล์ |
+|---------|-----------|-------------|
+| **SRP** (Single Responsibility) | Components มีหลายหน้าที่ (data, logic, UI) รวมอยู่ด้วยกัน | [CoursesGridArea.tsx](file:///c:/Pharmacy_Academy/eduspace-new/src/features/courses/components/CoursesGridArea.tsx), [CheckoutArea.tsx](file:///c:/Pharmacy_Academy/eduspace-new/src/features/payment/components/CheckoutArea.tsx) |
+| **OCP** (Open/Closed) | ข้อมูลถูก hardcode ทำให้ต้องแก้ไข component เมื่อต้องการเพิ่มข้อมูล | `COURSES_DATA`, `VOUCHER_CODES` |
+| **DIP** (Dependency Inversion) | Components พึ่งพา concrete data แทน abstractions | ไม่มี data layer แยก |
+
+---
+
+## Phased Integration Plan
+
+### Phase 1: Data Layer Extraction (แยก Data ออกจาก Components)
+
+**เป้าหมาย**: แยก hardcoded data ออกจาก components ให้เป็น centralized data modules
+
+#### [NEW] [courses.data.ts](file:///c:/Pharmacy_Academy/eduspace-new/src/data/courses.data.ts)
+- ย้าย `COURSES_DATA`, `CATEGORIES`, `PRICE_RANGES`, `LEVELS` จาก [CoursesGridArea.tsx](file:///c:/Pharmacy_Academy/eduspace-new/src/features/courses/components/CoursesGridArea.tsx)
+- Export เป็น typed constants
+
+#### [NEW] [payment.data.ts](file:///c:/Pharmacy_Academy/eduspace-new/src/data/payment.data.ts)
+- ย้าย `CART_ITEMS`, `VOUCHER_CODES` จาก [CheckoutArea.tsx](file:///c:/Pharmacy_Academy/eduspace-new/src/features/payment/components/CheckoutArea.tsx)
+- Export เป็น typed constants
+
+#### [NEW] [menu.data.ts](file:///c:/Pharmacy_Academy/eduspace-new/src/data/menu.data.ts)
+- ย้าย `menuItems` จาก [OffCanvas.tsx](file:///c:/Pharmacy_Academy/eduspace-new/src/components/common/OffCanvas.tsx)
+
+---
+
+### Phase 2: UI Components Extraction (แยก Reusable UI)
+
+**เป้าหมาย**: แยก repeatable UI patterns เป็น pure components
+
+#### [NEW] [RadioButton.tsx](file:///c:/Pharmacy_Academy/eduspace-new/src/components/ui/RadioButton.tsx)
+- Reusable radio button component (ใช้ใน [CheckoutArea.tsx](file:///c:/Pharmacy_Academy/eduspace-new/src/features/payment/components/CheckoutArea.tsx) payment/receipt selection)
+
+#### [NEW] [CourseCard.tsx](file:///c:/Pharmacy_Academy/eduspace-new/src/features/courses/components/CourseCard.tsx)
+- แยก course card UI logic ออกจาก [CoursesGridArea.tsx](file:///c:/Pharmacy_Academy/eduspace-new/src/features/courses/components/CoursesGridArea.tsx)
+
+#### [NEW] [CartItem.tsx](file:///c:/Pharmacy_Academy/eduspace-new/src/features/payment/components/CartItem.tsx)
+- แยก cart item UI logic ออกจาก [CheckoutArea.tsx](file:///c:/Pharmacy_Academy/eduspace-new/src/features/payment/components/CheckoutArea.tsx)
+
+---
+
+### Phase 3: Custom Hooks (แยก Business Logic)
+
+**เป้าหมาย**: แยก state management และ business logic ไปเป็น hooks
+
+#### [NEW] [useCourseFilter.ts](file:///c:/Pharmacy_Academy/eduspace-new/src/features/courses/hooks/useCourseFilter.ts)
+- ย้าย filtering logic จาก [CoursesGridArea.tsx](file:///c:/Pharmacy_Academy/eduspace-new/src/features/courses/components/CoursesGridArea.tsx)
+- รับผิดชอบ: search, category filter, price range filter
+
+#### [NEW] [useVoucher.ts](file:///c:/Pharmacy_Academy/eduspace-new/src/features/payment/hooks/useVoucher.ts)
+- ย้าย voucher validation logic จาก [CheckoutArea.tsx](file:///c:/Pharmacy_Academy/eduspace-new/src/features/payment/components/CheckoutArea.tsx)
+- รับผิดชอบ: apply, validate, remove voucher
+
+#### [NEW] [useAddressForm.ts](file:///c:/Pharmacy_Academy/eduspace-new/src/features/payment/hooks/useAddressForm.ts)
+- ย้าย address form state และ validation จาก [CheckoutArea.tsx](file:///c:/Pharmacy_Academy/eduspace-new/src/features/payment/components/CheckoutArea.tsx)
+
+---
+
+### Phase 4: Service Layer (เตรียมสำหรับ API)
+
+**เป้าหมาย**: สร้าง abstraction layer สำหรับ data access
+
+#### [NEW] [CourseService.ts](file:///c:/Pharmacy_Academy/eduspace-new/src/services/CourseService.ts)
+- Interface สำหรับ course data operations
+- ปัจจุบัน: return static data
+- อนาคต: fetch from API
+
+#### [NEW] [VoucherService.ts](file:///c:/Pharmacy_Academy/eduspace-new/src/services/VoucherService.ts)
+- Interface สำหรับ voucher validation
+- ปัจจุบัน: validate locally
+- อนาคต: validate via API
+
+---
+
+### Phase 5: Refactor Existing Components
+
+#### [MODIFY] [CoursesGridArea.tsx](file:///c:/Pharmacy_Academy/eduspace-new/src/features/courses/components/CoursesGridArea.tsx)
+- ใช้ data จาก `courses.data.ts`
+- ใช้ `useCourseFilter` hook
+- ใช้ `CourseCard` component
+
+#### [MODIFY] [CheckoutArea.tsx](file:///c:/Pharmacy_Academy/eduspace-new/src/features/payment/components/CheckoutArea.tsx)
+- ใช้ data จาก `payment.data.ts`
+- ใช้ `useVoucher` และ `useAddressForm` hooks
+- ใช้ `CartItem` และ `RadioButton` components
+
+#### [MODIFY] [OffCanvas.tsx](file:///c:/Pharmacy_Academy/eduspace-new/src/components/common/OffCanvas.tsx)
+- ใช้ data จาก `menu.data.ts`
+- แยก inline styles เป็น CSS classes
+
+---
+
+## Verification Plan
+
+> [!IMPORTANT]
+> ⚠️ โปรเจคนี้ยังไม่มี automated tests ดังนั้นจะใช้ Manual Verification
+
+### Manual Verification Steps
+
+**หลังแต่ละ Phase ให้ทำการทดสอบดังนี้:**
+
+1. **Build Check**
+   ```powershell
+   cd c:\Pharmacy_Academy\eduspace-new
+   npm run build
+   ```
+   - ต้อง build สำเร็จโดยไม่มี error
+
+2. **Visual Verification (ผ่าน Browser)**
+   - รัน dev server: `npm run dev`
+   - ตรวจสอบหน้า `/courses-grid` - filter ทำงานปกติ
+   - ตรวจสอบหน้า `/shop-cart` - voucher และ form ทำงานปกติ
+   - ตรวจสอบ hamburger menu บน mobile - แสดงผลปกติ
+
+3. **Code Review Checklist**
+   - [ ] ไม่มี TypeScript errors
+   - [ ] ไม่มี hardcoded data ใน components
+   - [ ] Components มีความรับผิดชอบเดียว (SRP)
+   - [ ] Logic ถูกแยกเป็น hooks
+   - [ ] UI ถูกแยกเป็น reusable components
+
+---
+
+## Execution Order
+
+```mermaid
+flowchart TD
+    P1[Phase 1: Data Layer] --> P2[Phase 2: UI Components]
+    P2 --> P3[Phase 3: Custom Hooks]
+    P3 --> P4[Phase 4: Service Layer]
+    P4 --> P5[Phase 5: Refactor Components]
+    P5 --> V[Final Verification]
+```
+
+---
+
+## User Review Required
+
+> [!CAUTION]
+> กรุณา review แผนนี้ก่อนเริ่มทำงาน
+
+1. **ลำดับความสำคัญ**: ต้องการเริ่มจาก Phase ไหนก่อน?
+2. **ขอบเขต**: ต้องการ refactor ทุก component หรือเลือกเฉพาะบางส่วน?
+3. **Testing**: ต้องการให้เพิ่ม automated tests หรือไม่? (จะต้องติดตั้ง Jest/Vitest เพิ่ม)

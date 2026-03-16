@@ -1,0 +1,4689 @@
+@import "tailwindcss";
+
+/* Global Font - Thai Sarabun (Local) */
+
+@font-face {
+  font-family: 'THSarabunNew';
+  src: url('/assets/fonts/THSarabunNew.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'THSarabunNew';
+  src: url('/assets/fonts/THSarabunNew Bold.ttf') format('truetype');
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+
+}
+
+@font-face {
+  font-family: 'THSarabunNew';
+  src: url('/assets/fonts/THSarabunNew Italic.ttf') format('truetype');
+  font-weight: normal;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'THSarabunNew';
+  src: url('/assets/fonts/THSarabunNew BoldItalic.ttf') format('truetype');
+  font-weight: bold;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Exclude icon fonts (Font Awesome, etc.) from font override */
+*:not([class*="fa-"]):not([class*="fab"]):not([class*="fas"]):not([class*="far"]):not([class*="fal"]):not([class*="fad"]):not([class*="icon"]):not(i) {
+  font-family: "THSarabunNew", sans-serif !important;
+}
+
+/* Global Font Enforcement - TH Sarabun New (Local) */
+/* Override all elements to use THSarabunNew, strictly excluding icon fonts */
+html,
+body,
+div,
+span,
+applet,
+object,
+iframe,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+blockquote,
+pre,
+a,
+abbr,
+acronym,
+address,
+big,
+cite,
+code,
+del,
+dfn,
+em,
+img,
+ins,
+kbd,
+q,
+s,
+samp,
+small,
+strike,
+strong,
+sub,
+sup,
+tt,
+var,
+b,
+u,
+i,
+center,
+dl,
+dt,
+dd,
+ol,
+ul,
+li,
+fieldset,
+form,
+label,
+legend,
+table,
+caption,
+tbody,
+tfoot,
+thead,
+tr,
+th,
+td,
+article,
+aside,
+canvas,
+details,
+embed,
+figure,
+figcaption,
+footer,
+header,
+hgroup,
+menu,
+nav,
+output,
+ruby,
+section,
+summary,
+time,
+mark,
+audio,
+video,
+input,
+textarea,
+select,
+button {
+  font-family: "THSarabunNew", sans-serif !important;
+}
+
+html,
+body {
+  font-family: "THSarabunNew", sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+/* Mobile base typography: Increase font size, line-height, and letter-spacing for better readability */
+@media (max-width: 576px) {
+
+  html,
+  body {
+    font-size: 17px !important;
+    line-height: 1.7 !important;
+    letter-spacing: 0.01em !important;
+  }
+}
+
+/* Ensure language specific settings also use it (just in case) */
+html.lang-th,
+html.lang-en,
+html.lang-th body,
+html.lang-en body {
+  font-family: "THSarabunNew", sans-serif !important;
+}
+
+/* Keep icon fonts intact */
+.fa,
+.fas,
+.far,
+.fal,
+.fad,
+.fab,
+[class*="fa-"],
+i[class*="fa"] {
+  font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands",
+    "Font Awesome 5 Free", "Font Awesome 5 Brands", FontAwesome !important;
+}
+
+/* Exclude FontAwesome icons from font override */
+html.lang-th i[class*="fa-"],
+html.lang-th i[class*="fas"],
+html.lang-th i[class*="far"],
+html.lang-th i[class*="fal"],
+html.lang-th i[class*="fab"],
+html.lang-en i[class*="fa-"],
+html.lang-en i[class*="fas"],
+html.lang-en i[class*="far"],
+html.lang-en i[class*="fal"],
+html.lang-en i[class*="fab"] {
+  font-family: "Font Awesome 5 Pro", "Font Awesome 5 Free", "FontAwesome" !important;
+}
+
+/* ====================================
+   Font Size Boost for Components (+2px)
+   ======================================== */
+
+/* Font Size Boost for Components - REMOVED TO ALLOW TAILWIND CONTROL */
+/* header, footer, etc. overrides removed */
+
+/* Sidebar - increase all text by 2px */
+/* Components generic overrides removed */
+
+/* Breadcrumb text */
+.breadcrumb-title,
+.breadcrumb-content {
+  font-size: calc(1em + 2px) !important;
+}
+
+/* Prices */
+.price,
+.course-price,
+[class*="price"] {
+  font-size: 21px !important;
+}
+
+/* Icons - keep reasonable size */
+i.fas,
+i.far,
+i.fab,
+i.fa,
+.icon i {
+  font-size: 15px !important;
+}
+
+/* Checkbox and Radio labels */
+input[type="checkbox"]+label,
+input[type="checkbox"]+span,
+input[type="radio"]+label,
+input[type="radio"]+span,
+.form-check-label,
+.checkbox label,
+.radio label,
+label[for] {
+  font-size: 16px !important;
+}
+
+/* Checkbox container text */
+.form-check,
+.checkbox,
+.radio {
+  font-size: 16px !important;
+}
+
+/* Course sidebar checkbox/radio labels - specific selectors */
+.checkbox-single,
+.checkbox-single .text-color,
+.checkbox-single span,
+.courses-list label,
+.courses-list .text-color,
+.courses-sidebar-items label,
+.courses-sidebar-items .text-color {
+  font-size: 16px !important;
+}
+
+/* ========================================
+   Hero Buttons - Same Row on Responsive
+   ======================================== */
+
+/* Desktop Specific - Increase Font Size as requested */
+@media (min-width: 992px) {
+  .hero-section .hero-button .theme-btn {
+    font-size: 24px !important;
+    padding: 15px 35px !important;
+  }
+
+  .hero-section .hero-button .d-line {
+    font-size: 20px !important;
+  }
+}
+
+/* iPad Mini specific (768px - 820px) - two column layout like iPad Air */
+@media (min-width: 768px) and (max-width: 820px) {
+  .hero-section.hero-2 .row {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+  }
+
+  .hero-section.hero-2 .row>.col-12:first-child {
+    flex: 0 0 50% !important;
+    max-width: 50% !important;
+  }
+
+  .hero-section.hero-2 .row>.col-12:last-child {
+    flex: 0 0 50% !important;
+    max-width: 50% !important;
+  }
+
+  .hero-section.hero-2 .hero-content {
+    text-align: left !important;
+  }
+
+  .hero-section.hero-2 .hero-content h1 {
+    text-align: left !important;
+    font-size: 28px !important;
+  }
+
+  .hero-section.hero-2 .hero-content p {
+    text-align: left !important;
+    font-size: 14px !important;
+  }
+
+  .hero-section.hero-2 .hero-button {
+    justify-content: flex-start !important;
+  }
+
+  .hero-section.hero-2 .hero-button .theme-btn {
+    padding: 10px 18px !important;
+    font-size: 13px !important;
+  }
+
+  .hero-section.hero-2 .hero-button .d-line {
+    font-size: 13px !important;
+  }
+}
+
+/* Tablet and mobile - keep buttons in same row and aligned */
+@media (max-width: 991px) {
+  .hero-section.hero-2 .hero-button {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 20px !important;
+  }
+
+  .hero-section.hero-2 .hero-button .theme-btn {
+    height: 48px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin: 0 !important;
+  }
+
+  .hero-section.hero-2 .hero-button .button-text {
+    display: inline-flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 10px !important;
+    height: 48px !important;
+    margin: 0 !important;
+    vertical-align: middle !important;
+  }
+
+  .hero-section.hero-2 .hero-button .video-btn {
+    width: 48px !important;
+    height: 48px !important;
+    min-width: 48px !important;
+    min-height: 48px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin: 0 !important;
+    vertical-align: middle !important;
+  }
+
+  .hero-section.hero-2 .hero-button .d-line,
+  .hero-section.hero-2 .hero-button .ms-3 {
+    display: inline-flex !important;
+    align-items: center !important;
+    height: 48px !important;
+    line-height: 1 !important;
+    margin: 0 !important;
+    margin-left: 10px !important;
+    vertical-align: middle !important;
+    white-space: nowrap !important;
+  }
+}
+
+@media (max-width: 576px) {
+  .hero-section.hero-2 .hero-button {
+    gap: 12px !important;
+    justify-content: center !important;
+  }
+
+  .hero-section.hero-2 .hero-button .theme-btn {
+    padding: 10px 28px !important;
+    font-size: 20px !important;
+    height: 60px !important;
+  }
+
+  .hero-section.hero-2 .hero-button .button-text {
+    height: 60px !important;
+  }
+
+  .hero-section.hero-2 .hero-button .video-btn {
+    width: 60px !important;
+    height: 60px !important;
+    min-width: 60px !important;
+    min-height: 60px !important;
+    line-height: 60px !important;
+  }
+
+  .hero-section.hero-2 .hero-button .d-line,
+  .hero-section.hero-2 .hero-button .ms-3 {
+    font-size: 18px !important;
+    height: 60px !important;
+    margin-left: 14px !important;
+    white-space: nowrap !important;
+  }
+}
+
+/* Very small mobile - 360px and below */
+@media (max-width: 400px) {
+  .hero-section.hero-2 .hero-button {
+    gap: 10px !important;
+  }
+
+  .hero-section.hero-2 .hero-button .theme-btn {
+    padding: 10px 20px !important;
+    font-size: 18px !important;
+    height: 52px !important;
+  }
+
+  .hero-section.hero-2 .hero-button .button-text {
+    height: 52px !important;
+  }
+
+  .hero-section.hero-2 .hero-button .video-btn {
+    width: 52px !important;
+    height: 52px !important;
+    min-width: 52px !important;
+    min-height: 52px !important;
+    line-height: 52px !important;
+  }
+
+  .hero-section.hero-2 .hero-button .d-line,
+  .hero-section.hero-2 .hero-button .ms-3 {
+    font-size: 16px !important;
+    height: 52px !important;
+    margin-left: 10px !important;
+  }
+}
+
+
+
+/* ========================================
+   Hero Counter Box - Fixed Inside Image
+   ======================================== */
+
+/* Ensure parent container positioning */
+.hero-2 .hero-image-items .hero-image {
+  position: relative !important;
+}
+
+/* Counter box - ALWAYS inside the image, top-right corner */
+.hero-2 .hero-image-items .hero-image .counter-box {
+  position: absolute !important;
+  top: 20px !important;
+  right: 20px !important;
+  left: auto !important;
+  bottom: auto !important;
+  width: 140px !important;
+  max-width: 140px !important;
+  min-width: 140px !important;
+  height: auto !important;
+  padding: 20px 18px !important;
+  border-radius: 12px !important;
+  background: #fff !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1) !important;
+  z-index: 50 !important;
+  text-align: center !important;
+  transform: none !important;
+  animation: none !important;
+  border: 1px solid #e5e5e5 !important;
+}
+
+.hero-2 .hero-image-items .hero-image .counter-box p {
+  font-size: 13px !important;
+  color: #666 !important;
+  margin: 0 !important;
+  line-height: 1.4 !important;
+  font-weight: 400 !important;
+}
+
+.hero-2 .hero-image-items .hero-image .counter-box h2 {
+  font-size: 42px !important;
+  color: #014d40 !important;
+  margin: 8px 0 !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+}
+
+/* All responsive breakpoints - keep counter box at top-right inside image */
+
+/* Large tablet - 1200px and below */
+@media (max-width: 1200px) {
+  .hero-2 .hero-image-items .hero-image .counter-box {
+    top: 15px !important;
+    right: 15px !important;
+    width: 130px !important;
+    max-width: 130px !important;
+    min-width: 130px !important;
+    padding: 16px 14px !important;
+  }
+
+  .hero-2 .hero-image-items .hero-image .counter-box h2 {
+    font-size: 36px !important;
+  }
+
+  .hero-2 .hero-image-items .hero-image .counter-box p {
+    font-size: 12px !important;
+  }
+}
+
+/* iPad Air / Tablet - 1024px and below */
+@media (max-width: 1024px) {
+  .hero-2 .hero-image-items .hero-image .counter-box {
+    top: 15px !important;
+    right: 15px !important;
+    width: 125px !important;
+    max-width: 125px !important;
+    min-width: 125px !important;
+    padding: 14px 12px !important;
+  }
+
+  .hero-2 .hero-image-items .hero-image .counter-box h2 {
+    font-size: 32px !important;
+  }
+
+  .hero-2 .hero-image-items .hero-image .counter-box p {
+    font-size: 11px !important;
+  }
+}
+
+/* Small tablet - 991px and below */
+@media (max-width: 991px) {
+  .hero-2 .hero-image-items .hero-image .counter-box {
+    top: 12px !important;
+    right: 12px !important;
+    width: 115px !important;
+    max-width: 115px !important;
+    min-width: 115px !important;
+    padding: 12px 10px !important;
+  }
+
+  .hero-2 .hero-image-items .hero-image .counter-box h2 {
+    font-size: 28px !important;
+  }
+
+  .hero-2 .hero-image-items .hero-image .counter-box p {
+    font-size: 11px !important;
+  }
+}
+
+/* Mobile - 768px and below */
+@media (max-width: 768px) {
+  .hero-2 .hero-image-items .hero-image .counter-box {
+    top: 10px !important;
+    right: 10px !important;
+    width: 105px !important;
+    max-width: 105px !important;
+    min-width: 105px !important;
+    padding: 10px 8px !important;
+  }
+}
+
+/* Small mobile - 576px and below */
+@media (max-width: 576px) {
+  .hero-2 .hero-image-items .hero-image .counter-box {
+    display: block !important;
+    top: 8px !important;
+    right: 8px !important;
+    width: 95px !important;
+    max-width: 95px !important;
+    min-width: 95px !important;
+    padding: 8px 6px !important;
+  }
+
+  .hero-2 .hero-image-items .hero-image .counter-box h2 {
+    font-size: 22px !important;
+  }
+
+  .hero-2 .hero-image-items .hero-image .counter-box p {
+    font-size: 9px !important;
+  }
+}
+
+/* ========================================
+   Section Title Underline Fix
+   ======================================== */
+
+/* White underline for category section title */
+.top-category-section-2 .section-title h6.text-white::before {
+  background-image: none !important;
+  background: #fff !important;
+  height: 3px !important;
+  border-radius: 2px !important;
+}
+
+/* Category Bottom Button - Center Text */
+/* Default / Mobile styles */
+.category-bottom-title h3 {
+  margin-bottom: 25px !important;
+  color: #fff !important;
+  font-weight: 700 !important;
+}
+
+.category-bottom-title .theme-btn {
+  display: inline-flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  text-align: center !important;
+  width: auto !important;
+  min-width: 200px;
+  max-width: 300px;
+  font-size: 22px !important;
+  margin-top: 10px;
+}
+
+/* Desktop styles - Larger fonts */
+@media (min-width: 992px) {
+  .category-bottom-title h3 {
+    font-size: 40px !important;
+  }
+
+  .category-bottom-title .theme-btn {
+    font-size: 24px !important;
+    padding: 15px 35px !important;
+  }
+
+  /* Course Card Title (Desktop) */
+  .courses-content h5,
+  .courses-content h5 a,
+  .courses-content h5 span {
+    font-size: 26px !important;
+  }
+
+  /* Course Card Price (Desktop) */
+  .courses-content h4 {
+    font-size: 24px !important;
+  }
+
+  /* Course Details Header (Desktop) */
+  .breadcrumb-content h1 {
+    font-size: 40px !important;
+    line-height: 1.3 !important;
+  }
+
+  .breadcrumb-content .client-content h5 {
+    font-size: 22px !important;
+  }
+
+  /* Profile Page (Desktop) */
+  .profile-section h2 {
+    font-size: 32px !important;
+    /* User Name */
+  }
+
+  .profile-section .cpe-desktop div {
+    font-size: 56px !important;
+    /* Big CPE Number */
+  }
+
+  .profile-section h3 {
+    font-size: 36px !important;
+    /* Stat Numbers */
+  }
+
+  .profile-section h4 {
+    /* font-size: 24px !important; - Removed */
+    /* Section Headers */
+  }
+
+  .profile-section .course-card-title {
+    font-size: 20px !important;
+    /* Course Title list */
+  }
+
+  /* Home Section Title (Desktop) */
+  .top-category-section-2 .section-title h6 {
+    font-size: 24px !important;
+  }
+
+  .top-category-section-2 .section-title h2 {
+    font-size: 52px !important;
+  }
+
+  /* Header & Navigation (Desktop) */
+  .main-menu ul li a {
+    /* font-size: 20px !important; - Removed */
+    font-weight: 700 !important;
+    /* Bold */
+  }
+
+  .header-logo-text {
+    font-size: 28px !important;
+    font-weight: 700 !important;
+  }
+
+  .header-right input::placeholder,
+  .header-right input {
+    /* font-size: 18px !important; */
+    font-weight: 500 !important;
+    /* Semi-bold for input */
+  }
+
+  .header-right .header-user-name {
+    font-size: 16px !important;
+  }
+
+  .header-right .header-user-email {
+    font-size: 13px !important;
+  }
+
+  /* --- Payment History Page (Desktop) --- */
+  .payment-history-section h3 {
+    font-size: 32px !important;
+  }
+
+  .payment-history-section table th {
+    font-size: 20px !important;
+  }
+
+  .payment-history-section table td {
+    font-size: 18px !important;
+  }
+
+  /* --- Shopping Cart Page (Desktop) --- */
+  .cart-list-area table th {
+    font-size: 20px !important;
+  }
+
+  .cart-list-area .head {
+    font-size: 20px !important;
+    /* Product Name */
+  }
+
+  .cart-list-area .price-usd {
+    font-size: 20px !important;
+  }
+
+  .cart-total-items h3 {
+    font-size: 28px !important;
+  }
+
+  .cart-total-items li {
+    font-size: 20px !important;
+  }
+
+  .cart-total-items .theme-btn {
+    font-size: 22px !important;
+  }
+
+  /* --- Payment Method Pages (Desktop) --- */
+  .payment-card-section h4,
+  .payment-section h4,
+  .payment-fail-section h2,
+  .payment-result-section h2 {
+    font-size: 26px !important;
+    /* Unified Title Size */
+  }
+
+  .payment-card-section label,
+  .payment-section p,
+  .payment-fail-section p,
+  .payment-result-section p {
+    font-size: 18px !important;
+  }
+
+  .payment-card-section input {
+    font-size: 18px !important;
+  }
+
+  .order-summary-wrapper h5 {
+    font-size: 24px !important;
+  }
+
+  .order-summary-wrapper p,
+  .order-summary-wrapper span {
+    font-size: 18px !important;
+  }
+
+  /* --- Course Details Page (Desktop) --- */
+  .courses-details-content .nav-link {
+    font-size: 22px !important;
+  }
+
+  .description-content h3,
+  .course-curriculum-items h3,
+  .instructors-items h3 {
+    font-size: 28px !important;
+  }
+
+  .description-content p,
+  .description-content li {
+    font-size: 20px !important;
+    line-height: 1.6 !important;
+  }
+
+  .accordion-button {
+    font-size: 20px !important;
+  }
+
+  .accordion-body span {
+    font-size: 18px !important;
+  }
+
+  /* --- User Profile Dropdown (Desktop) --- */
+  .header-user-profile>div>div>p:first-child {
+    /* User Name */
+    font-size: 18px !important;
+    font-weight: 700 !important;
+  }
+
+  .header-user-profile>div>div>p:last-child {
+    /* User Role */
+    font-size: 16px !important;
+    font-weight: 500 !important;
+  }
+
+  .header-user-profile>div>a>span,
+  .header-user-profile>div>button>span {
+    /* Menu Items */
+    font-size: 18px !important;
+    font-weight: 600 !important;
+  }
+}
+
+
+/* All Theme Buttons - Center Text */
+.theme-btn {
+  display: inline-flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  text-align: center !important;
+}
+
+/* ====================================
+   Responsive Typography Utils (Clamp)
+   ==================================== */
+
+/* Headings */
+.text-resp-h1 {
+  font-size: clamp(32px, 6vw, 52px) !important;
+  line-height: 1.2;
+}
+
+.text-resp-h2 {
+  font-size: clamp(26px, 5vw, 40px) !important;
+  line-height: 1.3;
+}
+
+.text-resp-h3 {
+  font-size: clamp(22px, 4vw, 32px) !important;
+  line-height: 1.4;
+}
+
+/* Body Text */
+.text-resp-body-lg {
+  font-size: clamp(18px, 2.5vw, 22px) !important;
+  line-height: 1.5;
+}
+
+.text-resp-body {
+  font-size: clamp(15px, 2vw, 18px) !important;
+  line-height: 1.6;
+}
+
+/* Buttons & Links */
+.text-resp-btn {
+  font-size: clamp(18px, 2.5vw, 26px) !important;
+}
+
+.text-resp-link {
+  font-size: clamp(16px, 2vw, 20px) !important;
+}
+
+/* Small Info Text */
+.text-resp-info {
+  font-size: clamp(14px, 1.5vw, 16px) !important;
+}
+
+/* ========================================
+   Category Boxes - Equal Size (All Screens)
+   ======================================== */
+
+/* Wrapper - unified white container */
+.top-category-wrapper-2 {
+  background: #fff !important;
+  border-radius: 12px !important;
+  overflow: hidden !important;
+}
+
+.top-category-wrapper-2 .top-category-left-items {
+  background: #fff !important;
+  border-radius: 12px !important;
+  overflow: hidden !important;
+}
+
+/* Grid layout - 4 columns on desktop, 2 rows */
+.top-category-wrapper-2 .row.g-0 {
+  display: flex !important;
+  flex-wrap: wrap !important;
+}
+
+.top-category-wrapper-2 .row.g-0>[class*="col-"] {
+  flex: 0 0 25% !important;
+  max-width: 25% !important;
+}
+
+/* Base styles for equal-sized category boxes */
+.top-category-wrapper-2 .top-category-left-items .top-category-box {
+  height: 220px !important;
+  min-height: 220px !important;
+  max-height: 220px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-start !important;
+  padding: 30px 25px !important;
+  box-sizing: border-box !important;
+  background: #fff !important;
+  border: 1px solid #e5e5e5 !important;
+}
+
+.top-category-wrapper-2 .top-category-box .icon {
+  flex-shrink: 0 !important;
+  margin-bottom: 5px !important;
+  color: #014d40 !important;
+}
+
+.top-category-wrapper-2 .top-category-box .icon img,
+.top-category-wrapper-2 .top-category-box .icon svg {
+  width: 50px !important;
+  height: 50px !important;
+}
+
+.top-category-wrapper-2 .top-category-box .content {
+  flex: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-start !important;
+  overflow: hidden !important;
+}
+
+.top-category-wrapper-2 .top-category-box .content h6 {
+  font-size: 22px !important;
+  font-weight: 700 !important;
+  line-height: 1.4 !important;
+  margin-bottom: 8px !important;
+  overflow: hidden !important;
+  display: -webkit-box !important;
+  -webkit-line-clamp: 2 !important;
+  -webkit-box-orient: vertical !important;
+  line-clamp: 2 !important;
+  color: #333 !important;
+}
+
+.top-category-wrapper-2 .top-category-box .content p {
+  font-size: 18px !important;
+  margin: 0 !important;
+  color: #666 !important;
+}
+
+/* Hover Effects for Category Boxes */
+.top-category-wrapper-2 .top-category-box {
+  transition: all 0.3s ease-in-out !important;
+  cursor: pointer !important;
+}
+
+.top-category-wrapper-2 .top-category-box:hover {
+  background: #014d40 !important;
+  transform: scale(1.02) !important;
+  box-shadow: 0 8px 25px rgba(1, 77, 64, 0.3) !important;
+  z-index: 10 !important;
+  position: relative !important;
+}
+
+.top-category-wrapper-2 .top-category-box:hover .icon {
+  color: #fff !important;
+}
+
+.top-category-wrapper-2 .top-category-box:hover .icon img,
+.top-category-wrapper-2 .top-category-box:hover .icon svg {
+  filter: brightness(0) invert(1) !important;
+}
+
+.top-category-wrapper-2 .top-category-box:hover .content h6 {
+  color: #fff !important;
+}
+
+.top-category-wrapper-2 .top-category-box:hover .content p {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+/* ========================================
+   Responsive Styles
+   ======================================== */
+
+/* Reduce breadcrumb banner height on mobile */
+@media (max-width: 640px) {
+  .breadcrumb-wrapper.courses-page-banner {
+    padding: 20px 0 !important;
+    min-height: auto !important;
+  }
+
+  .breadcrumb-wrapper.courses-page-banner .page-heading h1 {
+    font-size: 1.6rem !important;
+    margin-bottom: 8px;
+  }
+
+  .hero-content p {
+    font-size: 16px !important;
+  }
+
+  /* Hide decorative shapes on smaller screens */
+  .hero-shape {
+    display: none !important;
+  }
+
+  /* Adjust counter box position */
+  .counter-box {
+    bottom: 10px !important;
+    right: 10px !important;
+    padding: 12px 16px !important;
+  }
+
+  .counter-box h2 {
+    font-size: 24px !important;
+  }
+
+  /* ========================================
+     Category Section Responsive (≤992px)
+     ======================================== */
+
+  /* Keep wrapper with white background */
+  .top-category-wrapper-2 {
+    background: #fff !important;
+    border-radius: 12px !important;
+  }
+
+  /* 4 columns grid on tablet */
+  .top-category-wrapper-2 .row.g-0>[class*="col-"] {
+    flex: 0 0 25% !important;
+    max-width: 25% !important;
+  }
+
+  .top-category-box {
+    height: 200px !important;
+    min-height: 200px !important;
+    max-height: 200px !important;
+    padding: 25px 18px !important;
+  }
+
+  .top-category-box .icon img,
+  .top-category-box .icon svg {
+    width: 45px !important;
+    height: 45px !important;
+  }
+
+  .top-category-box .content h6 {
+    font-size: 15px !important;
+  }
+
+  .top-category-box .content p {
+    font-size: 14px !important;
+  }
+}
+
+/* Tablet & iPad Pro (≤1024px) - 4 columns grid */
+@media (max-width: 1024px) {
+  .top-category-wrapper-2 {
+    background: #fff !important;
+    border-radius: 12px !important;
+  }
+
+  /* Keep 4 columns on iPad */
+  .top-category-wrapper-2 .row.g-0>[class*="col-"] {
+    flex: 0 0 25% !important;
+    max-width: 25% !important;
+  }
+
+  .top-category-box {
+    height: 190px !important;
+    min-height: 190px !important;
+    max-height: 190px !important;
+    padding: 22px 15px !important;
+  }
+
+  .top-category-box .icon img,
+  .top-category-box .icon svg {
+    width: 42px !important;
+    height: 42px !important;
+  }
+
+  .top-category-box .content h6 {
+    font-size: 14px !important;
+  }
+
+  .top-category-box .content p {
+    font-size: 13px !important;
+  }
+}
+
+/* Collapsible Filter Section Styles */
+.filter-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #0d4f4a 0%, #0a3d39 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  transition: all 0.3s ease;
+}
+
+.filter-toggle-btn:hover {
+  background: linear-gradient(135deg, #0a3d39 0%, #072e2b 100%);
+  transform: translateY(-1px);
+}
+
+.filter-toggle-btn i {
+  transition: transform 0.3s ease;
+}
+
+.filter-toggle-btn.open i {
+  transform: rotate(180deg);
+}
+
+.filter-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease-out, opacity 0.3s ease;
+  opacity: 0;
+}
+
+.filter-content.open {
+  max-height: 1000px;
+  opacity: 1;
+  transition: max-height 0.4s ease-in, opacity 0.3s ease;
+}
+
+/* iPad Pro & Nest Hub (1024px+): Hide toggle button and always show filter content */
+@media (min-width: 1024px) {
+  .filter-toggle-btn {
+    display: none !important;
+  }
+
+  .filter-content {
+    max-height: none !important;
+    opacity: 1 !important;
+    overflow: visible !important;
+  }
+}
+
+/* PC (larger screens): Same behavior */
+@media (min-width: 1025px) {
+  .filter-toggle-btn {
+    display: none !important;
+  }
+
+  .filter-content {
+    max-height: none !important;
+    opacity: 1 !important;
+    overflow: visible !important;
+  }
+
+  /* ========================================
+   Courses Grid - Card Spacing
+   ======================================== */
+
+  /* Add margin between course cards */
+  .courses-card-main-items {
+    margin-bottom: 40px !important;
+  }
+
+  /* Tablet (≤1024px) */
+  @media (max-width: 1024px) {
+    .courses-card-main-items {
+      margin-bottom: 60px !important;
+    }
+  }
+
+  /* Mobile (≤768px) */
+  @media (max-width: 768px) {
+    .courses-card-main-items {
+      margin-bottom: 70px !important;
+    }
+  }
+
+  /* Small Mobile (≤576px) */
+  @media (max-width: 576px) {
+    .courses-card-main-items {
+      margin-bottom: 50px !important;
+    }
+  }
+
+  /* Limit course card modal size - Tablet only */
+  @media (max-width: 1024px) {
+    .courses-card-main-items .courses-card-items {
+      max-height: 340px !important;
+      overflow: hidden !important;
+    }
+  }
+
+  /* Limit course card modal size - Mobile */
+  @media (max-width: 768px) {
+    .courses-card-main-items .courses-card-items {
+      max-height: 320px !important;
+    }
+  }
+
+  /* Limit course card modal size - Small Mobile */
+  @media (max-width: 576px) {
+    .courses-card-main-items .courses-card-items {
+      max-height: 300px !important;
+    }
+  }
+
+  /* Reduce height of hover modal (green card) */
+  .courses-card-main-items .courses-card-items-hover {
+    max-height: 350px !important;
+    overflow: hidden !important;
+  }
+
+  /* Modal title styling - 16px bold */
+  .courses-card-main-items .courses-card-items-hover h5 {
+    font-size: 20px !important;
+    font-weight: 700 !important;
+  }
+
+  /* Responsive hover modal size - Tablet */
+  @media (max-width: 1024px) {
+    .courses-card-main-items .courses-card-items-hover {
+      max-height: 320px !important;
+    }
+  }
+
+  /* Responsive hover modal size - Mobile */
+  @media (max-width: 768px) {
+    .courses-card-main-items .courses-card-items-hover {
+      max-height: 300px !important;
+    }
+  }
+
+  /* Responsive hover modal size - Small Mobile */
+  @media (max-width: 576px) {
+    .courses-card-main-items .courses-card-items-hover {
+      max-height: 280px !important;
+    }
+  }
+
+  /* Cart icon smaller */
+  .header-right a[href="/shop-cart"] {
+    width: 32px !important;
+    height: 32px !important;
+  }
+
+  .header-right a[href="/shop-cart"] i {
+    font-size: 12px !important;
+  }
+
+  /* Category boxes - white background on mobile */
+  .top-category-left-items .row {
+    display: flex !important;
+    flex-wrap: wrap !important;
+  }
+
+  /* Category section for tablet portrait */
+  .top-category-wrapper-2>.row>[class*="col-"] {
+    flex: 0 0 100% !important;
+    max-width: 100% !important;
+  }
+
+  .top-category-left-items {
+    margin: 0 0 20px 0 !important;
+  }
+
+  .top-category-left-items .row.g-0>.col-6 {
+    flex: 0 0 50% !important;
+    max-width: 50% !important;
+  }
+
+  .top-category-box {
+    padding: 22px 15px !important;
+    height: 180px !important;
+    min-height: 180px !important;
+    max-height: 180px !important;
+  }
+
+  .top-category-box .icon img,
+  .top-category-box .icon svg {
+    width: 40px !important;
+    height: 40px !important;
+  }
+
+  .top-category-box .content h6 {
+    font-size: 14px !important;
+  }
+
+  .top-category-box .content p {
+    font-size: 13px !important;
+  }
+
+  /* Category bottom CTA */
+  .category-bottom-title {
+    flex-direction: column !important;
+    gap: 16px !important;
+    text-align: center !important;
+    padding: 30px 20px !important;
+  }
+}
+
+/* ========================================
+   Checkout Page Responsive Styles
+   ======================================== */
+
+/* Tablet (≤992px) - Reorder checkout sections */
+@media (max-width: 992px) {
+
+  /* Header adjustments for mobile */
+  .header-2 .container {
+    padding: 0 15px;
+  }
+
+  /* Courses section (col-lg-5) comes first visually (on top) */
+  .checkout-section .col-lg-5 {
+    order: -1 !important;
+    margin-bottom: 20px !important;
+  }
+
+  /* Payment section (col-lg-7) comes second (on bottom) */
+  .checkout-section .col-lg-7 {
+    order: 1 !important;
+  }
+}
+
+/* Mobile (≤768px) */
+@media (max-width: 768px) {
+
+  /* Checkout section padding */
+  .checkout-section {
+    padding: 20px 0 !important;
+  }
+
+  .checkout-section .container {
+    padding: 0 12px !important;
+  }
+
+  /* Payment/Cart wrapper adjustments */
+  .payment-wrapper,
+  .cart-wrapper {
+    padding: 16px !important;
+    border-radius: 12px !important;
+  }
+
+  /* Payment methods - stack vertically */
+  .payment-methods {
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+
+  .payment-methods label {
+    width: 100% !important;
+    flex: none !important;
+  }
+
+  /* Keep text left, logo right in payment methods */
+  .payment-methods label>div:last-of-type {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    flex: 1 !important;
+  }
+
+  .payment-methods label>div:last-of-type p {
+    margin: 0 !important;
+  }
+
+  .payment-methods label>div:last-of-type img {
+    margin-top: 0 !important;
+  }
+
+  .payment-methods label>div:last-of-type>div:last-child {
+    margin-top: 0 !important;
+  }
+
+  /* Receipt type selection - stack vertically */
+  .receipt-type-section .d-flex.gap-3 {
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+
+  /* Category section mobile */
+  .top-category-section-2 {
+    padding: 30px 0 !important;
+  }
+
+  .section-title h2 {
+    font-size: 20px !important;
+  }
+
+  .receipt-type-section .d-flex.gap-2.mb-2>div {
+    width: 100% !important;
+    flex: none !important;
+  }
+
+  .top-category-left-items {
+    margin: 0 0 15px 0 !important;
+    border-radius: 8px !important;
+  }
+
+  /* 2 columns on mobile */
+  .top-category-wrapper-2 .row.g-0>[class*="col-"] {
+    flex: 0 0 50% !important;
+    max-width: 50% !important;
+  }
+
+  .top-category-box {
+    padding: 18px 12px !important;
+    height: 170px !important;
+    min-height: 170px !important;
+    max-height: 170px !important;
+  }
+
+  .top-category-box .icon img,
+  .top-category-box .icon svg {
+    width: 38px !important;
+    height: 38px !important;
+  }
+
+  .top-category-box .content h6 {
+    font-size: 13px !important;
+    line-height: 1.3 !important;
+  }
+
+  .top-category-box .content p {
+    font-size: 12px !important;
+  }
+
+  .category-bottom-title {
+    padding: 20px 15px !important;
+  }
+}
+
+/* Small Mobile (≤576px) */
+@media (max-width: 576px) {
+  .category-bottom-title .theme-btn {
+    width: 100% !important;
+    max-width: 280px !important;
+  }
+
+  /* Circle shape hide on mobile */
+  .circle-shape {
+    display: none !important;
+  }
+
+  /* Cart items */
+  .cart-items {
+    max-height: 200px !important;
+  }
+
+  /* Smaller text on mobile */
+  .checkout-section h5 {
+    font-size: 16px !important;
+  }
+
+  .checkout-section h6 {
+    font-size: 14px !important;
+  }
+
+  /* Order summary adjustments */
+  .order-summary .d-flex span {
+    font-size: 12px !important;
+  }
+
+  .order-summary strong {
+    font-size: 14px !important;
+  }
+}
+
+/* ========================================
+   Payment Card Page Responsive Styles
+   ======================================== */
+
+/* Tablet (≤992px) */
+@media (max-width: 992px) {
+
+  /* Footer mobile */
+  .footer-section,
+  .footer-area {
+    padding: 30px 0;
+  }
+
+  /* General spacing reductions */
+  .section-padding {
+    padding: 40px 0;
+  }
+
+  /* Compact header elements on mobile */
+  .header-right {
+    gap: 6px !important;
+  }
+
+  /* Order Summary (second col-lg-6) comes first visually (on top) */
+  .payment-card-section .col-lg-6:last-child {
+    order: -1 !important;
+    margin-bottom: 20px !important;
+  }
+
+  /* Card Form (first col-lg-6) comes second (on bottom) */
+  .payment-card-section .col-lg-6:first-child {
+    order: 1 !important;
+  }
+}
+
+/* ========================================
+   Responsive Logo Sizing
+   ======================================== */
+
+/* Tablet (<1200px) */
+@media (max-width: 1199px) {
+  .header-logo .header-logo-img {
+    height: 45px !important;
+    width: auto !important;
+  }
+
+  .header-logo .header-logo-text {
+    font-size: 16px !important;
+  }
+}
+
+/* Mobile (<768px) */
+@media (max-width: 768px) {
+  .header-logo .header-logo-img {
+    height: 38px !important;
+    margin-right: 8px !important;
+  }
+
+  .header-logo .header-logo-text {
+    font-size: 14px !important;
+  }
+}
+
+/* Small Mobile (<576px) */
+@media (max-width: 576px) {
+  .header-logo .header-logo-img {
+    height: 32px !important;
+    margin-right: 6px !important;
+  }
+
+  .header-logo .header-logo-text {
+    font-size: 12px !important;
+  }
+}
+
+/* ========================================
+   Hamburger Icon Styling (Match Cart Icon)
+   ======================================== */
+
+/* Hamburger button - same style as cart icon */
+@media (max-width: 1199px) {
+  .header__hamburger .sidebar__toggle {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 36px !important;
+    height: 36px !important;
+    background: #f5f7fa !important;
+    border-radius: 8px !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+  }
+
+  .header__hamburger .sidebar__toggle:hover {
+    background: #e8f5f0 !important;
+  }
+
+  .header__hamburger .sidebar__toggle i.fa-bars {
+    font-size: 14px !important;
+    color: #004736 !important;
+  }
+}
+
+/* ========================================
+   Profile Page Responsive Styling
+   ======================================== */
+
+/* Tablet & Mobile (<992px) */
+@media (max-width: 991px) {
+
+  /* Main section padding */
+  .profile-section {
+    padding: 24px 0 !important;
+  }
+
+  /* Profile Header Card */
+  .profile-section .row.mb-5>.col-12>div {
+    padding: 24px !important;
+    border-radius: 16px !important;
+  }
+
+  /* Profile Header Row - Stack on mobile */
+  .profile-section .row.align-items-center {
+    flex-direction: column !important;
+  }
+
+  .profile-section .row.align-items-center>.col-md-8,
+  .profile-section .row.align-items-center>.col-md-4 {
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: 0 0 100% !important;
+  }
+
+  /* Avatar and info - center on mobile */
+  .profile-section .d-flex.align-items-center.gap-4 {
+    flex-direction: column !important;
+    text-align: center !important;
+    gap: 16px !important;
+  }
+
+  /* CPE section center */
+  .profile-section .col-md-4.text-md-end {
+    text-align: center !important;
+    margin-top: 24px !important;
+    padding-top: 20px !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.2) !important;
+  }
+
+  /* Stats Cards - 2 columns on tablet */
+  .profile-section .row.g-4>.col-lg-3 {
+    flex: 0 0 50% !important;
+    max-width: 50% !important;
+  }
+
+  /* Course section header */
+  .profile-section .d-flex.justify-content-between.align-items-center.mb-4 {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 16px !important;
+  }
+
+  .profile-section .d-flex.justify-content-between .theme-btn {
+    width: 100% !important;
+    text-align: center !important;
+    display: block !important;
+  }
+}
+
+/* Mobile (<768px) */
+@media (max-width: 768px) {
+  .profile-section {
+    padding: 16px 0 !important;
+  }
+
+  /* Profile Header */
+  .profile-section .row.mb-5>.col-12>div {
+    padding: 20px 16px !important;
+  }
+
+  /* Avatar smaller */
+  .profile-section .d-flex.align-items-center.gap-4>div:first-child {
+    width: 80px !important;
+    height: 80px !important;
+  }
+
+  /* Name smaller */
+  .profile-section h2 {
+    font-size: 22px !important;
+    margin-bottom: 8px !important;
+  }
+
+  /* CPE number smaller */
+  .profile-section .col-md-4>div:first-child {
+    font-size: 36px !important;
+  }
+
+  /* Reduce section spacing */
+  .profile-section .row.mb-5 {
+    margin-bottom: 24px !important;
+  }
+
+  .profile-section .row.g-4.mb-5 {
+    margin-bottom: 24px !important;
+  }
+
+  /* Course card section */
+  .profile-section .row>.col-12>div {
+    padding: 16px !important;
+    border-radius: 12px !important;
+  }
+
+  /* Section title */
+  .profile-section h4 {
+    font-size: 18px !important;
+  }
+}
+
+/* Small Mobile (<576px) */
+@media (max-width: 576px) {
+  .profile-section {
+    padding: 12px 0 !important;
+  }
+
+  /* Profile Header even smaller padding */
+  .profile-section .row.mb-5>.col-12>div {
+    padding: 16px 12px !important;
+  }
+
+  /* Avatar even smaller */
+  .profile-section .d-flex.align-items-center.gap-4>div:first-child {
+    width: 70px !important;
+    height: 70px !important;
+  }
+
+  /* Name smaller */
+  .profile-section h2 {
+    font-size: 20px !important;
+  }
+
+  /* CPE number */
+  .profile-section .col-md-4>div:first-child {
+    font-size: 32px !important;
+  }
+
+  /* Stats Cards - single column on small mobile */
+  .profile-section .row.g-4>.col-lg-3,
+  .profile-section .row.g-4>.col-md-6 {
+    flex: 0 0 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* Stats card compact */
+  .profile-section .row.g-4>div>div {
+    padding: 14px !important;
+  }
+
+  /* Stats card icon smaller */
+  .profile-section .row.g-4 .d-flex.align-items-center.gap-3>div:first-child {
+    width: 42px !important;
+    height: 42px !important;
+  }
+
+  .profile-section .row.g-4 .d-flex.align-items-center.gap-3 i {
+    font-size: 16px !important;
+  }
+
+  /* Stats card text smaller */
+  .profile-section .row.g-4 h3 {
+    font-size: 20px !important;
+  }
+
+  .profile-section .row.g-4 p {
+    font-size: 12px !important;
+  }
+
+  /* Course card section */
+  .profile-section .row>.col-12>div {
+    padding: 12px !important;
+  }
+
+  /* Section title smaller */
+  .profile-section h4 {
+    font-size: 16px !important;
+  }
+
+  /* Course cards margin */
+  .profile-section .row.mb-5 {
+    margin-bottom: 16px !important;
+  }
+}
+
+/* ========================================
+   Profile Card Tablet Optimizations (iPad Mini, iPad Air)
+   ======================================== */
+
+@media (max-width: 991px) and (min-width: 641px) {
+
+  /* Profile Header Card Container */
+  .profile-section .row.mb-5>.col-12>div {
+    position: relative !important;
+    padding: 16px !important;
+    border-radius: 14px !important;
+  }
+
+  /* Inner row - stack vertically */
+  .profile-section .row.mb-5 .row.align-items-center {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+
+  /* Col-md-8 full width */
+  .profile-section .row.mb-5 .col-md-8 {
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: none !important;
+  }
+
+  /* Profile Info Container - Horizontal layout */
+  .profile-section .d-flex.align-items-center.gap-4 {
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    text-align: left !important;
+    gap: 12px !important;
+    align-items: center !important;
+    padding-right: 100px !important;
+  }
+
+  /* Avatar - Centered vertically */
+  .profile-section .d-flex.align-items-center.gap-4>div:first-child {
+    width: 50px !important;
+    height: 50px !important;
+    font-size: 22px !important;
+    border-radius: 12px !important;
+    flex-shrink: 0 !important;
+    align-self: center !important;
+  }
+
+  /* Info section */
+  .profile-section .d-flex.align-items-center.gap-4>div:last-child {
+    flex: 1 !important;
+    min-width: 0 !important;
+  }
+
+  /* Name */
+  .profile-section .d-flex.align-items-center.gap-4 h2 {
+    font-size: 16px !important;
+    margin-bottom: 0 !important;
+    line-height: 1.2 !important;
+  }
+
+  /* Email */
+  .profile-section .d-flex.align-items-center.gap-4 p {
+    font-size: 11px !important;
+    margin: 0 !important;
+    line-height: 1.2 !important;
+  }
+
+  /* Pharmacist Badge - Centered right side */
+  .profile-section .pharmacist-badge {
+    position: absolute !important;
+    top: 50% !important;
+    right: 14px !important;
+    transform: translateY(-50%) !important;
+    margin: 0 !important;
+    padding: 5px 12px !important;
+    font-size: 10px !important;
+    border-radius: 16px !important;
+    z-index: 10 !important;
+  }
+
+  /* Hide desktop CPE on tablet */
+  .profile-section .cpe-desktop {
+    display: none !important;
+  }
+
+  /* Show mobile CPE on tablet */
+  .profile-section .cpe-mobile {
+    display: flex !important;
+    align-items: center !important;
+    margin: 2px 0 0 0 !important;
+  }
+
+  /* Stats Cards Container */
+  .profile-section .row.g-4.mb-5 {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    margin-bottom: 4px !important;
+  }
+
+  /* Stats Cards - 2x2 Grid on Tablet */
+  .profile-section .row.g-4.mb-5 .col-lg-3 {
+    width: 50% !important;
+    flex: 0 0 50% !important;
+    max-width: 50% !important;
+    padding: 8px !important;
+  }
+
+  .profile-section .row.g-4.mb-5 .col-lg-3>div {
+    padding: 16px !important;
+    border-radius: 12px !important;
+  }
+
+  .profile-section .row.g-4.mb-5 .col-lg-3 h3 {
+    font-size: 24px !important;
+  }
+
+  .profile-section .row.g-4.mb-5 .col-lg-3 p {
+    font-size: 12px !important;
+  }
+
+  .profile-section .row.g-4.mb-5 .col-lg-3 .d-flex>div:first-child {
+    width: 40px !important;
+    height: 40px !important;
+  }
+
+  .profile-section .row.g-4.mb-5 .col-lg-3 .d-flex>div:first-child i {
+    font-size: 16px !important;
+  }
+}
+
+/* ========================================
+   Profile Card Mobile Optimizations
+   ======================================== */
+
+@media (max-width: 640px) {
+
+  /* Profile Header Card Container */
+  .profile-section .row.mb-5>.col-12>div {
+    position: relative !important;
+    padding: 16px !important;
+    border-radius: 14px !important;
+  }
+
+  /* Inner row - stack */
+  .profile-section .row.mb-5 .row.align-items-center {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+
+  /* Col-md-8 full width */
+  .profile-section .row.mb-5 .col-md-8 {
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: none !important;
+  }
+
+  /* Profile Info Container - Horizontal layout */
+  .profile-section .d-flex.align-items-center.gap-4 {
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    text-align: left !important;
+    gap: 12px !important;
+    padding-top: 0 !important;
+    align-items: center !important;
+    padding-right: 50px !important;
+  }
+
+  /* Avatar */
+  .profile-section .d-flex.align-items-center.gap-4>div:first-child {
+    width: 50px !important;
+    height: 50px !important;
+    font-size: 22px !important;
+    border-radius: 12px !important;
+    margin-bottom: 0 !important;
+    flex-shrink: 0 !important;
+    align-self: center !important;
+  }
+
+  /* Info section */
+  .profile-section .d-flex.align-items-center.gap-4>div:last-child {
+    flex: 1 !important;
+    min-width: 0 !important;
+  }
+
+  /* Name */
+  .profile-section .d-flex.align-items-center.gap-4 h2 {
+    font-size: 16px !important;
+    text-align: left !important;
+    margin-bottom: 0 !important;
+    line-height: 1.2 !important;
+  }
+
+  /* Email */
+  .profile-section .d-flex.align-items-center.gap-4 p {
+    font-size: 11px !important;
+    padding: 0 !important;
+    line-height: 1.2 !important;
+    opacity: 0.85 !important;
+    margin: 0 !important;
+  }
+
+  /* Pharmacist Badge - Centered right side */
+  .profile-section .pharmacist-badge {
+    position: absolute !important;
+    top: 50% !important;
+    right: 14px !important;
+    transform: translateY(-50%) !important;
+    margin: 0 !important;
+    padding: 5px 12px !important;
+    font-size: 10px !important;
+    border-radius: 16px !important;
+    z-index: 10 !important;
+  }
+
+  /* Hide desktop CPE on mobile */
+  .profile-section .cpe-desktop {
+    display: none !important;
+  }
+
+  /* Show mobile CPE */
+  .profile-section .cpe-mobile {
+    display: flex !important;
+    align-items: center !important;
+    margin: 2px 0 0 0 !important;
+  }
+
+  /* Stats Cards Container - Align with profile card */
+  .profile-section .row.g-4.mb-5 {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    margin-bottom: 4px !important;
+  }
+
+  /* Stats Cards - 2x2 Grid on Mobile */
+  .profile-section .row.g-4.mb-5 .col-lg-3 {
+    width: 50% !important;
+    flex: 0 0 50% !important;
+    max-width: 50% !important;
+    padding: 3px !important;
+  }
+
+  .profile-section .row.g-4.mb-5 .col-lg-3>div {
+    padding: 10px !important;
+    border-radius: 8px !important;
+  }
+
+  .profile-section .row.g-4.mb-5 .col-lg-3 h3 {
+    font-size: 20px !important;
+  }
+
+  .profile-section .row.g-4.mb-5 .col-lg-3 p {
+    font-size: 10px !important;
+  }
+
+  .profile-section .row.g-4.mb-5 .col-lg-3 .d-flex>div:first-child {
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 8px !important;
+  }
+
+  .profile-section .row.g-4.mb-5 .col-lg-3 .d-flex>div:first-child i {
+    font-size: 12px !important;
+  }
+
+  .profile-section .row.g-4.mb-5 .col-lg-3 .d-flex.gap-3 {
+    gap: 8px !important;
+  }
+}
+
+/* ========================================
+   Course List Mobile Optimizations
+   ======================================== */
+
+@media (max-width: 640px) {
+
+  /* Course Cards List - More gap */
+  .course-cards-list {
+    gap: 16px !important;
+  }
+
+  /* Course Card - Vertical Stack Layout */
+  .course-card {
+    flex-direction: column !important;
+    padding: 16px !important;
+    gap: 14px !important;
+    align-items: stretch !important;
+  }
+
+  /* Course Icon - Smaller and inline with title */
+  .course-card-icon {
+    width: 50px !important;
+    height: 50px !important;
+    border-radius: 10px !important;
+    position: absolute !important;
+    top: 16px !important;
+    left: 16px !important;
+  }
+
+  .course-card-icon i {
+    font-size: 20px !important;
+  }
+
+  /* Course Info - Full width with padding for icon */
+  .course-card-info {
+    padding-left: 60px !important;
+    width: 100% !important;
+    min-height: 50px !important;
+  }
+
+  /* Course Header - Column layout */
+  .course-card-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+    margin-bottom: 10px !important;
+  }
+
+  /* Course Title - Larger and readable */
+  .course-card-title {
+    font-size: 16px !important;
+    line-height: 1.4 !important;
+    font-weight: 600 !important;
+    padding-right: 0 !important;
+    letter-spacing: 0.01em !important;
+  }
+
+  /* Status Badge - Inline below title */
+  .course-card-badge {
+    font-size: 11px !important;
+    padding: 4px 12px !important;
+    border-radius: 16px !important;
+  }
+
+  /* Main Content Column */
+  .learning-content-col {
+    padding: 24px 32px !important;
+  }
+
+  @media (max-width: 768px) {
+    .learning-content-col {
+      padding: 16px !important;
+    }
+  }
+
+  .lesson-content-row {
+    width: 100%;
+  }
+
+  /* Lesson Info Box & List Container */
+  .lesson-info-box {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+    padding: 24px !important;
+    margin-bottom: 24px;
+  }
+
+  .lesson-header-row {
+    flex-wrap: nowrap;
+  }
+
+  /* Meta Info - Same row */
+  .course-card-meta {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    gap: 0 !important;
+    font-size: 12px !important;
+    margin-bottom: 10px !important;
+    line-height: 1.4 !important;
+    align-items: center !important;
+  }
+
+  .course-card-meta span[style*="margin: 0 10px"] {
+    display: inline !important;
+    margin: 0 6px !important;
+  }
+
+  /* Progress Bar - Full width below */
+  .course-card-progress {
+    margin-bottom: 0 !important;
+    padding-left: 0 !important;
+  }
+
+  /* Action Buttons - Full width at bottom */
+  .course-card-actions {
+    width: 100% !important;
+    padding-top: 12px !important;
+    border-top: 1px solid #f0f0f0 !important;
+    margin-top: 4px !important;
+  }
+
+  /* Continue Button - Full width */
+  .course-card-btn {
+    width: 100% !important;
+    padding: 14px 24px !important;
+    text-align: center !important;
+    font-size: 15px !important;
+    border-radius: 10px !important;
+    display: block !important;
+  }
+
+  /* Download Button - Full width */
+  .course-card-actions button {
+    width: 100% !important;
+    height: 48px !important;
+    padding: 0 20px !important;
+    border-radius: 10px !important;
+    font-size: 14px !important;
+  }
+}
+
+/* ========================================
+   OffCanvas Menu - Hide Scrollbar
+   ======================================== */
+
+.offcanvas-menu {
+  scrollbar-width: none;
+  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE and Edge */
+}
+
+.offcanvas-menu::-webkit-scrollbar {
+  display: none;
+  /* Chrome, Safari, Opera */
+}
+
+/* ========================================
+   Payment History Responsive Styling
+   ======================================== */
+
+/* Default (Desktop > 1366px): Hide mobile cards, show table */
+.payment-history-section .payment-cards-mobile {
+  display: none;
+}
+
+.payment-history-section .table-responsive {
+  display: block;
+}
+
+/* iPad Pro 12.9" Landscape and smaller (max 1400px): Show mobile card layout */
+@media (max-width: 1400px) {
+
+  /* Hide table on mobile/tablet */
+  .payment-history-section .table-responsive {
+    display: none !important;
+  }
+
+  /* Show mobile cards */
+  .payment-history-section .payment-cards-mobile {
+    display: block !important;
+  }
+
+  /* Hide title header */
+  .payment-history-section .d-flex.justify-content-between {
+    display: none !important;
+  }
+
+  /* Main container */
+  .payment-history-section .history-wrapper {
+    padding: 16px !important;
+    border-radius: 16px !important;
+    box-shadow: none !important;
+    background: transparent !important;
+  }
+
+  /* Summary box */
+  .payment-history-section .summary-box {
+    padding: 16px 8px !important;
+    border-radius: 12px !important;
+    margin-top: 16px !important;
+  }
+
+  .payment-history-section .summary-box>.row {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    gap: 0 !important;
+    margin: 0 !important;
+  }
+
+  .payment-history-section .summary-box>.row>.col-md-4,
+  .payment-history-section .summary-box>.row>[class*="col-"] {
+    flex: 1 1 0 !important;
+    width: auto !important;
+    max-width: none !important;
+    padding: 8px 4px !important;
+    border-right: 1px solid rgba(0, 71, 54, 0.1) !important;
+  }
+
+  .payment-history-section .summary-box>.row>.col-md-4:last-child,
+  .payment-history-section .summary-box>.row>[class*="col-"]:last-child {
+    border-right: none !important;
+  }
+
+  .payment-history-section .summary-box h5 {
+    font-size: 20px !important;
+    margin-bottom: 4px !important;
+  }
+
+  .payment-history-section .summary-box p {
+    font-size: 10px !important;
+    margin: 0 !important;
+  }
+
+  /* Section padding */
+  .payment-history-section.section-padding {
+    padding: 0 !important;
+  }
+}
+
+/* Force horizontal summary box on ALL screen sizes */
+.payment-history-section .summary-box .row {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  margin: 0 !important;
+}
+
+.payment-history-section .summary-box .row .col-md-4 {
+  flex: 1 !important;
+  max-width: none !important;
+  width: auto !important;
+  padding: 10px 8px !important;
+  border-right: 1px solid rgba(0, 71, 54, 0.1);
+}
+
+.payment-history-section .summary-box .row .col-md-4:last-child {
+  border-right: none !important;
+}
+
+/* ========================================
+   Checkout Page Responsive Styling
+   ======================================== */
+
+/* Tablet (<992px) */
+@media (max-width: 991px) {
+
+  /* Order: Cart first (top), Payment second (bottom) on mobile */
+  .checkout-section .row.g-4 {
+    flex-direction: column !important;
+  }
+
+  /* Cart section shows first */
+  .checkout-section .col-lg-5 {
+    order: 1 !important;
+  }
+
+  /* Payment section shows last */
+  .checkout-section .col-lg-7 {
+    order: 2 !important;
+  }
+
+  .checkout-section .col-lg-7,
+  .checkout-section .col-lg-5 {
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: 0 0 100% !important;
+  }
+
+  /* Payment wrapper padding */
+  .checkout-section .payment-wrapper {
+    padding: 20px !important;
+  }
+
+  /* Cart wrapper padding */
+  .checkout-section .cart-wrapper {
+    padding: 20px !important;
+  }
+}
+
+/* Mobile (<768px) */
+@media (max-width: 768px) {
+  .checkout-section {
+    padding: 16px 0 !important;
+  }
+
+  /* Payment Methods - Stack vertically */
+  .checkout-section .payment-methods.d-flex {
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+
+  .checkout-section .payment-methods label {
+    height: auto !important;
+    min-height: 70px !important;
+    padding: 14px 16px !important;
+  }
+
+  /* Receipt Type - Stack vertically */
+  .checkout-section .receipt-type-section .d-flex.gap-3 {
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+
+  .checkout-section .receipt-type-section label {
+    padding: 12px 16px !important;
+  }
+
+  /* Address Form - 2 columns to 1 column, reduce spacing */
+  .checkout-section .receipt-type-section .d-flex.gap-2 {
+    flex-wrap: wrap !important;
+    gap: 0 !important;
+  }
+
+  .checkout-section .receipt-type-section .d-flex.gap-2>div {
+    flex: 0 0 100% !important;
+    min-width: 100% !important;
+    margin-bottom: 12px !important;
+  }
+
+  /* Form section container - reduce spacing */
+  .checkout-section .receipt-type-section .mb-2 {
+    margin-bottom: 12px !important;
+  }
+
+  /* Form inputs - Larger touch targets and bigger font */
+  .checkout-section input[type="text"],
+  .checkout-section select {
+    padding: 14px 16px !important;
+    font-size: 16px !important;
+    min-height: 50px !important;
+    border-radius: 10px !important;
+  }
+
+  /* Labels - Larger and very close to input */
+  .checkout-section label {
+    font-size: 14px !important;
+    margin: 0 0 0 0 !important;
+    padding: 0 !important;
+    font-weight: 500 !important;
+    line-height: 1.3 !important;
+  }
+
+  /* Input fields - Remove top margin */
+  .checkout-section input[type="text"],
+  .checkout-section select {
+    margin-top: 2px !important;
+  }
+
+  /* Section title */
+  .checkout-section h5 {
+    font-size: 16px !important;
+    margin-bottom: 16px !important;
+  }
+
+  /* Submit button - Larger */
+  .checkout-section button[style*="width: 100%"] {
+    padding: 16px !important;
+    font-size: 16px !important;
+    min-height: 52px !important;
+  }
+
+  /* Cart items - Show all without scroll */
+  .checkout-section .cart-items {
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  /* Cart item image smaller */
+  .checkout-section .cart-item>div:first-child {
+    width: 70px !important;
+    height: 50px !important;
+  }
+
+  /* Cart item text */
+  .checkout-section .cart-item h6 {
+    font-size: 12px !important;
+  }
+}
+
+/* Small Mobile (<576px) */
+@media (max-width: 576px) {
+  .checkout-section {
+    padding: 12px 0 !important;
+  }
+
+  /* Wrappers padding smaller */
+  .checkout-section .payment-wrapper,
+  .checkout-section .cart-wrapper {
+    padding: 16px !important;
+    border-radius: 12px !important;
+  }
+
+  /* Payment method cards */
+  .checkout-section .payment-methods label {
+    padding: 12px 14px !important;
+    gap: 10px !important;
+  }
+
+  /* Radio button smaller */
+  .checkout-section .payment-methods label>div:first-child {
+    width: 24px !important;
+    height: 24px !important;
+  }
+
+  /* Payment text */
+  .checkout-section .payment-methods p {
+    font-size: 14px !important;
+  }
+
+  /* Credit card logos smaller */
+  .checkout-section .payment-methods img {
+    height: 16px !important;
+  }
+
+  /* Form inputs */
+  .checkout-section input[type="text"],
+  .checkout-section select {
+    padding: 10px 12px !important;
+    font-size: 14px !important;
+    border-radius: 8px !important;
+  }
+
+  /* Voucher section */
+  .checkout-section .d-flex.gap-2>input {
+    flex: 1 !important;
+  }
+
+  /* Summary section */
+  .checkout-section .d-flex.justify-content-between {
+    font-size: 13px !important;
+  }
+
+  /* Total price */
+  .checkout-section h4 {
+    font-size: 18px !important;
+  }
+
+  /* Terms text smaller */
+  .checkout-section .text-center p {
+    font-size: 11px !important;
+    line-height: 1.5 !important;
+  }
+}
+
+/* ========================================
+   Payment History Page Responsive Styling
+   ======================================== */
+
+/* Tablet (<992px) */
+@media (max-width: 991px) {
+  .payment-history-section .history-wrapper {
+    padding: 24px !important;
+    border-radius: 16px !important;
+  }
+
+  .payment-history-section h3 {
+    font-size: 20px !important;
+  }
+
+  /* Hide Status and Action columns on tablet */
+  .payment-history-section table th:nth-child(5),
+  .payment-history-section table td:nth-child(5),
+  .payment-history-section table th:nth-child(6),
+  .payment-history-section table td:nth-child(6) {
+    display: none !important;
+  }
+
+  /* Table cells padding */
+  .payment-history-section table th,
+  .payment-history-section table td {
+    padding: 12px 10px !important;
+    font-size: 13px !important;
+  }
+
+  /* Summary box */
+  .payment-history-section .summary-box {
+    padding: 16px !important;
+  }
+
+  .payment-history-section .summary-box h5 {
+    font-size: 20px !important;
+  }
+
+  .payment-history-section .summary-box p {
+    font-size: 12px !important;
+  }
+}
+
+/* Mobile (<768px) */
+@media (max-width: 768px) {
+  .payment-history-section {
+    padding: 16px 0 !important;
+  }
+
+  .payment-history-section .history-wrapper {
+    padding: 16px !important;
+    border-radius: 12px !important;
+  }
+
+  .payment-history-section h3 {
+    font-size: 18px !important;
+  }
+
+  /* Hide more columns on mobile - keep only Order ID, Course, Amount */
+  .payment-history-section table th:nth-child(3),
+  .payment-history-section table td:nth-child(3) {
+    display: none !important;
+  }
+
+  /* Table cells */
+  .payment-history-section table th,
+  .payment-history-section table td {
+    padding: 10px 8px !important;
+    font-size: 12px !important;
+  }
+
+  /* Order ID smaller */
+  .payment-history-section table td:first-child {
+    font-size: 11px !important;
+  }
+
+  /* Amount column */
+  .payment-history-section table td:nth-child(4) {
+    font-size: 14px !important;
+    font-weight: 600 !important;
+  }
+
+  /* Summary box - stack vertically */
+  .payment-history-section .summary-box .row {
+    flex-direction: column !important;
+    gap: 16px !important;
+  }
+
+  .payment-history-section .summary-box .col-md-4 {
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: 0 0 100% !important;
+    padding: 12px 0 !important;
+    border-bottom: 1px solid rgba(0, 71, 54, 0.1) !important;
+  }
+
+  .payment-history-section .summary-box .col-md-4:last-child {
+    border-bottom: none !important;
+  }
+
+  .payment-history-section .summary-box h5 {
+    font-size: 24px !important;
+    margin-bottom: 4px !important;
+  }
+
+  .payment-history-section .summary-box p {
+    font-size: 13px !important;
+  }
+}
+
+/* Small Mobile (<576px) */
+@media (max-width: 576px) {
+  .payment-history-section .history-wrapper {
+    padding: 12px !important;
+  }
+
+  .payment-history-section h3 {
+    font-size: 16px !important;
+  }
+
+  /* Table - Card-like layout */
+  .payment-history-section table thead {
+    display: none !important;
+  }
+
+  .payment-history-section table tbody tr {
+    display: flex !important;
+    flex-direction: column !important;
+    padding: 12px !important;
+    margin-bottom: 12px !important;
+    background: #f8f9fa !important;
+    border-radius: 10px !important;
+    border: none !important;
+  }
+
+  .payment-history-section table tbody td {
+    display: flex !important;
+    justify-content: space-between !important;
+    padding: 6px 0 !important;
+    border: none !important;
+  }
+
+  .payment-history-section table tbody td:before {
+    font-weight: 600 !important;
+    color: #004736 !important;
+  }
+
+  /* Show all columns in card layout */
+  .payment-history-section table th:nth-child(3),
+  .payment-history-section table td:nth-child(3),
+  .payment-history-section table th:nth-child(5),
+  .payment-history-section table td:nth-child(5),
+  .payment-history-section table th:nth-child(6),
+  .payment-history-section table td:nth-child(6) {
+    display: flex !important;
+  }
+
+  /* Order ID */
+  .payment-history-section table td:first-child {
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    color: #004736 !important;
+    padding-bottom: 8px !important;
+    border-bottom: 1px solid #e0e0e0 !important;
+    margin-bottom: 8px !important;
+  }
+
+  /* Course name */
+  .payment-history-section table td:nth-child(2) {
+    font-size: 13px !important;
+  }
+
+  /* Amount */
+  .payment-history-section table td:nth-child(4) {
+    font-size: 16px !important;
+    color: #004736 !important;
+  }
+
+  /* Summary box */
+  .payment-history-section .summary-box {
+    padding: 12px !important;
+    margin-top: 16px !important;
+  }
+
+  .payment-history-section .summary-box h5 {
+    font-size: 22px !important;
+  }
+}
+
+/* ========================================
+   Payment History - Mobile Optimizations (640px)
+   ======================================== */
+
+@media (max-width: 640px) {
+
+  /* Main container */
+  .payment-history-section .history-wrapper {
+    padding: 16px !important;
+    border-radius: 14px !important;
+  }
+
+  /* Title */
+  .payment-history-section h3 {
+    font-size: 18px !important;
+    margin-bottom: 16px !important;
+  }
+
+  /* Hide table header */
+  .payment-history-section table thead {
+    display: none !important;
+  }
+
+  /* Card Layout for each row */
+  .payment-history-section table tbody tr {
+    display: block !important;
+    padding: 0 !important;
+    margin-bottom: 16px !important;
+    background: #fff !important;
+    border-radius: 12px !important;
+    border: 1px solid #e5e7eb !important;
+    overflow: hidden !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+  }
+
+  /* Order ID - Header with background */
+  .payment-history-section table tbody td:first-child {
+    display: block !important;
+    background: linear-gradient(135deg, #004736 0%, #006B52 100%) !important;
+    color: #fff !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    padding: 12px 16px !important;
+    margin: 0 !important;
+    border: none !important;
+  }
+
+  /* Course name */
+  .payment-history-section table tbody td:nth-child(2) {
+    display: block !important;
+    padding: 14px 16px 8px !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    color: #333 !important;
+    border: none !important;
+  }
+
+  /* Date */
+  .payment-history-section table tbody td:nth-child(3) {
+    display: block !important;
+    padding: 0 16px 12px !important;
+    font-size: 12px !important;
+    color: #666 !important;
+    border: none !important;
+  }
+
+  /* Price and Status - Horizontal layout */
+  .payment-history-section table tbody td:nth-child(4),
+  .payment-history-section table tbody td:nth-child(5) {
+    display: inline-flex !important;
+    border: none !important;
+  }
+
+  .payment-history-section table tbody td:nth-child(4) {
+    padding: 8px 16px !important;
+    font-size: 18px !important;
+    font-weight: 700 !important;
+    color: #004736 !important;
+    width: auto !important;
+  }
+
+  .payment-history-section table tbody td:nth-child(5) {
+    padding: 8px 0 !important;
+    vertical-align: middle !important;
+  }
+
+  .payment-history-section table tbody td:nth-child(5) span {
+    padding: 6px 14px !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+  }
+
+  /* Receipt Button - Large touch target */
+  .payment-history-section table tbody td:nth-child(6) {
+    display: block !important;
+    padding: 12px 16px 16px !important;
+    border: none !important;
+    border-top: 1px solid #f0f0f0 !important;
+    margin-top: 8px !important;
+  }
+
+  .payment-history-section table tbody td:nth-child(6) a {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    background: #E8F8F4 !important;
+    color: #004736 !important;
+    padding: 12px 20px !important;
+    border-radius: 10px !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    text-decoration: none !important;
+    min-height: 48px !important;
+    transition: all 0.2s ease !important;
+  }
+
+  .payment-history-section table tbody td:nth-child(6) a:hover {
+    background: #004736 !important;
+    color: #fff !important;
+  }
+
+  /* Summary Section - Grid Layout */
+  .payment-history-section .summary-box {
+    padding: 16px !important;
+    margin-top: 20px !important;
+    border-radius: 12px !important;
+  }
+
+  .payment-history-section .summary-box .row {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 12px !important;
+    flex-direction: row !important;
+  }
+
+  .payment-history-section .summary-box .col-md-4 {
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: none !important;
+    padding: 10px 8px !important;
+    border-bottom: none !important;
+    border-right: 1px solid rgba(0, 71, 54, 0.15) !important;
+    text-align: center !important;
+  }
+
+  .payment-history-section .summary-box .col-md-4:last-child {
+    border-right: none !important;
+  }
+
+  .payment-history-section .summary-box h5 {
+    font-size: 20px !important;
+    font-weight: 700 !important;
+    margin-bottom: 2px !important;
+    color: #004736 !important;
+  }
+
+  .payment-history-section .summary-box p {
+    font-size: 10px !important;
+    margin: 0 !important;
+    line-height: 1.3 !important;
+  }
+}
+
+/* ========================================
+   Payment Card Page Responsive Styling
+   ======================================== */
+
+@media (max-width: 991px) {
+
+  /* Stack columns */
+  .payment-card-section .row.g-4 {
+    flex-direction: column !important;
+  }
+
+  .payment-card-section .col-lg-6 {
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: 0 0 100% !important;
+  }
+
+  /* Card Form stays at top (order 1), Summary at bottom (order 2) */
+  .payment-card-section .col-lg-6:first-child {
+    order: 1 !important;
+  }
+
+  .payment-card-section .col-lg-6:last-child {
+    order: 2 !important;
+  }
+
+  /* Reduce padding */
+  .payment-card-section .card-form-wrapper {
+    padding: 24px !important;
+    border-radius: 14px !important;
+  }
+
+  .payment-card-section .order-summary-wrapper {
+    padding: 20px !important;
+    border-radius: 14px !important;
+    margin-top: 16px !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .payment-card-section {
+    padding: 16px 0 !important;
+  }
+
+  /* Card Form */
+  .payment-card-section .card-form-wrapper {
+    padding: 20px !important;
+    border-radius: 12px !important;
+  }
+
+  .payment-card-section .card-form-wrapper h4 {
+    font-size: 18px !important;
+    margin-bottom: 12px !important;
+  }
+
+  /* Timer */
+  .payment-card-section .card-form-wrapper>div:nth-child(2)>div {
+    padding: 10px 24px !important;
+    font-size: 18px !important;
+  }
+
+  /* Form labels */
+  .payment-card-section label {
+    font-size: 13px !important;
+    margin-bottom: 6px !important;
+  }
+
+  /* Form inputs */
+  .payment-card-section input[type="text"],
+  .payment-card-section input[type="password"] {
+    padding: 14px 16px !important;
+    font-size: 15px !important;
+    border-radius: 10px !important;
+  }
+
+  /* Submit button */
+  .payment-card-section button[type="submit"] {
+    padding: 16px !important;
+    font-size: 16px !important;
+    min-height: 52px !important;
+    border-radius: 10px !important;
+  }
+
+  /* Security note */
+  .payment-card-section .card-form-wrapper>div:last-child p {
+    font-size: 12px !important;
+  }
+
+  /* Order Summary */
+  .payment-card-section .order-summary-wrapper {
+    padding: 16px !important;
+    border-radius: 12px !important;
+  }
+
+  .payment-card-section .order-summary-wrapper h5 {
+    font-size: 16px !important;
+    margin-bottom: 16px !important;
+  }
+
+  /* Order items */
+  .payment-card-section .order-summary-wrapper p {
+    font-size: 13px !important;
+  }
+
+  .payment-card-section .order-summary-wrapper span {
+    font-size: 14px !important;
+  }
+
+  /* Total */
+  .payment-card-section .order-summary-wrapper strong {
+    font-size: 16px !important;
+  }
+
+  .payment-card-section .order-summary-wrapper strong:last-child {
+    font-size: 20px !important;
+  }
+
+  /* Back link */
+  .payment-card-section .order-summary-wrapper>a {
+    font-size: 13px !important;
+    padding: 12px !important;
+    margin-top: 16px !important;
+  }
+}
+
+/* ========================================
+   Course Details - Tabs Responsive
+   ======================================== */
+
+/* Force tabs to single row on ALL screens */
+.courses-details-content>ul.nav,
+.courses-details-section .nav,
+.courses-details-content ul.nav {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  justify-content: center !important;
+  gap: 12px !important;
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  border-bottom: none !important;
+  padding: 4px !important;
+  width: 100% !important;
+  margin-top: 40px !important;
+}
+
+.courses-details-content>ul.nav::-webkit-scrollbar,
+.courses-details-section .nav::-webkit-scrollbar {
+  display: none;
+}
+
+.courses-details-content>ul.nav .nav-item,
+.courses-details-section .nav .nav-item {
+  flex: 1 !important;
+  white-space: nowrap !important;
+  border: none !important;
+}
+
+.courses-details-content>ul.nav .nav-link,
+.courses-details-section .nav .nav-link {
+  text-align: center !important;
+  padding: 10px 16px !important;
+  font-size: 18px !important;
+  color: #333 !important;
+  border-radius: 8px !important;
+  border: none !important;
+  background: transparent !important;
+  transition: all 0.2s ease !important;
+  text-decoration: none !important;
+  width: 100% !important;
+  display: block !important;
+}
+
+.courses-details-content>ul.nav .nav-link::after,
+.courses-details-section .nav .nav-link::after {
+  display: none !important;
+}
+
+.courses-details-content>ul.nav .nav-link:hover,
+.courses-details-section .nav .nav-link:hover {
+  background: #f0f0f0 !important;
+}
+
+/* Active tab - button style */
+.courses-details-content>ul.nav .nav-link.active,
+.courses-details-section .nav .nav-link.active {
+  background: #004736 !important;
+  color: #fff !important;
+  font-weight: 600 !important;
+}
+
+/* Large Tablet (≤1024px) - iPad Pro landscape */
+@media (max-width: 1024px) {
+
+  .courses-details-content>ul.nav,
+  .courses-details-section .nav {
+    gap: 10px !important;
+  }
+
+  .courses-details-content>ul.nav .nav-link,
+  .courses-details-section .nav .nav-link {
+    padding: 10px 18px !important;
+    font-size: 15px !important;
+  }
+}
+
+/* Tablet (≤992px) */
+@media (max-width: 992px) {
+
+  .courses-details-content>ul.nav,
+  .courses-details-section .nav {
+    gap: 8px !important;
+  }
+
+  .courses-details-content>ul.nav .nav-link,
+  .courses-details-section .nav .nav-link {
+    padding: 10px 16px !important;
+    font-size: 15px !important;
+  }
+}
+
+/* Tablet Portrait & Mobile Landscape (≤768px) */
+@media (max-width: 768px) {
+
+  .courses-details-content>ul.nav,
+  .courses-details-section .nav {
+    gap: 8px !important;
+  }
+
+  .courses-details-content>ul.nav .nav-link,
+  .courses-details-section .nav .nav-link {
+    padding: 8px 14px !important;
+    font-size: 14px !important;
+  }
+}
+
+/* Mobile (≤640px) */
+@media (max-width: 640px) {
+
+  .courses-details-content>ul.nav,
+  .courses-details-section .nav {
+    gap: 6px !important;
+  }
+
+  .courses-details-content>ul.nav .nav-link,
+  .courses-details-section .nav .nav-link {
+    padding: 8px 12px !important;
+    font-size: 14px !important;
+    border-radius: 6px !important;
+  }
+}
+
+/* Small Mobile (≤576px) */
+@media (max-width: 576px) {
+
+  .courses-details-content>ul.nav,
+  .courses-details-section .nav {
+    gap: 4px !important;
+  }
+
+  .courses-details-content>ul.nav .nav-link,
+  .courses-details-section .nav .nav-link {
+    padding: 8px 10px !important;
+    font-size: 13px !important;
+    border-radius: 6px !important;
+  }
+}
+
+/* Extra Small Mobile (≤400px) */
+@media (max-width: 400px) {
+
+  .courses-details-content>ul.nav .nav-link,
+  .courses-details-section .nav .nav-link {
+    padding: 6px 8px !important;
+    font-size: 12px !important;
+  }
+}
+
+/* Landscape orientation for mobile */
+@media (max-height: 500px) and (orientation: landscape) {
+
+  .courses-details-content>ul.nav,
+  .courses-details-section .nav {
+    gap: 10px !important;
+  }
+
+  .courses-details-content>ul.nav .nav-link,
+  .courses-details-section .nav .nav-link {
+    padding: 8px 16px !important;
+    font-size: 14px !important;
+  }
+}
+
+/* ========================================
+   Course Learning Page - Responsive
+   Clean Media Query Structure
+   ======================================== */
+
+/* 
+   MOBILE RESPONSIVE - เฉพาะ responsive ไม่แก้ไข web
+   Breakpoints:
+   - ≤1200px: Large Tablet/Small Desktop
+   - ≤992px:  Tablet Landscape
+   - ≤768px:  Tablet Portrait / Mobile Landscape
+   - ≤576px:  Mobile Portrait
+   - ≤400px:  Small Mobile
+*/
+
+/* ----------------------------------------
+   Large Tablet (≤1200px)
+   ---------------------------------------- */
+@media (max-width: 1200px) {
+  .course-learning-section .lesson-sidebar {
+    padding: 16px !important;
+  }
+
+  .course-learning-section .course-info {
+    padding: 16px !important;
+  }
+
+  .course-learning-section .col-lg-9 {
+    padding: 20px 24px !important;
+  }
+}
+
+/* ----------------------------------------
+   Course Learning - Desktop Layout (>992px)
+   ---------------------------------------- */
+
+/* Desktop: lesson-content-row เป็น 2 คอลัมน์ */
+.course-learning-section .lesson-content-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 16px 24px;
+  /* row-gap: 16px, column-gap: 24px */
+}
+
+/* Desktop: Lesson Title + Documents อยู่คอลัมน์ซ้าย */
+.course-learning-section .lesson-title-section,
+.course-learning-section .documents-section {
+  grid-column: 1;
+}
+
+/* Desktop: ลด margin-bottom และเพิ่ม padding ของ lesson-title-section */
+.course-learning-section .lesson-title-section>div {
+  margin-bottom: 0 !important;
+  padding: 24px !important;
+}
+
+/* Desktop: Actions อยู่คอลัมน์ขวา */
+.course-learning-section .actions-section {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+}
+
+/* ซ่อน mobile lessons section บน desktop */
+.course-learning-section .mobile-lessons-section {
+  display: none;
+}
+
+/* ----------------------------------------
+   Tablet & iPad Pro (≤1024px) - Stack Layout
+   ---------------------------------------- */
+@media (max-width: 1024px) {
+
+  /* Main row */
+  .course-learning-section .row.g-0 {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  /* Main content (Video) - แสดงก่อน */
+  .course-learning-section .col-lg-9,
+  .course-learning-section .col-md-8 {
+    order: 1 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: 0 0 100% !important;
+    padding: 16px !important;
+  }
+
+  /* ซ่อน Sidebar บน mobile (เพราะใช้ mobile-lessons-section แทน) */
+  .course-learning-section .col-lg-3,
+  .course-learning-section .col-md-4 {
+    display: none !important;
+  }
+
+  /* Video container */
+  .course-learning-section .video-container {
+    border-radius: 12px !important;
+  }
+
+  /* Lesson Content Row - จัดลำดับใหม่ */
+  .course-learning-section .lesson-content-row {
+    display: flex !important;
+    flex-direction: column !important;
+    padding: 0 !important;
+  }
+
+  /* 1. Lesson Title - แสดงก่อน */
+  .course-learning-section .lesson-title-section {
+    order: 1 !important;
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* 2. Mobile Lessons List - แสดงหลัง Lesson Title */
+  .course-learning-section .mobile-lessons-section {
+    display: block !important;
+    order: 2 !important;
+    width: 100% !important;
+    background: #fff;
+    border-radius: 12px;
+    padding: 16px;
+    margin-top: -16px !important;
+    margin-bottom: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  }
+
+  /* ลด margin-bottom และปรับขนาดกรอบ lesson-title-section บน mobile */
+  .course-learning-section .lesson-title-section>div {
+    margin-bottom: 0 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    width: 100% !important;
+    padding: 16px !important;
+    border-radius: 12px !important;
+    box-sizing: border-box !important;
+  }
+
+  /* ให้ทั้งสองกรอบมีขนาดเท่ากัน */
+  .course-learning-section .lesson-title-section {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .course-learning-section .mobile-lessons-section {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  /* กรอบด้านในของ mobile-lessons-section ให้มี padding เท่ากับ lesson-title */
+  .course-learning-section .mobile-lessons-section>h6,
+  .course-learning-section .mobile-lessons-section>div {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+
+  .course-learning-section .mobile-lessons-section>h6 {
+    padding-top: 16px !important;
+  }
+
+  .course-learning-section .mobile-lessons-section>div:last-child {
+    padding-bottom: 16px !important;
+  }
+
+  /* 3. Documents - แสดงหลังเนื้อหาการเรียน */
+  .course-learning-section .documents-section {
+    order: 3 !important;
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* 4. Actions - แสดงล่างสุด */
+  .course-learning-section .actions-section {
+    order: 4 !important;
+    width: 100% !important;
+    margin-top: -8px !important;
+  }
+
+  /* Lesson Title Box - ปรับ font ให้พอดีกับกรอบ */
+  .course-learning-section .lesson-title-section>div {
+    padding: 16px !important;
+    border-radius: 12px !important;
+  }
+
+  .course-learning-section .lesson-title-section h4 {
+    font-size: 16px !important;
+    line-height: 1.4 !important;
+    margin-bottom: 8px !important;
+  }
+
+  .course-learning-section .lesson-title-section p {
+    font-size: 13px !important;
+    line-height: 1.5 !important;
+  }
+
+  /* Badges - ปรับขนาดให้พอดี */
+  .course-learning-section .lesson-title-section>div>div:first-child {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 10px !important;
+  }
+
+  .course-learning-section .lesson-title-section>div>div:first-child>div:last-child {
+    flex-wrap: wrap !important;
+  }
+
+  .course-learning-section .lesson-title-section span {
+    font-size: 11px !important;
+    padding: 4px 10px !important;
+  }
+
+  /* ========================================
+     ทุกกรอบมีขนาดเท่ากัน - Consistent Box Styling
+     ======================================== */
+
+  /* กรอบหลัก - ขนาดเท่ากันทุกกรอบ */
+  .course-learning-section .lesson-title-section>div:first-child,
+  .course-learning-section .documents-section>div:first-child,
+  .course-learning-section .actions-section>div:first-child {
+    background: #fff !important;
+    border-radius: 12px !important;
+    padding: 16px !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06) !important;
+    margin-bottom: 12px !important;
+  }
+
+  /* Mobile Lessons Section */
+  .course-learning-section .mobile-lessons-section h6 {
+    font-size: 14px !important;
+    margin-bottom: 12px !important;
+  }
+
+  /* Lesson items ใน Mobile Lessons */
+  .course-learning-section .mobile-lessons-section>div>div {
+    padding: 12px !important;
+    border-radius: 10px !important;
+    margin-bottom: 6px !important;
+  }
+
+  .course-learning-section .mobile-lessons-section p {
+    font-size: 12px !important;
+    line-height: 1.3 !important;
+  }
+
+  .course-learning-section .mobile-lessons-section small {
+    font-size: 10px !important;
+  }
+
+  /* Documents Section - แก้ไขการจัดเรียงข้อความ */
+  .course-learning-section .documents-section>div>div:first-child>div {
+    padding: 12px !important;
+    font-size: 13px !important;
+  }
+
+  .course-learning-section .documents-section [style*="padding: 24px"] {
+    padding: 12px !important;
+  }
+
+  /* Document Items - จัดข้อความให้เรียงกัน */
+  .course-learning-section .documents-section [style*="padding: 16px 20px"],
+  .course-learning-section .documents-section>div>div:last-child>div>div {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 12px !important;
+    padding: 12px !important;
+    flex-wrap: nowrap !important;
+  }
+
+  /* Icon container */
+  .course-learning-section .documents-section [style*="width: 48px"] {
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* Text container - ให้ข้อความอยู่ในบรรทัดเดียว */
+  .course-learning-section .documents-section [style*="flex: 1"] {
+    flex: 1 !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
+  }
+
+  .course-learning-section .documents-section [style*="flex: 1"] p {
+    font-size: 12px !important;
+    line-height: 1.3 !important;
+    margin: 0 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  .course-learning-section .documents-section [style*="flex: 1"] small {
+    font-size: 10px !important;
+  }
+
+  /* Download button - แสดงแค่ไอคอน */
+  .course-learning-section .documents-section button {
+    padding: 10px !important;
+    font-size: 0 !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+    min-width: 40px !important;
+    min-height: 40px !important;
+  }
+
+  .course-learning-section .documents-section button i {
+    font-size: 16px !important;
+    margin: 0 !important;
+  }
+
+  /* Actions Section */
+  .course-learning-section .actions-section h6 {
+    font-size: 14px !important;
+  }
+
+  .course-learning-section .actions-section button {
+    padding: 12px !important;
+    font-size: 13px !important;
+    border-radius: 8px !important;
+  }
+}
+
+/* ----------------------------------------
+   Tablet Portrait / Mobile Landscape (≤768px)
+   ---------------------------------------- */
+@media (max-width: 768px) {
+  .course-learning-section {
+    padding-bottom: 20px !important;
+  }
+
+  .course-learning-section .lesson-sidebar {
+    padding: 12px !important;
+  }
+
+  .course-learning-section .course-info {
+    padding: 14px !important;
+    border-radius: 10px !important;
+    margin-bottom: 12px !important;
+  }
+
+  .course-learning-section .course-info h6 {
+    font-size: 13px !important;
+  }
+
+  /* Lessons list - แสดงแบบ compact */
+  .course-learning-section .lesson-sidebar h6 {
+    font-size: 14px !important;
+    margin-bottom: 12px !important;
+  }
+
+  /* Lesson items */
+  .course-learning-section .lesson-sidebar>div:last-child>div {
+    padding: 12px !important;
+    margin-bottom: 6px !important;
+    border-radius: 10px !important;
+  }
+
+  .course-learning-section .lesson-sidebar>div:last-child>div p {
+    font-size: 12px !important;
+  }
+
+  /* Main content area */
+  .course-learning-section .col-lg-9,
+  .course-learning-section .col-md-8 {
+    padding: 12px !important;
+  }
+
+  /* Video */
+  .course-learning-section .video-container {
+    border-radius: 10px !important;
+  }
+
+  /* Lesson title box */
+  .course-learning-section .video-wrapper>div>div {
+    padding: 16px !important;
+    border-radius: 12px !important;
+  }
+
+  .course-learning-section .video-wrapper h4 {
+    font-size: 16px !important;
+  }
+
+  .course-learning-section .video-wrapper p {
+    font-size: 13px !important;
+  }
+
+  /* ลดระยะห่างระหว่างกรอบ */
+  .course-learning-section .lesson-title-section>div {
+    margin-bottom: 0 !important;
+  }
+
+  .course-learning-section .mobile-lessons-section {
+    margin-top: -16px !important;
+  }
+}
+
+/* ----------------------------------------
+   Mobile Portrait (≤576px)
+   ---------------------------------------- */
+@media (max-width: 576px) {
+  .course-learning-section .lesson-sidebar {
+    padding: 10px !important;
+  }
+
+  .course-learning-section .course-info {
+    padding: 12px !important;
+    border-radius: 8px !important;
+  }
+
+  .course-learning-section .course-info h6 {
+    font-size: 12px !important;
+  }
+
+  .course-learning-section .course-info>div:first-child>div:first-child {
+    width: 32px !important;
+    height: 32px !important;
+  }
+
+  .course-learning-section .course-info>div:first-child>div:first-child i {
+    font-size: 14px !important;
+  }
+
+  /* Lessons list title */
+  .course-learning-section .lesson-sidebar h6 {
+    font-size: 13px !important;
+  }
+
+  /* Lesson items */
+  .course-learning-section .lesson-sidebar>div:last-child>div {
+    padding: 10px 12px !important;
+    margin-bottom: 4px !important;
+    border-radius: 8px !important;
+  }
+
+  .course-learning-section .lesson-sidebar>div:last-child>div>div>div:first-child {
+    width: 28px !important;
+    height: 28px !important;
+  }
+
+  .course-learning-section .lesson-sidebar>div:last-child>div p {
+    font-size: 11px !important;
+    line-height: 1.2 !important;
+  }
+
+  .course-learning-section .lesson-sidebar>div:last-child>div small {
+    font-size: 10px !important;
+  }
+
+  /* Main content area */
+  .course-learning-section .col-lg-9,
+  .course-learning-section .col-md-8 {
+    padding: 10px !important;
+  }
+
+  /* Video */
+  .course-learning-section .video-container {
+    border-radius: 8px !important;
+  }
+
+  /* Lesson title box */
+  .course-learning-section .video-wrapper>div>div {
+    padding: 12px !important;
+    border-radius: 10px !important;
+    margin-bottom: 12px !important;
+  }
+
+  .course-learning-section .video-wrapper h4 {
+    font-size: 14px !important;
+    line-height: 1.3 !important;
+  }
+
+  .course-learning-section .video-wrapper p {
+    font-size: 12px !important;
+    line-height: 1.4 !important;
+  }
+
+  /* Badges */
+  .course-learning-section .video-wrapper span {
+    font-size: 10px !important;
+    padding: 4px 8px !important;
+  }
+
+  /* Document items */
+  .course-learning-section [style*="padding: 16px 20px"] {
+    padding: 12px !important;
+    border-radius: 8px !important;
+  }
+
+  .course-learning-section [style*="width: 48px"] {
+    width: 40px !important;
+    height: 40px !important;
+  }
+
+  .course-learning-section [style*="width: 48px"] i {
+    font-size: 16px !important;
+  }
+
+  /* Action buttons */
+  .course-learning-section button {
+    padding: 10px !important;
+    font-size: 13px !important;
+    border-radius: 8px !important;
+  }
+
+  /* ลดระยะห่างระหว่างกรอบ */
+  .course-learning-section .lesson-title-section>div {
+    margin-bottom: 0 !important;
+  }
+
+  .course-learning-section .mobile-lessons-section {
+    margin-top: -16px !important;
+  }
+}
+
+/* ----------------------------------------
+   Small Mobile (≤400px)
+   ---------------------------------------- */
+@media (max-width: 400px) {
+  .course-learning-section .lesson-sidebar {
+    padding: 8px !important;
+  }
+
+  .course-learning-section .course-info {
+    padding: 10px !important;
+  }
+
+  .course-learning-section .course-info h6 {
+    font-size: 11px !important;
+  }
+
+  .course-learning-section .lesson-sidebar>div:last-child>div {
+    padding: 8px 10px !important;
+  }
+
+  .course-learning-section .lesson-sidebar>div:last-child>div p {
+    font-size: 10px !important;
+  }
+
+  .course-learning-section .video-wrapper h4 {
+    font-size: 13px !important;
+  }
+
+  .course-learning-section .video-wrapper p {
+    font-size: 11px !important;
+  }
+
+  /* ลดระยะห่างระหว่างกรอบ */
+  .course-learning-section .lesson-title-section>div {
+    margin-bottom: 0 !important;
+  }
+
+  .course-learning-section .mobile-lessons-section {
+    margin-top: -16px !important;
+  }
+}
+
+/* ----------------------------------------
+   Landscape Orientation - Mobile
+   ---------------------------------------- */
+@media (max-height: 500px) and (orientation: landscape) {
+  .course-learning-section .lesson-sidebar {
+    padding: 12px !important;
+  }
+
+  .course-learning-section .course-info {
+    padding: 12px !important;
+  }
+
+  /* ลด height ของ lessons list */
+  .course-learning-section .lesson-sidebar>div:last-child {
+    max-height: 150px !important;
+    overflow-y: auto !important;
+  }
+
+  .course-learning-section .video-wrapper h4 {
+    font-size: 14px !important;
+  }
+}
+
+/* ========================================
+   Checkout Cart Items - Remove Scroll on Tablet
+   ======================================== */
+
+/* Default: show scroll on desktop only when needed */
+.checkout-cart-items {
+  max-height: 250px;
+  overflow-y: auto;
+}
+
+/* Hide scrollbar on all tablets (up to 1024px) */
+@media (max-width: 1024px) {
+  .checkout-cart-items {
+    max-height: none !important;
+    overflow-y: visible !important;
+    overflow: visible !important;
+  }
+}
+
+/* ========================================
+   Payment History - iPad Pro Landscape Responsive
+   ======================================== */
+
+/* iPad Pro 12.9" Landscape (1366px) and smaller - Show mobile card layout */
+@media (max-width: 1366px) {
+
+  /* Hide table layout on iPad Pro landscape */
+  .payment-history-section .table-responsive {
+    display: none !important;
+  }
+
+  /* Show mobile card layout on iPad Pro landscape */
+  .payment-history-section .payment-cards-mobile {
+    display: block !important;
+  }
+
+  /* Adjust wrapper padding */
+  .payment-history-section .history-wrapper {
+    padding: 24px !important;
+  }
+
+  /* Adjust title section */
+  .payment-history-section .history-wrapper>div:first-child {
+    margin-bottom: 16px !important;
+  }
+
+  .payment-history-section .history-wrapper h3 {
+    font-size: 22px !important;
+  }
+
+  /* Summary box responsive */
+  .payment-history-section .summary-box {
+    padding: 14px !important;
+  }
+
+  .payment-history-section .summary-box h5 {
+    font-size: 20px !important;
+  }
+
+  .payment-history-section .summary-box p {
+    font-size: 11px !important;
+  }
+}
+
+/* Tablet Portrait and smaller (up to 768px) */
+@media (max-width: 768px) {
+  .payment-history-section .history-wrapper {
+    padding: 16px !important;
+    border-radius: 16px !important;
+  }
+
+  .payment-history-section .history-wrapper h3 {
+    font-size: 18px !important;
+  }
+
+  /* Summary box - smaller padding */
+  .payment-history-section .summary-box {
+    padding: 10px !important;
+  }
+
+  .payment-history-section .summary-box h5 {
+    font-size: 16px !important;
+  }
+}
+
+/* Mobile (up to 576px) */
+@media (max-width: 576px) {
+  .payment-history-section .history-wrapper {
+    padding: 12px !important;
+    border-radius: 12px !important;
+  }
+
+  .payment-history-section .history-wrapper h3 {
+    font-size: 16px !important;
+  }
+
+  /* Summary box */
+  .payment-history-section .summary-box {
+    padding: 8px !important;
+  }
+
+  .payment-history-section .summary-box h5 {
+    font-size: 14px !important;
+  }
+
+  .payment-history-section .summary-box p {
+    font-size: 9px !important;
+  }
+}
+
+/* ========================================
+   Payment Pages Typography (Responsive)
+   ======================================== */
+
+/* Desktop Sizes (Default) */
+.payment-page-title {
+  font-size: 24px !important;
+  font-weight: bold !important;
+  margin-bottom: 16px !important;
+  color: #014D40 !important;
+}
+
+.payment-label {
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  margin-bottom: 8px !important;
+  display: block !important;
+  color: #014D40 !important;
+}
+
+.payment-input {
+  font-size: 18px !important;
+  width: 100% !important;
+  border-radius: 12px !important;
+  color: #333 !important;
+}
+
+.payment-summary-title {
+  font-size: 24px !important;
+  font-weight: bold !important;
+  margin-bottom: 20px !important;
+  color: #014D40 !important;
+}
+
+.payment-summary-item {
+  font-size: 16px !important;
+}
+
+.payment-summary-price {
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  color: #014D40 !important;
+}
+
+.payment-summary-sublabel {
+  font-size: 16px !important;
+  color: #666 !important;
+}
+
+.payment-total-label {
+  font-size: 20px !important;
+  color: #014D40 !important;
+  font-weight: bold !important;
+}
+
+.payment-total-amount {
+  font-size: 28px !important;
+  color: #014D40 !important;
+  font-weight: bold !important;
+}
+
+.payment-status-title {
+  font-size: 32px !important;
+  font-weight: 600 !important;
+  margin-bottom: 12px !important;
+}
+
+.payment-status-message {
+  font-size: 16px !important;
+  line-height: 1.6 !important;
+  margin-bottom: 32px !important;
+}
+
+.payment-detail-label {
+  font-size: 16px !important;
+  color: #666 !important;
+}
+
+.payment-detail-value {
+  font-size: 16px !important;
+  color: #333 !important;
+}
+
+.payment-detail-amount {
+  font-size: 24px !important;
+  font-weight: bold !important;
+  color: #333 !important;
+}
+
+.payment-btn-main {
+  font-size: 18px !important;
+  font-weight: 600 !important;
+}
+
+/* Mobile Adjustments (max-width: 768px) */
+@media (max-width: 768px) {
+
+  /* Reduce header sizes */
+  .payment-page-title {
+    font-size: 20px !important;
+  }
+
+  .payment-summary-title {
+    font-size: 20px !important;
+  }
+
+  .payment-status-title {
+    font-size: 24px !important;
+  }
+
+  /* Reduce label and input sizes */
+  .payment-label {
+    font-size: 15px !important;
+  }
+
+  .payment-input {
+    font-size: 16px !important;
+  }
+
+  /* Reduce summary text sizes */
+  .payment-summary-item {
+    font-size: 14px !important;
+  }
+
+  .payment-summary-price {
+    font-size: 14px !important;
+  }
+
+  .payment-summary-sublabel {
+    font-size: 14px !important;
+  }
+
+  /* Reduce total sizes */
+  .payment-total-label {
+    font-size: 18px !important;
+  }
+
+  .payment-total-amount {
+    font-size: 24px !important;
+  }
+
+  /* Status page adjustments */
+  .payment-status-message {
+    font-size: 15px !important;
+    margin-bottom: 24px !important;
+  }
+
+  .payment-detail-label {
+    font-size: 14px !important;
+  }
+
+  .payment-detail-value {
+    font-size: 14px !important;
+  }
+
+  .payment-detail-amount {
+    font-size: 20px !important;
+  }
+
+  .payment-btn-main {
+    font-size: 16px !important;
+  }
+}
+
+/* ========================================
+   Force Typography Utilities (Created for Consistency)
+   ======================================== */
+.text-force-22 {
+  font-size: 22px !important;
+}
+
+.text-force-20 {
+  font-size: 20px !important;
+}
+
+.text-force-18 {
+  font-size: 18px !important;
+}
+
+.text-force-24 {
+  font-size: 24px !important;
+}
+
+.text-force-26 {
+  font-size: 26px !important;
+}
+
+.text-force-28 {
+  font-size: 28px !important;
+}
+
+.text-force-30 {
+  font-size: 30px !important;
+}
+
+.text-force-36 {
+  font-size: 36px !important;
+}
+
+.text-force-16 {
+  font-size: 16px !important;
+}
+
+.text-force-bold {
+  font-weight: 700 !important;
+}
+
+/* ========================================
+   Responsive Typography Improvements
+   ======================================== */
+
+/* Course Grid Title - Mobile */
+@media (max-width: 768px) {
+
+  .courses-content h5,
+  .courses-content h5 a,
+  .courses-content h5 span {
+    font-size: 18px !important;
+    line-height: 1.4 !important;
+  }
+
+  .courses-content h4 {
+    font-size: 18px !important;
+  }
+}
+
+@media (max-width: 576px) {
+
+  .courses-content h5,
+  .courses-content h5 a,
+  .courses-content h5 span {
+    font-size: 16px !important;
+  }
+
+  .courses-content h4 {
+    font-size: 16px !important;
+  }
+}
+
+/* Footer Typography - Mobile */
+@media (max-width: 768px) {
+
+  .footer-section p,
+  .footer-area p,
+  .footer-section a,
+  .footer-area a,
+  .footer-section li,
+  .footer-area li {
+    font-size: 16px !important;
+    line-height: 1.6 !important;
+  }
+
+  .footer-section h5,
+  .footer-area h5 {
+    font-size: 18px !important;
+  }
+
+  /* Social Icons - Larger on Mobile */
+  .footer-section .social-icon a,
+  .footer-area .social-icon a {
+    width: 44px !important;
+    height: 44px !important;
+    line-height: 44px !important;
+    font-size: 20px !important;
+    margin-right: 8px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+}
+
+@media (max-width: 576px) {
+
+  .footer-section p,
+  .footer-area p,
+  .footer-section a,
+  .footer-area a,
+  .footer-section li,
+  .footer-area li {
+    font-size: 16px !important;
+    line-height: 1.6 !important;
+  }
+
+  .footer-section h5,
+  .footer-area h5 {
+    font-size: 18px !important;
+  }
+
+  /* Social Icons */
+  .footer-section .social-icon a,
+  .footer-area .social-icon a {
+    width: 42px !important;
+    height: 42px !important;
+    font-size: 18px !important;
+  }
+}
+
+/* Course Details - Mobile Typography */
+@media (max-width: 768px) {
+  .accordion-button {
+    font-size: 16px !important;
+  }
+
+  .accordion-body span {
+    font-size: 15px !important;
+  }
+
+  .description-content p,
+  .description-content li {
+    font-size: 16px !important;
+    line-height: 1.7 !important;
+  }
+}
+
+@media (max-width: 576px) {
+  .accordion-button {
+    font-size: 15px !important;
+  }
+
+  .accordion-body span {
+    font-size: 14px !important;
+  }
+
+  .description-content p,
+  .description-content li {
+    font-size: 15px !important;
+    line-height: 1.7 !important;
+    letter-spacing: 0.01em !important;
+  }
+}
+
+/* Functional Pages (Auth & Breadcrumb) - Mobile */
+@media (max-width: 768px) {
+
+  .sign-in-section h3,
+  .register-section h3 {
+    font-size: 22px !important;
+  }
+
+  .sign-in-section label,
+  .register-section label {
+    font-size: 15px !important;
+  }
+
+  .sign-in-section input,
+  .register-section input,
+  .sign-in-section select,
+  .register-section select {
+    font-size: 16px !important;
+    padding: 12px 14px !important;
+  }
+
+  .sign-in-section .theme-btn,
+  .register-section .theme-btn {
+    font-size: 18px !important;
+  }
+}
+
+@media (max-width: 576px) {
+
+  .sign-in-section h3,
+  .register-section h3 {
+    font-size: 20px !important;
+  }
+
+  /* Breadcrumb */
+  .breadcrumb-content h1 {
+    font-size: 22px !important;
+    line-height: 1.3 !important;
+  }
+
+  .breadcrumb-content p,
+  .breadcrumb-content .client-content h5 {
+    font-size: 14px !important;
+  }
+}
+
+/* ========================================
+   Global Input Fix (Prevent iOS Zoom)
+   ======================================== */
+@media (max-width: 768px) {
+
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  input[type="search"],
+  input[type="tel"],
+  input[type="url"],
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}
+
+/* ========================================
+   Cart Table Mobile Layout (Card Style)
+   ======================================== */
+@media (max-width: 768px) {
+
+  .cart-list-area table,
+  .cart-list-area tbody,
+  .cart-list-area tr,
+  .cart-list-area td {
+    display: block !important;
+    width: 100% !important;
+  }
+
+  /* Hide table header */
+  .cart-list-area thead {
+    display: none !important;
+  }
+
+  /* Card styling for rows */
+  .cart-list-area tr {
+    margin-bottom: 20px !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 12px !important;
+    padding: 20px !important;
+    background: #fff !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05) !important;
+  }
+
+  /* Cell styling */
+  .cart-list-area td {
+    text-align: right !important;
+    padding: 8px 0 !important;
+    border: none !important;
+    position: relative !important;
+  }
+
+  /* Product Name & Image (First cell) */
+  .cart-list-area td:first-child {
+    text-align: left !important;
+    border-bottom: 1px solid #f3f4f6 !important;
+    padding-bottom: 15px !important;
+    margin-bottom: 10px !important;
+  }
+
+  /* Quantity Section (Center alignment) */
+  .cart-list-area td.price-quantity {
+    display: flex !important;
+    justify-content: flex-end !important;
+  }
+
+  /* Last cell (Subtotal) */
+  .cart-list-area td:last-child {
+    border-top: 1px solid #f3f4f6 !important;
+    padding-top: 15px !important;
+    margin-top: 10px !important;
+    font-weight: bold !important;
+    font-size: 18px !important;
+    color: #004736 !important;
+  }
+}
+
+/* ========================================
+   Header Revision - Mobile Size Increase
+   ======================================== */
+@media (max-width: 768px) {
+
+  /* Logo Text (High Specificity to fix 12px bug) */
+  html body .header-logo-text,
+  .header-logo-text {
+    font-size: 24px !important;
+  }
+
+  /* Language Switcher */
+  .language-switcher {
+    font-size: 16px !important;
+    padding: 4px 10px !important;
+  }
+
+  /* Hamburger Menu Icon */
+  .sidebar__toggle i {
+    font-size: 26px !important;
+  }
+}
+
+@media (max-width: 576px) {
+  .header-logo-text {
+    font-size: 20px !important;
+  }
+}
+
+/* ========================================
+   Profile Revision - Mobile Text Increase
+   ======================================== */
+@media (max-width: 768px) {
+
+  /* Profile Name */
+  .profile-section h2 {
+    font-size: 26px !important;
+  }
+
+  /* Profile Email */
+  .profile-section p {
+    font-size: 16px !important;
+  }
+
+  /* Stats Numbers (e.g. 3 Courses) */
+  .text-resp-h3 {
+    font-size: 28px !important;
+  }
+
+  /* Stats Labels & Course Titles */
+  .text-resp-body-lg,
+  .course-card-title {
+    font-size: 18px !important;
+  }
+
+  /* Course Meta (Instructor name etc) */
+  .course-card-meta {
+    font-size: 15px !important;
+  }
+
+  /* Badges */
+  .course-card-badge,
+  .pharmacist-badge {
+    font-size: 14px !important;
+  }
+
+  /* Buttons in Profile */
+  .profile-section .theme-btn,
+  .profile-section .course-card-btn {
+    font-size: 16px !important;
+    padding: 12px 20px !important;
+  }
+}
+
+/* ========================================
+   Payment History Revision - Mobile
+   ======================================== */
+@media (max-width: 768px) {
+
+  /* Summary Box (Total Amount, Courses, CPE) */
+  /* Increase specificity and size for Numbers */
+  .payment-history-section .summary-box h5,
+  .payment-history-section .summary-box .text-resp-h3 {
+    font-size: 24px !important;
+  }
+
+  /* Increase specificity and size */
+  .payment-history-section .summary-box p,
+  .payment-history-section .summary-box .text-resp-body {
+    font-size: 16px !important;
+  }
+
+  /* History Cards (Mobile List) */
+  .payment-cards-mobile h6 {
+    /* Course Name */
+    font-size: 18px !important;
+  }
+
+  /* Select the Order ID header (first div inside card) */
+  .payment-cards-mobile>div>div:first-child {
+    font-size: 16px !important;
+    padding: 14px 16px !important;
+  }
+
+  /* Amount Text */
+  .payment-cards-mobile span {
+    font-size: 20px !important;
+  }
+
+  /* Date Text (Fix 12px issue) */
+  .payment-cards-mobile p {
+    font-size: 16px !important;
+  }
+}
+
+/* ========================================
+   Checkout Revision - Mobile
+   ======================================== */
+@media (max-width: 768px) {
+
+  /* Headings & Titles */
+  .checkout-section .payment-summary-title,
+  .checkout-section h5 {
+    font-size: 20px !important;
+  }
+
+  /* Labels (Form Labels) */
+  .checkout-section label,
+  .checkout-section p.text-force-20,
+  .checkout-section .text-force-20 {
+    font-size: 18px !important;
+  }
+
+  /* Specific Override: Payment Methods & Receipt Type (Make them bigger) */
+  .checkout-section .payment-methods p.text-force-20,
+  .checkout-section .receipt-type-section span.text-force-20 {
+    font-size: 18px !important;
+  }
+
+  /* Form Inputs (Text, Select) */
+  .checkout-section input[type="text"],
+  .checkout-section select {
+    font-size: 18px !important;
+    /* Increase to 18px for readability */
+    padding: 10px !important;
+    /* Keep padding compact */
+  }
+
+  /* Submit Button */
+  .checkout-section button.text-force-20 {
+    font-size: 18px !important;
+    padding: 14px !important;
+  }
+}
+
+/* ========================================
+   Checkout Summary Revision - Mobile
+   ======================================== */
+@media (max-width: 768px) {
+
+  /* Cart Items */
+  .checkout-cart-items h6 {
+    font-size: 18px !important;
+    /* Title */
+  }
+
+  .checkout-cart-items p {
+    font-size: 15px !important;
+    /* Instructor/Meta */
+  }
+
+  .checkout-cart-items span {
+    font-size: 13px !important;
+    /* Credits Badge */
+  }
+
+  /* Order Summary */
+  .order-summary span {
+    font-size: 16px !important;
+    /* General Labels */
+  }
+
+  /* Specific Subtotal (Restore to 18px or bigger) */
+  .order-summary .text-force-18 {
+    font-size: 18px !important;
+  }
+
+  /* Discount specific (if needs to be smaller/larger) */
+  .order-summary span[style*="font-size: 13px"],
+  .order-summary span[style*="font-size: 14px"] {
+    font-size: 14px !important;
+  }
+
+  /* Total Amount (Make sure it's big) */
+  .order-summary strong.text-force-30 {
+    font-size: 26px !important;
+    /* Match Payment History max preference */
+  }
+
+  /* Nuclear Override for Subtotal (Fix 12px bug) - Increased Specificity */
+  html body .checkout-section .order-summary span.text-force-18,
+  html body span.text-force-18 {
+    font-size: 18px !important;
+  }
+
+  /* Nuclear Override for ALL other summary spans (VAT, etc) to Fix 12px bug */
+  html body .checkout-section .order-summary span {
+    font-size: 16px !important;
+  }
+}
+
+/* ========================================
+   Course Page Revision - Mobile
+   ======================================== */
+@media (max-width: 768px) {
+
+  /* --- Course Grid (Normal State) --- */
+  /* Card Title */
+  .courses-card-main-items h5,
+  .courses-card-main-items h5 a {
+    font-size: 22px !important;
+    /* Increased from 18px to match hover style better */
+    line-height: 1.3 !important;
+    font-weight: 700 !important;
+  }
+
+  /* Category Label (Top Left Overlay) */
+  .courses-card-main-items .courses-title,
+  .courses-card-main-items h3 {
+    font-size: 18px !important;
+    /* Increased from 16px */
+  }
+
+  /* Category List (Bottom) */
+  .courses-card-main-items .post-cat li a {
+    font-size: 18px !important;
+  }
+
+  /* Instructor & Meta */
+  .courses-card-main-items p,
+  .courses-card-main-items .post-class li {
+    font-size: 16px !important;
+  }
+
+  /* --- Course Details --- */
+  /* Tabs (Course Info, Curriculum, etc) - was 30px */
+  /* Tabs (Course Info, Curriculum, etc) - was 30px */
+  html body .courses-details-content .nav-link,
+  html body .courses-details-content .nav-link.active {
+    font-size: 18px !important;
+    /* Reverted to 18px as requested */
+    padding: 10px 14px !important;
+    font-family: inherit !important;
+    /* Ensure no weird font override */
+  }
+
+  /* --- Course Learning Page --- */
+  /* Video Overlay */
+  .video-container .video-overlay-status {
+    font-size: 18px !important;
+  }
+
+  .video-container .video-overlay-time {
+    font-size: 24px !important;
+  }
+
+  .video-container .video-overlay-next-quiz {
+    font-size: 14px !important;
+  }
+
+  /* Sidebar Lessons */
+  .lesson-sidebar .lesson-text-title {
+    font-size: 15px !important;
+  }
+
+  /* Quiz Popup */
+  .quiz-wrapper .quiz-progress-text {
+    font-size: 14px !important;
+  }
+
+  .quiz-wrapper .quiz-question-text {
+    font-size: 18px !important;
+  }
+
+  /* Section Headings - was 30px */
+  .courses-details-content h3.font-bold,
+  .courses-details-content h3 {
+    font-size: 22px !important;
+    margin-bottom: 15px !important;
+  }
+
+  /* Body Text - was 20px */
+  .courses-details-content p {
+    font-size: 16px !important;
+    line-height: 1.6 !important;
+  }
+
+  /* List Items (Curriculum / Sidebar) */
+  .courses-details-content ul li,
+  .courses-sidebar-area ul li span {
+    font-size: 16px !important;
+  }
+
+  /* Sidebar Price - was 36px */
+  .courses-sidebar-area .courses-content h3 {
+    font-size: 28px !important;
+  }
+
+  /* Sidebar Buttons */
+  .courses-sidebar-area .theme-btn {
+    font-size: 18px !important;
+  }
+
+  /* --- Course Card Hover (Green Box) --- */
+  /* Move Content Up */
+  .courses-card-items-hover {
+    align-items: flex-start !important;
+    padding-top: 25px !important;
+    /* Reduced from 50px to move it up more */
+  }
+
+  /* Fix Content Structure to allow button push */
+  .courses-card-items-hover .courses-content {
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100% !important;
+    width: 100% !important;
+  }
+
+  .courses-card-items-hover h5 span {
+    font-size: 26px !important;
+    /* Title: 22px -> 26px (Fill space) */
+    line-height: 1.3 !important;
+  }
+
+  .courses-card-items-hover h4 {
+    font-size: 24px !important;
+    /* Price: 22px -> 24px */
+    color: #FFB013 !important;
+    margin-top: 8px !important;
+  }
+
+  .courses-card-items-hover .post-cat li a {
+    font-size: 18px !important;
+    /* Category Badge */
+  }
+
+  .courses-card-items-hover .text-force-16 {
+    font-size: 16px !important;
+    line-height: 1.6 !important;
+    margin-top: 8px !important;
+  }
+
+  .courses-card-items-hover .client-items {
+    margin-top: 20px !important;
+    /* Push down to avoid overlap with long description */
+  }
+
+  .courses-card-items-hover .theme-btn {
+    font-size: 22px !important;
+    /* Button Text */
+    color: #004736 !important;
+    margin-top: auto !important;
+    /* Push to bottom */
+    width: 100% !important;
+    margin-bottom: 60px !important;
+    /* Lifted up significantly to avoid cutoff */
+  }
+
+  .courses-card-items-hover .theme-btn span {
+    font-size: 22px !important;
+  }
+}
+
+/* ========================================
+   Header Logo Fix - Mobile (Redo)
+   ======================================== */
+@media (max-width: 768px) {
+
+  /* Logo Text (High Specificity to fix 12px bug from lines 1544) */
+  html body .header-logo .header-logo-text,
+  .header-logo .header-logo-text,
+  .header-logo-text {
+    font-size: 18px !important;
+  }
+}
