@@ -177,8 +177,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }, []);
 
     // Reset Password
-    const resetPassword = useCallback(async (email: string, otp: string, newPassword: string): Promise<AuthResponse> => {
-        return authService.resetPassword(email, otp, newPassword) as Promise<AuthResponse>;
+    const resetPassword = useCallback(async (email: string, newPassword: string, captchaAnswer: string, captchaToken: string): Promise<AuthResponse> => {
+        return authService.resetPassword(email, newPassword, captchaAnswer, captchaToken) as Promise<AuthResponse>;
     }, []);
 
     const value: AuthContextType = {

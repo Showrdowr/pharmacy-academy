@@ -264,12 +264,12 @@ export const authService = {
     /**
      * Reset password with token
      */
-    async resetPassword(email: string, otp: string, newPassword: string): Promise<{ success: boolean; message?: string }> {
+    async resetPassword(email: string, newPassword: string, captchaAnswer: string, captchaToken: string): Promise<{ success: boolean; message?: string }> {
         try {
             const response = await fetch(`${API_BASE_URL}/auth/reset-password`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, otp, newPassword }),
+                body: JSON.stringify({ email, newPassword, captchaAnswer, captchaToken }),
             });
 
             const data = await response.json();

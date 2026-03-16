@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff, KeyRound, Loader2, X, RefreshCw, CheckCircle, AlertCircle } from "lucide-react";
+import { Eye, EyeOff, KeyRound, Loader2, X, CheckCircle } from "lucide-react";
 import { useAuth } from "@/features/auth";
 import { authService } from '../services/authApi';
 
@@ -26,23 +26,22 @@ const SignInArea: React.FC = () => {
     // Captcha states
     const [showCaptchaModal, setShowCaptchaModal] = useState(false);
 
-    // Forgot password states
-    const [showOtpModal, setShowOtpModal] = useState(false);
+    // Forgot password states (CAPTCHA-based, no OTP)
+    const [showForgotCaptchaModal, setShowForgotCaptchaModal] = useState(false);
     const [showResetModal, setShowResetModal] = useState(false);
-    const [otp, setOtp] = useState(["", "", "", "", "", ""]);
+    const [forgotCaptchaAnswer, setForgotCaptchaAnswer] = useState("");
+    const [forgotCaptchaToken, setForgotCaptchaToken] = useState("");
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [forgotError, setForgotError] = useState("");
     const [forgotSubmitting, setForgotSubmitting] = useState(false);
-    const [resendCooldown, setResendCooldown] = useState(0);
     const [resetSuccess, setResetSuccess] = useState(false);
-    const otpInputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
     // No longer fetching CAPTCHA on mount
     useEffect(() => {
     }, []);
 
-    const handleForgotPassword = async () => {
+    const handleForgotPassword = () => {
         setFieldErrors({});
         setLoginFailed(false);
 
@@ -55,76 +54,18 @@ const SignInArea: React.FC = () => {
             return;
         }
 
-        setForgotSubmitting(true);
-        const result = await authService.forgotPassword(email);
-        if (result.success) {
-            setShowOtpModal(true);
-            setResendCooldown(15);
-            setOtp(["", "", "", "", "", ""]);
-            setForgotError("");
-        } else {
-            setFieldErrors({ email: result.message || t('เกิดข้อผิดพลาด', 'An error occurred') });
-        }
-        setForgotSubmitting(false);
+        // Show CAPTCHA modal for forgot password verification
+        setShowForgotCaptchaModal(true);
     };
 
-    const handleOtpChange = (index: number, value: string) => {
-        if (!/^\d*$/.test(value)) return;
-        const newOtp = [...otp];
-        newOtp[index] = value.slice(-1);
-        setOtp(newOtp);
+    const handleForgotCaptchaSuccess = (answer: string, token: string) => {
+        setShowForgotCaptchaModal(false);
+        setForgotCaptchaAnswer(answer);
+        setForgotCaptchaToken(token);
+        setShowResetModal(true);
+        setNewPassword("");
+        setConfirmPassword("");
         setForgotError("");
-        if (value && index < 5) otpInputRefs.current[index + 1]?.focus();
-    };
-
-    const handleOtpKeyDown = (index: number, e: React.KeyboardEvent) => {
-        if (e.key === 'Backspace' && !otp[index] && index > 0) {
-            otpInputRefs.current[index - 1]?.focus();
-        }
-    };
-
-    const handleOtpPaste = (e: React.ClipboardEvent) => {
-        e.preventDefault();
-        const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
-        const newOtp = [...otp];
-        for (let i = 0; i < 6; i++) newOtp[i] = pasted[i] || "";
-        setOtp(newOtp);
-        if (pasted.length === 6) otpInputRefs.current[5]?.focus();
-    };
-
-    const handleVerifyOtp = async () => {
-        const otpString = otp.join("");
-        if (otpString.length !== 6) {
-            setForgotError(t('กรุณากรอกรหัส OTP 6 หลัก', 'Please enter 6-digit OTP'));
-            return;
-        }
-        setForgotSubmitting(true);
-        const result = await authService.verifyOtp(email, otpString);
-        if (result.success) {
-            setShowOtpModal(false);
-            setShowResetModal(true);
-            setForgotError("");
-            setNewPassword("");
-            setConfirmPassword("");
-        } else {
-            setForgotError(result.message || t('รหัส OTP ไม่ถูกต้อง', 'Invalid OTP'));
-        }
-        setForgotSubmitting(false);
-    };
-
-    const handleResendOtp = async () => {
-        if (resendCooldown > 0) return;
-        setForgotSubmitting(true);
-        setForgotError("");
-        const result = await authService.forgotPassword(email);
-        if (result.success) {
-            setOtp(["", "", "", "", "", ""]);
-            setResendCooldown(15);
-            setForgotError(t('ส่งรหัส OTP ใหม่แล้ว', 'New OTP sent'));
-        } else {
-            setForgotError(result.message || t('เกิดข้อผิดพลาด', 'An error occurred'));
-        }
-        setForgotSubmitting(false);
     };
 
     const handleResetPassword = async () => {
@@ -138,7 +79,7 @@ const SignInArea: React.FC = () => {
             return;
         }
         setForgotSubmitting(true);
-        const result = await authService.resetPassword(email, otp.join(""), newPassword);
+        const result = await authService.resetPassword(email, newPassword, forgotCaptchaAnswer, forgotCaptchaToken);
         if (result.success) {
             setShowResetModal(false);
             setResetSuccess(true);
@@ -226,111 +167,12 @@ const SignInArea: React.FC = () => {
 
     return (
         <AuthLayout>
-            {/* ===== OTP Modal ===== */}
-            {showOtpModal && (
-                <div style={{
-                    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-                    backgroundColor: 'rgba(0, 0, 0, 0.6)', backdropFilter: 'blur(4px)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    zIndex: 9999, padding: '20px',
-                }}>
-                    <div style={{
-                        backgroundColor: '#ffffff', borderRadius: '20px',
-                        padding: '40px 32px', width: '100%', maxWidth: '440px',
-                        position: 'relative', boxShadow: '0 25px 60px rgba(0, 0, 0, 0.3)',
-                    }}>
-                        <button onClick={() => setShowOtpModal(false)} style={{
-                            position: 'absolute', top: '16px', right: '16px',
-                            background: '#F3F4F6', border: 'none', borderRadius: '10px',
-                            width: '36px', height: '36px', cursor: 'pointer',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        }}>
-                            <X style={{ width: '18px', height: '18px', color: '#6B7280' }} />
-                        </button>
-
-                        <div style={{ textAlign: 'center', marginBottom: '28px' }}>
-                            <div style={{
-                                width: '64px', height: '64px', borderRadius: '16px',
-                                background: 'linear-gradient(135deg, #0D9488, #014D40)',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                margin: '0 auto 16px',
-                            }}>
-                                <KeyRound style={{ width: '32px', height: '32px', color: '#ffffff' }} />
-                            </div>
-                            <h2 style={{ fontSize: '22px', fontWeight: 'bold', color: '#111827', marginBottom: '8px' }}>
-                                {t('ยืนยันรหัส OTP', 'Verify OTP Code')}
-                            </h2>
-                            <p style={{ color: '#6B7280', fontSize: '14px', lineHeight: '1.5' }}>
-                                {t('เราส่งรหัส 6 หลักไปที่', 'We sent a 6-digit code to')}<br />
-                                <strong style={{ color: '#014D40' }}>{email}</strong>
-                            </p>
-                        </div>
-
-                        {forgotError && (
-                            <div style={{
-                                color: forgotError.includes('ใหม่แล้ว') || forgotError.includes('sent') ? '#059669' : '#DC2626',
-                                fontSize: '14px', marginBottom: '16px', textAlign: 'center', fontWeight: '500',
-                                padding: '10px 16px', borderRadius: '10px',
-                                backgroundColor: forgotError.includes('ใหม่แล้ว') || forgotError.includes('sent') ? '#F0FDF4' : '#FEF2F2',
-                            }}>{forgotError}</div>
-                        )}
-
-                        <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginBottom: '24px' }}>
-                            {otp.map((digit, index) => (
-                                <input
-                                    key={index}
-                                    ref={(el) => { otpInputRefs.current[index] = el; }}
-                                    type="text" inputMode="numeric" maxLength={1}
-                                    value={digit}
-                                    onChange={(e) => handleOtpChange(index, e.target.value)}
-                                    onKeyDown={(e) => handleOtpKeyDown(index, e)}
-                                    onPaste={index === 0 ? handleOtpPaste : undefined}
-                                    style={{
-                                        width: '52px', height: '60px', textAlign: 'center',
-                                        fontSize: '24px', fontWeight: 'bold', fontFamily: 'monospace',
-                                        borderRadius: '12px', outline: 'none', transition: 'all 0.2s',
-                                        border: digit ? '2px solid #014D40' : '2px solid #D1D5DB',
-                                        backgroundColor: digit ? '#F0FDF9' : '#F9FAFB', color: '#014D40',
-                                    }}
-                                    onFocus={(e) => { e.target.style.borderColor = '#014D40'; e.target.style.boxShadow = '0 0 0 3px rgba(1, 77, 64, 0.15)'; }}
-                                    onBlur={(e) => { e.target.style.borderColor = digit ? '#014D40' : '#D1D5DB'; e.target.style.boxShadow = 'none'; }}
-                                />
-                            ))}
-                        </div>
-
-                        <button onClick={handleVerifyOtp} disabled={forgotSubmitting || otp.join("").length !== 6} style={{
-                            width: '100%', padding: '16px', backgroundColor: '#014D40', color: '#ffffff',
-                            border: 'none', borderRadius: '12px', fontWeight: 'bold', fontSize: '16px',
-                            cursor: (forgotSubmitting || otp.join("").length !== 6) ? 'not-allowed' : 'pointer',
-                            opacity: (forgotSubmitting || otp.join("").length !== 6) ? 0.6 : 1,
-                            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                            marginBottom: '16px', transition: 'all 0.2s ease',
-                        }}>
-                            {forgotSubmitting
-                                ? <><Loader2 style={{ width: '20px', height: '20px', animation: 'spin 1s linear infinite' }} /> {t('กำลังตรวจสอบ...', 'Verifying...')}</>
-                                : t('ยืนยัน OTP', 'Verify OTP')
-                            }
-                        </button>
-
-                        <div style={{ textAlign: 'center' }}>
-                            <button type="button" onClick={handleResendOtp} disabled={forgotSubmitting || resendCooldown > 0} style={{
-                                background: 'none', border: 'none', fontWeight: '600', padding: '8px 16px',
-                                color: resendCooldown > 0 ? '#9CA3AF' : '#014D40',
-                                cursor: (forgotSubmitting || resendCooldown > 0) ? 'not-allowed' : 'pointer',
-                                display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '14px',
-                            }}>
-                                <RefreshCw style={{ width: '16px', height: '16px' }} />
-                                {resendCooldown > 0
-                                    ? t(`ส่งอีกครั้งใน ${resendCooldown} วินาที`, `Resend in ${resendCooldown}s`)
-                                    : t('ส่งรหัส OTP อีกครั้ง', 'Resend OTP')
-                                }
-                            </button>
-                        </div>
-                        <p style={{ textAlign: 'center', color: '#9CA3AF', fontSize: '12px', marginTop: '12px' }}>
-                            {t('รหัส OTP จะหมดอายุใน 10 นาที', 'OTP expires in 10 minutes')}
-                        </p>
-                    </div>
-                </div>
+            {/* ===== Forgot Password CAPTCHA Modal ===== */}
+            {showForgotCaptchaModal && (
+                <TextCaptchaModal 
+                    onSuccess={handleForgotCaptchaSuccess} 
+                    onClose={() => setShowForgotCaptchaModal(false)} 
+                />
             )}
 
             {/* ===== Reset Password Modal ===== */}

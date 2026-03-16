@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const BE_API_URL = process.env.NEXT_PUBLIC_API_URL || "https://pharmacy-ac-api.onrender.com/api";
+const BE_API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api/v1";
 
 export async function POST(
     req: NextRequest,
@@ -10,7 +10,12 @@ export async function POST(
     const path = params.path.join("/");
 
     try {
-        const body = await req.json();
+        let body = {};
+        try {
+            body = await req.json();
+        } catch {
+            // No body (e.g., logout request)
+        }
 
         // Forward login request to the actual backend
         const response = await fetch(`${BE_API_URL}/auth/${path}`, {

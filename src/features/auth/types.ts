@@ -89,7 +89,7 @@ export interface AuthActions {
     updateProfile: (data: Partial<User>) => Promise<AuthResponse>;
     changePassword: (oldPassword: string, newPassword: string) => Promise<AuthResponse>;
     forgotPassword: (email: string) => Promise<{ success: boolean; message?: string }>;
-    resetPassword: (email: string, otp: string, newPassword: string) => Promise<AuthResponse>;
+    resetPassword: (email: string, newPassword: string, captchaAnswer: string, captchaToken: string) => Promise<AuthResponse>;
 }
 
 /**
