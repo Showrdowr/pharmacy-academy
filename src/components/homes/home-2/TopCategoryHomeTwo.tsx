@@ -86,7 +86,7 @@ const TopCategoryHomeTwo = () => {
         <>
             <section className="top-category-section-2 pb-0 section-padding fix footer-bg">
                 <div className="circle-shape">
-                    <img src="assets/img/circle-shape.png" alt="img" />
+                    <img src="/assets/img/circle-shape.png" alt="img" />
                 </div>
                 <div className="container">
                     <div className="section-title text-center">

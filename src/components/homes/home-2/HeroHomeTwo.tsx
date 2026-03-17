@@ -20,7 +20,7 @@ const HeroHomeTwo = () => {
                             <div className="hero-content">
                                 <h1 className="wow fadeInUp text-resp-h1 font-bold mb-4 leading-tight" data-wow-delay=".3s">
                                     {t('ศูนย์การเรียนรู้ออนไลน์สำหรับ', 'Online Learning Center for')}
-                                    <span>{t('เภสัชกร', 'Pharmacists')} <img src="assets/img/hero/bar-shape-2.png" alt="shape-img" /></span>
+                                    <span>{t('เภสัชกร', 'Pharmacists')} <img src="/assets/img/hero/bar-shape-2.png" alt="shape-img" /></span>
                                 </h1>
                                 <p className="wow fadeInUp text-resp-body-lg mb-8 text-gray-600" data-wow-delay=".5s">
                                     {t(
@@ -47,7 +47,7 @@ const HeroHomeTwo = () => {
                             <div className="hero-image-items">
                                 <div className="hero-image" style={{ position: 'relative' }}>
                                     <img
-                                        src="assets/img/hero/pharma-hero.png"
+                                        src="/assets/img/hero/pharma-hero.png"
                                         alt={t('เภสัชกรเรียนออนไลน์', 'Pharmacist learning online')}
                                         className="wow img-custom-anim-left"
                                         data-wow-duration="1.5s"
@@ -60,7 +60,7 @@ const HeroHomeTwo = () => {
                                         }}
                                     />
                                     <div className="hero-shape">
-                                        <img src="assets/img/hero/hero-shape.png" alt="img" className="wow img-custom-anim-top" data-wow-duration="1.5s" data-wow-delay="0.2s" />
+                                        <img src="/assets/img/hero/hero-shape.png" alt="img" className="wow img-custom-anim-top" data-wow-duration="1.5s" data-wow-delay="0.2s" />
                                     </div>
                                     <div className="counter-box">
                                         <p className="text-resp-info">{t('มากกว่า', 'More than')}</p>

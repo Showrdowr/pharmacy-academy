@@ -80,7 +80,7 @@ const EventHomeTwo = () => {
                                                     </div>
                                                 </div>
                                                 <div className="event-image">
-                                                    <img src="assets/img/event/01.jpg" alt="img" />
+                                                    <img src="/assets/img/event/01.jpg" alt="img" />
                                                 </div>
                                                 <ul className="button-list">
                                                     <li>

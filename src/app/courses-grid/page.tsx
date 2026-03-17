@@ -7,7 +7,6 @@ import HeaderTwo from '@/components/layout/headers/HeaderTwo';
 import BreadcrumbCourses from '@/components/common/breadcrumb/BreadcrumbCourses';
 import { CoursesGridArea } from '@/features/courses';
 import { coursesService } from '@/features/courses/services/coursesApi';
-import { COURSES_DATA, Course } from '@/features/courses/data/mockData';
 
 export const metadata: Metadata = {
     title: "คอร์สเรียน - Pharmacy Academy",
@@ -26,39 +25,52 @@ export default async function CoursesGridPage({
     const search = typeof resolvedParams.search === 'string' ? resolvedParams.search : undefined;
     const categoryQuery = typeof resolvedParams.category === 'string' ? resolvedParams.category : undefined;
 
-    let initialData: Course[] = COURSES_DATA;
+    let initialData: any[] = [];
 
     try {
-        // Attempt to perform SSR Fetching via actual API
         const response = await coursesService.getCourses({
             search,
-            // Cast to CourseCategory if it matched, but for now we pass as any or strictly mapped
             category: categoryQuery as any,
             limit: 12
         });
 
-        // Map API response to UI Mock Data format to prevent ANY UI breakages
-        if (response && response.courses && response.courses.length > 0) {
-            initialData = response.courses.map((apiCourse) => ({
+        if (response && Array.isArray(response)) {
+            initialData = response.map((apiCourse: any) => ({
                 id: apiCourse.id,
                 title: apiCourse.title,
                 titleEn: apiCourse.title,
-                category: apiCourse.category || 'อื่นๆ',
-                categoryEn: apiCourse.category || 'Other',
-                instructor: apiCourse.instructor?.name || 'Unknown Instructor',
+                category: apiCourse.category?.name || 'อื่นๆ',
+                categoryEn: apiCourse.category?.name || 'Other',
+                instructor: apiCourse.authorName || 'ผู้สอน',
                 cpe: apiCourse.cpeCredits || 0,
-                price: apiCourse.price,
+                price: Number(apiCourse.price) || 0,
                 level: 'All Level',
-                rating: apiCourse.rating || 5,
-                students: apiCourse.reviewsCount || 0,
-                duration: `${Math.round((apiCourse.duration || 0) / 60)} ชั่วโมง`,
-                image: apiCourse.thumbnail || 'assets/img/courses/01.jpg',
-                description: 'คอร์สเรียนคุณภาพ',
+                rating: 5,
+                students: 0,
+                duration: '0 ชั่วโมง',
+                image: apiCourse.thumbnail || '/assets/img/courses/01.jpg',
+                description: apiCourse.description || 'คอร์สเรียนคุณภาพ',
+            }));
+        } else if (response && response.courses) {
+            initialData = response.courses.map((apiCourse: any) => ({
+                id: apiCourse.id,
+                title: apiCourse.title,
+                titleEn: apiCourse.title,
+                category: apiCourse.category?.name || 'อื่นๆ',
+                categoryEn: apiCourse.category?.name || 'Other',
+                instructor: apiCourse.authorName || 'ผู้สอน',
+                cpe: apiCourse.cpeCredits || 0,
+                price: Number(apiCourse.price) || 0,
+                level: 'All Level',
+                rating: 5,
+                students: 0,
+                duration: '0 ชั่วโมง',
+                image: apiCourse.thumbnail || '/assets/img/courses/01.jpg',
+                description: apiCourse.description || 'คอร์สเรียนคุณภาพ',
             }));
         }
     } catch (e) {
-        console.warn("SSR API Fetch failed, falling back to mock data.", e);
-        // Fallback to COURSES_DATA gracefully if the backend is offline
+        // API failed — show empty grid
     }
 
     return (

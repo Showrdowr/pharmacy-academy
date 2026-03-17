@@ -55,7 +55,7 @@ const ChooseHomeTwo = () => {
                             </div>
                             <div className="col-xxl-3 col-xl-4">
                                 <div className="choose-us-image">
-                                    <img src="assets/img/feature/choose-us.png" alt="img" className="wow img-custom-anim-left" />
+                                    <img src="/assets/img/feature/choose-us.png" alt="img" className="wow img-custom-anim-left" />
                                 </div>
                             </div>
                         </div>

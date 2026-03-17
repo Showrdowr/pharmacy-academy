@@ -61,6 +61,7 @@ export interface Course {
     title: string;
     slug: string;
     description: string;
+    details?: string;
     shortDescription?: string;
     thumbnail: string;
     price: number;

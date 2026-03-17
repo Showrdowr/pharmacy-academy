@@ -147,7 +147,7 @@ const TestimonialHomeTwo = () => {
                             <div className="col-xxl-4 col-xl-5 col-lg-5 d-none d-md-block">
                                 <div className="testimonial-image-items">
                                     <div className="box-shape">
-                                        <img src="assets/img/testimonial/box-shape.png" alt="img" />
+                                        <img src="/assets/img/testimonial/box-shape.png" alt="img" />
                                     </div>
                                     <div className="row g-4">
                                         <div className="col-md-6 col-sm-6">

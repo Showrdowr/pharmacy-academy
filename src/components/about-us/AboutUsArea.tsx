@@ -34,7 +34,7 @@ const AboutUsArea = () => {
           <div className="col-lg-6">
             <div className="about-image text-center">
               <img
-                src="assets/img/about/about-1.png"
+                src="/assets/img/about/about-1.png"
                 alt={t('เกี่ยวกับ Pharmacy Academy', 'About Pharmacy Academy')}
                 style={{ maxWidth: '100%', borderRadius: '15px' }}
               />
@@ -79,7 +79,7 @@ const AboutUsArea = () => {
           <div className="col-lg-6 order-lg-1">
             <div className="about-image text-center">
               <img
-                src="assets/img/about/about-2.png"
+                src="/assets/img/about/about-2.png"
                 alt={t('วิสัยทัศน์ของเรา', 'Our Vision')}
                 style={{ maxWidth: '100%', borderRadius: '15px' }}
               />

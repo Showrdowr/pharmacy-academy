@@ -128,7 +128,7 @@ const CheckoutArea = () => {
                                         <div>
                                             <p className="text-force-20 text-force-bold" style={{ margin: 0, color: '#333' }}>QR PromptPay</p>
                                             <img
-                                                src="assets/img/prompt-pay-logo.png"
+                                                src="/assets/img/prompt-pay-logo.png"
                                                 alt="PromptPay"
                                                 style={{ height: '24px', marginTop: '6px' }}
                                             />

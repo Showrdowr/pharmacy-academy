@@ -48,7 +48,7 @@ export const SAMPLE_CART_ITEMS: CartItem[] = [
         credits: 2,
         originalPrice: 3900,
         price: 2500,
-        image: 'assets/img/courses/01.jpg',
+        image: '/assets/img/courses/01.jpg',
     },
     {
         id: 2,
@@ -57,7 +57,7 @@ export const SAMPLE_CART_ITEMS: CartItem[] = [
         credits: 2,
         originalPrice: null,
         price: 1990,
-        image: 'assets/img/courses/02.jpg',
+        image: '/assets/img/courses/02.jpg',
     },
     {
         id: 3,
@@ -66,7 +66,7 @@ export const SAMPLE_CART_ITEMS: CartItem[] = [
         credits: 2,
         originalPrice: 6000,
         price: 4500,
-        image: 'assets/img/courses/03.jpg',
+        image: '/assets/img/courses/03.jpg',
     },
 ];
 

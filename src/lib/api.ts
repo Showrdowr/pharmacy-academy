@@ -61,7 +61,7 @@ class ApiClient {
             }
 
             return {
-                data,
+                data: data.data !== undefined ? data.data : data,
                 success: true,
             };
         } catch (error) {

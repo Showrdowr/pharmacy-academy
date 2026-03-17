@@ -11,7 +11,7 @@ export const ALL_COURSES = [
         categoryEn: 'Clinical Pharmacy College',
         instructor: 'ภก.สมชาย ใจดี',
         price: 1500,
-        image: 'assets/img/courses/01.jpg',
+        image: '/assets/img/courses/01.jpg',
     },
     {
         id: 2,
@@ -21,7 +21,7 @@ export const ALL_COURSES = [
         categoryEn: 'Community Pharmacy College',
         instructor: 'ภก.วิชัย สุขใจ',
         price: 1800,
-        image: 'assets/img/courses/02.jpg',
+        image: '/assets/img/courses/02.jpg',
     },
     {
         id: 3,
@@ -31,7 +31,7 @@ export const ALL_COURSES = [
         categoryEn: 'Consumer Protection College',
         instructor: 'ภก.ประสิทธิ์ นิติกร',
         price: 1200,
-        image: 'assets/img/courses/03.jpg',
+        image: '/assets/img/courses/03.jpg',
     },
     {
         id: 4,
@@ -41,7 +41,7 @@ export const ALL_COURSES = [
         categoryEn: 'Herbal Medicine College',
         instructor: 'ภก.สุวรรณา เภสัชกร',
         price: 2000,
-        image: 'assets/img/courses/04.jpg',
+        image: '/assets/img/courses/04.jpg',
     },
     {
         id: 5,
@@ -51,7 +51,7 @@ export const ALL_COURSES = [
         categoryEn: 'Pharmacy Administration College',
         instructor: 'ภก.นภา ธุรกิจดี',
         price: 1600,
-        image: 'assets/img/courses/05.jpg',
+        image: '/assets/img/courses/05.jpg',
     },
     {
         id: 6,
@@ -61,7 +61,7 @@ export const ALL_COURSES = [
         categoryEn: 'Clinical Pharmacy College',
         instructor: 'ภก.ธนวัฒน์ หัวใจดี',
         price: 2500,
-        image: 'assets/img/courses/06.jpg',
+        image: '/assets/img/courses/06.jpg',
     },
     {
         id: 7,
@@ -71,7 +71,7 @@ export const ALL_COURSES = [
         categoryEn: 'Industrial Pharmacy College',
         instructor: 'ภก.สมศักดิ์ โรงพยาบาลดี',
         price: 3500,
-        image: 'assets/img/courses/07.jpg',
+        image: '/assets/img/courses/07.jpg',
     },
     {
         id: 8,
@@ -81,7 +81,7 @@ export const ALL_COURSES = [
         categoryEn: 'Clinical Pharmacy College',
         instructor: 'ภก.อรุณ พิษวิทยา',
         price: 4500,
-        image: 'assets/img/courses/08.jpg',
+        image: '/assets/img/courses/08.jpg',
     },
     {
         id: 9,
@@ -91,7 +91,7 @@ export const ALL_COURSES = [
         categoryEn: 'Herbal Medicine College',
         instructor: 'ภก.สมุนไพร รักษ์ธรรมชาติ',
         price: 800,
-        image: 'assets/img/courses/09.jpg',
+        image: '/assets/img/courses/09.jpg',
     },
     {
         id: 10,
@@ -101,7 +101,7 @@ export const ALL_COURSES = [
         categoryEn: 'Community Pharmacy College',
         instructor: 'ภก.วัยวุฒิ ผู้สูงวัย',
         price: 5500,
-        image: 'assets/img/courses/10.jpg',
+        image: '/assets/img/courses/10.jpg',
     },
 ];
 

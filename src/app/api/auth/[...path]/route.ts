@@ -2,6 +2,83 @@ import { NextRequest, NextResponse } from "next/server";
 
 const BE_API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api/v1";
 
+export async function GET(
+    req: NextRequest,
+    context: { params: Promise<{ path: string[] }> }
+) {
+    const params = await context.params;
+    const path = params.path.join("/");
+
+    try {
+        const headers: Record<string, string> = {};
+
+        // Forward Authorization header if present
+        const authHeader = req.headers.get("Authorization");
+        if (authHeader) {
+            headers["Authorization"] = authHeader;
+        }
+
+        const response = await fetch(`${BE_API_URL}/auth/${path}`, {
+            method: "GET",
+            headers,
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            return NextResponse.json(data, { status: response.status });
+        }
+
+        return NextResponse.json(data);
+    } catch (error) {
+        console.error("API Proxy GET Error:", error);
+        return NextResponse.json(
+            { success: false, message: "Internal Server Error" },
+            { status: 500 }
+        );
+    }
+}
+
+export async function PUT(
+    req: NextRequest,
+    context: { params: Promise<{ path: string[] }> }
+) {
+    const params = await context.params;
+    const path = params.path.join("/");
+
+    try {
+        const body = await req.json();
+
+        const headers: Record<string, string> = {
+            "Content-Type": "application/json",
+        };
+        const authHeader = req.headers.get("Authorization");
+        if (authHeader) {
+            headers["Authorization"] = authHeader;
+        }
+
+        const response = await fetch(`${BE_API_URL}/auth/${path}`, {
+            method: "PUT",
+            headers,
+            body: JSON.stringify(body),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            return NextResponse.json(data, { status: response.status });
+        }
+
+        return NextResponse.json(data);
+    } catch (error) {
+        console.error("API Proxy PUT Error:", error);
+        return NextResponse.json(
+            { success: false, message: "Internal Server Error" },
+            { status: 500 }
+        );
+    }
+}
+
 export async function POST(
     req: NextRequest,
     context: { params: Promise<{ path: string[] }> }
@@ -17,12 +94,19 @@ export async function POST(
             // No body (e.g., logout request)
         }
 
-        // Forward login request to the actual backend
+        const headers: Record<string, string> = {
+            "Content-Type": "application/json",
+        };
+        // Forward Authorization header for authenticated routes (change-password, etc.)
+        const authHeader = req.headers.get("Authorization");
+        if (authHeader) {
+            headers["Authorization"] = authHeader;
+        }
+
+        // Forward request to the actual backend
         const response = await fetch(`${BE_API_URL}/auth/${path}`, {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
+            headers,
             body: JSON.stringify(body),
         });
 
@@ -46,12 +130,9 @@ export async function POST(
                 path: "/",
                 maxAge: 7 * 24 * 60 * 60, // 7 Days
             });
-            // We can optionally clear the token from the payload here so
-            // it doesn't even enter the client-side JavaScript memory
         }
 
-        // If it's a logout (though usually we handle logout internally, 
-        // we can still catch an auth/logout request and clear cookies)
+        // If it's a logout, clear cookies
         if (path === "logout") {
             res.cookies.delete("auth_token");
         }

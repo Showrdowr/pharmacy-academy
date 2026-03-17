@@ -11,6 +11,8 @@ import type {
     Certificate,
     NotificationPreferences,
 } from './types';
+import { authService } from '@/features/auth/services/authApi';
+import { coursesService } from '@/features/courses/services/coursesApi';
 
 /**
  * useProfile hook
@@ -26,11 +28,23 @@ export function useProfile() {
         setError(null);
 
         try {
-            // TODO: Replace with actual API call
-            await new Promise((resolve) => setTimeout(resolve, 500));
-
-            // Mock profile data
-            setProfile(null);
+            const user = await authService.getCurrentUser();
+            if (user) {
+                setProfile({
+                    id: user.id,
+                    name: user.fullName || '',
+                    email: user.email,
+                    role: user.role === 'pharmacist' ? 'pharmacist' : 'general',
+                    pharmacistLicense: user.professionalLicenseNumber,
+                    totalCourses: 0,
+                    completedCourses: 0,
+                    totalCPECredits: 0,
+                    createdAt: '',
+                    updatedAt: '',
+                });
+            } else {
+                setProfile(null);
+            }
         } catch (err) {
             setError(err instanceof Error ? err.message : 'เกิดข้อผิดพลาด');
         } finally {
@@ -44,11 +58,12 @@ export function useProfile() {
 
     const updateProfile = useCallback(async (data: UpdateProfileData): Promise<boolean> => {
         try {
-            // TODO: Replace with actual API call
-            await new Promise((resolve) => setTimeout(resolve, 500));
-
-            setProfile((prev) => (prev ? { ...prev, ...data } : null));
-            return true;
+            const response = await authService.updateProfile({ fullName: data.name });
+            if (response.success && response.user) {
+                setProfile((prev) => (prev ? { ...prev, ...data } : null));
+                return true;
+            }
+            return false;
         } catch {
             return false;
         }
@@ -106,11 +121,14 @@ export function useChangePassword() {
         }
 
         try {
-            // TODO: Replace with actual API call
-            await new Promise((resolve) => setTimeout(resolve, 500));
-
-            setSuccess(true);
-            return true;
+            const response = await authService.changePassword(data.currentPassword, data.newPassword);
+            if (response.success) {
+                setSuccess(true);
+                return true;
+            } else {
+                setError(response.error || 'เปลี่ยนรหัสผ่านล้มเหลว');
+                return false;
+            }
         } catch (err) {
             setError(err instanceof Error ? err.message : 'เกิดข้อผิดพลาด');
             return false;
@@ -145,14 +163,22 @@ export function useCPESummary() {
         const fetchSummary = async () => {
             setIsLoading(true);
             try {
-                // TODO: Replace with actual API call
-                await new Promise((resolve) => setTimeout(resolve, 500));
+                const enrolled = await coursesService.getEnrolledCourses();
+                const totalCredits = enrolled
+                    .filter((c: any) => c.status === 'completed')
+                    .reduce((sum: number, c: any) => sum + (c.cpeCredits || 0), 0);
+                const thisYear = new Date().getFullYear();
+                const thisYearCredits = enrolled
+                    .filter((c: any) => c.status === 'completed' && new Date(c.completedAt).getFullYear() === thisYear)
+                    .reduce((sum: number, c: any) => sum + (c.cpeCredits || 0), 0);
 
                 setSummary({
-                    totalCredits: 0,
-                    thisYearCredits: 0,
-                    requiredCredits: 100, // ตาม ก.ภ.
+                    totalCredits,
+                    thisYearCredits,
+                    requiredCredits: 100,
                 });
+            } catch {
+                setSummary({ totalCredits: 0, thisYearCredits: 0, requiredCredits: 100 });
             } finally {
                 setIsLoading(false);
             }
@@ -176,17 +202,20 @@ export function useLearningStats() {
         const fetchStats = async () => {
             setIsLoading(true);
             try {
-                // TODO: Replace with actual API call
-                await new Promise((resolve) => setTimeout(resolve, 500));
+                const enrolled = await coursesService.getEnrolledCourses();
+                const completed = enrolled.filter((c: any) => c.status === 'completed').length;
+                const inProgress = enrolled.filter((c: any) => c.status !== 'completed').length;
 
                 setStats({
-                    enrolledCourses: 0,
-                    completedCourses: 0,
-                    inProgressCourses: 0,
+                    enrolledCourses: enrolled.length,
+                    completedCourses: completed,
+                    inProgressCourses: inProgress,
                     totalLearningHours: 0,
                     currentStreak: 0,
                     longestStreak: 0,
                 });
+            } catch {
+                setStats({ enrolledCourses: 0, completedCourses: 0, inProgressCourses: 0, totalLearningHours: 0, currentStreak: 0, longestStreak: 0 });
             } finally {
                 setIsLoading(false);
             }
@@ -210,9 +239,19 @@ export function useCertificates() {
         const fetchCertificates = async () => {
             setIsLoading(true);
             try {
-                // TODO: Replace with actual API call
-                await new Promise((resolve) => setTimeout(resolve, 500));
-
+                const enrolled = await coursesService.getEnrolledCourses();
+                const certs: Certificate[] = enrolled
+                    .filter((c: any) => c.status === 'completed' && c.certificateUrl)
+                    .map((c: any) => ({
+                        id: String(c.id),
+                        courseId: c.courseId,
+                        courseTitle: c.courseTitle || '',
+                        completedAt: c.completedAt || '',
+                        certificateUrl: c.certificateUrl || '',
+                        cpeCredits: c.cpeCredits,
+                    }));
+                setCertificates(certs);
+            } catch {
                 setCertificates([]);
             } finally {
                 setIsLoading(false);

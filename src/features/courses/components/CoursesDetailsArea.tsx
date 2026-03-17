@@ -12,21 +12,68 @@ interface CoursesDetailsAreaProps {
     initialData?: any; // To allow flexibility for Zero UI Breakage Pattern
 }
 
+function getCategoryLabel(category: unknown): string {
+    if (typeof category === 'string') return category;
+    if (category && typeof category === 'object' && 'name' in category) {
+        const name = (category as { name?: unknown }).name;
+        if (typeof name === 'string') return name;
+    }
+    return 'Development';
+}
+
+function normalizeImageSrc(src?: string): string {
+    if (!src) return '/assets/img/courses/01.jpg';
+    if (/^(https?:\/\/|data:|blob:)/i.test(src)) return src;
+    return src.startsWith('/') ? src : `/${src}`;
+}
+
 const CoursesDetailsArea: React.FC<CoursesDetailsAreaProps> = ({ initialData }) => {
     const [isVideoOpen, setIsVideoOpen] = useState(false);
     const router = useRouter();
     const { addToCart } = useAddToCart();
 
-    // Mock course data matching the static content
-    // In a real app, this would come from props or API
-    // Use initialData if provided, otherwise fallback to mock
     const title = initialData?.title || initialData?.titleEn || "Web Development";
-    const price = initialData?.price || 1500;
+    const parsedPrice = Number(initialData?.price);
+    const price = Number.isFinite(parsedPrice) ? parsedPrice : 0;
     const instructorName = initialData?.instructor || "Mario S. Davis";
-    const coverImage = initialData?.image || "assets/img/courses/details-1.jpg";
-    const sidebarImage = initialData?.image || "assets/img/courses/22.jpg";
-    const description = initialData?.description || "UX/UI design focuses on creating user-friendly and visually appealing digital experiences...";
-    const category = initialData?.category || "Development";
+    const coverImage = initialData?.image || "/assets/img/courses/details-1.jpg";
+    const sidebarImage = initialData?.image || "/assets/img/courses/22.jpg";
+    const shortDescription = initialData?.description || "UX/UI design focuses on creating user-friendly and visually appealing digital experiences...";
+    const fullDescription = initialData?.details || shortDescription;
+    const sidebarDescription =
+        shortDescription.length > 100
+            ? `${shortDescription.substring(0, 100)}...`
+            : shortDescription;
+    const category = getCategoryLabel(initialData?.category);
+    const lessonsCount = Number.isFinite(Number(initialData?.lessonsCount))
+        ? Number(initialData.lessonsCount)
+        : 0;
+    const durationText =
+        typeof initialData?.duration === 'string' && initialData.duration.trim()
+            ? initialData.duration
+            : '-';
+    const studentsText =
+        typeof initialData?.students === 'number'
+            ? initialData.students.toLocaleString()
+            : typeof initialData?.students === 'string' && initialData.students.trim()
+                ? initialData.students
+                : '-';
+    const languageText =
+        typeof initialData?.language === 'string' && initialData.language.trim()
+            ? initialData.language
+            : '-';
+    const deadlineText =
+        typeof initialData?.deadline === 'string' && initialData.deadline.trim()
+            ? initialData.deadline
+            : '-';
+    const skillLevelText =
+        typeof initialData?.level === 'string' && initialData.level.trim()
+            ? initialData.level
+            : '-';
+    const certificationsText =
+        typeof initialData?.certifications === 'string' && initialData.certifications.trim()
+            ? initialData.certifications
+            : '-';
 
     const courseData: CartItem = {
         id: initialData?.id || 999,
@@ -71,7 +118,7 @@ const CoursesDetailsArea: React.FC<CoursesDetailsAreaProps> = ({ initialData }) 
                                 <div className="courses-details-items">
                                     <div className="courses-image" style={{ position: 'relative', height: '500px', overflow: 'hidden', width: '100%' }}>
                                         <Image
-                                            src={coverImage.startsWith('/') ? coverImage : `/${coverImage}`}
+                                            src={normalizeImageSrc(coverImage)}
                                             alt="cover"
                                             fill
                                             style={{ objectFit: 'cover' }}
@@ -89,7 +136,7 @@ const CoursesDetailsArea: React.FC<CoursesDetailsAreaProps> = ({ initialData }) 
                                         <ul className="nav" role="tablist">
                                             <li className="nav-item wow fadeInUp" data-wow-delay=".3s" role="presentation">
                                                 <a href="#Course" data-bs-toggle="tab" className="nav-link active" style={{ fontSize: '30px', fontWeight: 'bold' }} role="tab" aria-selected="true" tabIndex={0}>
-                                                    Course Info
+                                                    รายละเอียดคอร์ส
                                                 </a>
                                             </li>
                                             <li className="nav-item wow fadeInUp" data-wow-delay=".5s" role="presentation">
@@ -111,8 +158,8 @@ const CoursesDetailsArea: React.FC<CoursesDetailsAreaProps> = ({ initialData }) 
                                         <div className="tab-content">
                                             <div id="Course" className="tab-pane fade show active" role="tabpanel">
                                                 <div className="description-content">
-                                                    <h3 className="font-bold" style={{ fontSize: '30px' }}>Description</h3>
-                                                    <p className="mb-3" style={{ fontSize: '20px', lineHeight: '1.6' }} dangerouslySetInnerHTML={{ __html: description }}>
+                                                    <h3 className="font-bold" style={{ fontSize: '30px' }}>รายละเอียดคอร์ส</h3>
+                                                    <p className="mb-3" style={{ fontSize: '20px', lineHeight: '1.6' }} dangerouslySetInnerHTML={{ __html: fullDescription }}>
                                                     </p>
                                                     <h3 className="mt-5 font-bold" style={{ fontSize: '30px' }}>What you'll learn in this course?</h3>
                                                     <p className="mb-4" style={{ fontSize: '20px', lineHeight: '1.6' }}>
@@ -343,7 +390,7 @@ const CoursesDetailsArea: React.FC<CoursesDetailsAreaProps> = ({ initialData }) 
                                                     <h3>Instructors</h3>
                                                     <div className="instructors-box-items">
                                                         <div className="thumb">
-                                                            <img src="assets/img/courses/instructors-1.png" alt="img" />
+                                                            <img src="/assets/img/courses/instructors-1.png" alt="img" />
                                                         </div>
                                                         <div className="content">
                                                             <h4>Norman K. Zapata</h4>
@@ -362,7 +409,7 @@ const CoursesDetailsArea: React.FC<CoursesDetailsAreaProps> = ({ initialData }) 
                                                     </div>
                                                     <div className="instructors-box-items style-2">
                                                         <div className="thumb">
-                                                            <img src="assets/img/courses/instructors-2.png" alt="img" />
+                                                            <img src="/assets/img/courses/instructors-2.png" alt="img" />
                                                         </div>
                                                         <div className="content">
                                                             <h4>Ryan M. Carmichael</h4>
@@ -467,7 +514,7 @@ const CoursesDetailsArea: React.FC<CoursesDetailsAreaProps> = ({ initialData }) 
                                                         </div>
                                                         <div className="instructors-box-items">
                                                             <div className="thumb">
-                                                                <img src="assets/img/courses/instructors-3.png" alt="img" />
+                                                                <img src="/assets/img/courses/instructors-3.png" alt="img" />
                                                             </div>
                                                             <div className="content">
                                                                 <h4>Maria L</h4>
@@ -496,7 +543,7 @@ const CoursesDetailsArea: React.FC<CoursesDetailsAreaProps> = ({ initialData }) 
                                     <div className="courses-items">
                                         <div className="courses-image" style={{ position: 'relative', paddingBottom: '60%', overflow: 'hidden' }}>
                                             <Image
-                                                src={sidebarImage.startsWith('/') ? sidebarImage : `/${sidebarImage}`}
+                                                src={normalizeImageSrc(sidebarImage)}
                                                 alt="sidebar cover"
                                                 fill
                                                 style={{ objectFit: 'cover' }}
@@ -506,28 +553,28 @@ const CoursesDetailsArea: React.FC<CoursesDetailsAreaProps> = ({ initialData }) 
                                             <h4 className="topic-title">{title}</h4>
                                             <div className="arrow-items">
                                                 <div className="GlidingArrow">
-                                                    <img src="assets/img/courses/a1.png" alt="img" />
+                                                    <img src="/assets/img/courses/a1.png" alt="img" />
                                                 </div>
                                                 <div className="GlidingArrow delay1">
-                                                    <img src="assets/img/courses/a2.png" alt="img" />
+                                                    <img src="/assets/img/courses/a2.png" alt="img" />
                                                 </div>
                                                 <div className="GlidingArrow delay2">
-                                                    <img src="assets/img/courses/a3.png" alt="img" />
+                                                    <img src="/assets/img/courses/a3.png" alt="img" />
                                                 </div>
                                                 <div className="GlidingArrow delay3">
-                                                    <img src="assets/img/courses/a4.png" alt="img" />
+                                                    <img src="/assets/img/courses/a4.png" alt="img" />
                                                 </div>
                                                 <div className="GlidingArrow delay4">
-                                                    <img src="assets/img/courses/a5.png" alt="img" />
+                                                    <img src="/assets/img/courses/a5.png" alt="img" />
                                                 </div>
                                                 <div className="GlidingArrow delay5">
-                                                    <img src="assets/img/courses/a6.png" alt="img" />
+                                                    <img src="/assets/img/courses/a6.png" alt="img" />
                                                 </div>
                                             </div>
                                         </div>
                                         <div className="courses-content">
                                             <h3 className="text-force-bold mb-2" style={{ color: '#014d40', fontSize: '36px' }}>฿{price.toLocaleString()}</h3>
-                                            <p style={{ fontSize: '18px' }} dangerouslySetInnerHTML={{ __html: description.substring(0, 100) + '...' }}>
+                                            <p style={{ fontSize: '18px' }} dangerouslySetInnerHTML={{ __html: sidebarDescription }}>
                                             </p>
                                             <div className="courses-btn">
                                                 <button onClick={handleAddToCart} className="theme-btn" style={{ fontSize: '22px', width: '100%', padding: '14px', fontWeight: 'bold' }}>Add to Cart</button>
@@ -550,49 +597,49 @@ const CoursesDetailsArea: React.FC<CoursesDetailsAreaProps> = ({ initialData }) 
                                                     <i className="far fa-user" style={{ fontSize: '20px' }}></i>
                                                     Lesson
                                                 </span>
-                                                <span className="text" style={{ fontSize: '18px', fontWeight: '500' }}>15</span>
+                                                <span className="text" style={{ fontSize: '18px', fontWeight: '500' }}>{lessonsCount}</span>
                                             </li>
                                             <li style={{ marginBottom: '12px' }}>
                                                 <span>
                                                     <i className="far fa-clock" style={{ fontSize: '20px' }}></i>
                                                     Duration
                                                 </span>
-                                                <span className="text" style={{ fontSize: '18px', fontWeight: '500' }}>40h</span>
+                                                <span className="text" style={{ fontSize: '18px', fontWeight: '500' }}>{durationText}</span>
                                             </li>
                                             <li style={{ marginBottom: '12px' }}>
                                                 <span>
                                                     <i className="far fa-user" style={{ fontSize: '20px' }}></i>
                                                     Students
                                                 </span>
-                                                <span className="text" style={{ fontSize: '18px', fontWeight: '500' }}>50+</span>
+                                                <span className="text" style={{ fontSize: '18px', fontWeight: '500' }}>{studentsText}</span>
                                             </li>
                                             <li style={{ marginBottom: '12px' }}>
                                                 <span>
                                                     <i className="far fa-globe" style={{ fontSize: '20px' }}></i>
                                                     Language
                                                 </span>
-                                                <span className="text" style={{ fontSize: '18px', fontWeight: '500' }}>English</span>
+                                                <span className="text" style={{ fontSize: '18px', fontWeight: '500' }}>{languageText}</span>
                                             </li>
                                             <li style={{ marginBottom: '12px' }}>
                                                 <span>
                                                     <i className="far fa-calendar-alt" style={{ fontSize: '20px' }}></i>
                                                     Deadline
                                                 </span>
-                                                <span className="text" style={{ fontSize: '18px', fontWeight: '500' }}>15 December 2024</span>
+                                                <span className="text" style={{ fontSize: '18px', fontWeight: '500' }}>{deadlineText}</span>
                                             </li>
                                             <li style={{ marginBottom: '12px' }}>
                                                 <span>
                                                     <i className="far fa-signal-alt" style={{ fontSize: '20px' }}></i>
                                                     Skill Level
                                                 </span>
-                                                <span className="text" style={{ fontSize: '18px', fontWeight: '500' }}>All Level</span>
+                                                <span className="text" style={{ fontSize: '18px', fontWeight: '500' }}>{skillLevelText}</span>
                                             </li>
                                             <li>
                                                 <span>
                                                     <i className="fal fa-medal" style={{ fontSize: '20px' }}></i>
                                                     Certifications
                                                 </span>
-                                                <span className="text" style={{ fontSize: '18px', fontWeight: '500' }}>Yes</span>
+                                                <span className="text" style={{ fontSize: '18px', fontWeight: '500' }}>{certificationsText}</span>
                                             </li>
                                         </ul>
                                         <Link href={`/courses/${initialData?.id || ''}`} className="share-btn"><i className="fas fa-share"></i> Share this courses</Link>

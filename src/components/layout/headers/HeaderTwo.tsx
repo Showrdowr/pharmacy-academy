@@ -13,10 +13,10 @@ import { useLanguage } from '@/features/i18n';
 
 // Mock courses for search suggestions
 const COURSES_DATA = [
-    { id: 1, title: 'เภสัชวิทยาคลินิกเบื้องต้น', instructor: 'ภญ.สมใจ รักเรียน', price: 1500, image: 'assets/img/courses/01.jpg' },
-    { id: 2, title: 'การบริบาลเภสัชกรรมผู้ป่วยเบาหวาน', instructor: 'ภก.วิชัย ใจดี', price: 2000, image: 'assets/img/courses/02.jpg' },
-    { id: 3, title: 'กฎหมายเภสัชกรรมเบื้องต้น', instructor: 'ภก.ธนา มั่นคง', price: 1200, image: 'assets/img/courses/03.jpg' },
-    { id: 4, title: 'การใช้ยาในผู้สูงอายุ', instructor: 'ภญ.พิมพ์ใจ สว่าง', price: 1800, image: 'assets/img/courses/04.jpg' },
+    { id: 1, title: 'เภสัชวิทยาคลินิกเบื้องต้น', instructor: 'ภญ.สมใจ รักเรียน', price: 1500, image: '/assets/img/courses/01.jpg' },
+    { id: 2, title: 'การบริบาลเภสัชกรรมผู้ป่วยเบาหวาน', instructor: 'ภก.วิชัย ใจดี', price: 2000, image: '/assets/img/courses/02.jpg' },
+    { id: 3, title: 'กฎหมายเภสัชกรรมเบื้องต้น', instructor: 'ภก.ธนา มั่นคง', price: 1200, image: '/assets/img/courses/03.jpg' },
+    { id: 4, title: 'การใช้ยาในผู้สูงอายุ', instructor: 'ภญ.พิมพ์ใจ สว่าง', price: 1800, image: '/assets/img/courses/04.jpg' },
 ];
 
 const HeaderTwo = () => {

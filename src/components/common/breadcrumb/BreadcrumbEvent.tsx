@@ -6,19 +6,19 @@ const BreadcrumbEvent = ({title, subtitle} : any) => {
 		<>
 			<section className="breadcrumb-wrapper">
 				<div className="shape-1">
-					<img src="assets/img/breadcrumb/shape-1.png" alt="img" />
+					<img src="/assets/img/breadcrumb/shape-1.png" alt="img" />
 				</div>
 				<div className="shape-2">
-					<img src="assets/img/breadcrumb/shape-2.png" alt="img" />
+					<img src="/assets/img/breadcrumb/shape-2.png" alt="img" />
 				</div>
 				<div className="shape-3">
-					<img src="assets/img/breadcrumb/shape-3.png" alt="img" />
+					<img src="/assets/img/breadcrumb/shape-3.png" alt="img" />
 				</div>
 				<div className="dot-shape">
-					<img src="assets/img/breadcrumb/dot-shape.png" alt="img" />
+					<img src="/assets/img/breadcrumb/dot-shape.png" alt="img" />
 				</div>
 				<div className="vector-shape">
-					<img src="assets/img/breadcrumb/Vector.png" alt="img" />
+					<img src="/assets/img/breadcrumb/Vector.png" alt="img" />
 				</div>
 				<div className="container">
 					<div className="row">
@@ -31,7 +31,7 @@ const BreadcrumbEvent = ({title, subtitle} : any) => {
 								<li className="style-2">{subtitle}</li>
 							</ul>
 							<div className="breadcrumb-image">
-								<img src="assets/img/breadcrumb/breadcrumb.jpg" alt="img" />
+								<img src="/assets/img/breadcrumb/breadcrumb.jpg" alt="img" />
 							</div>
 						</div>
 					</div>

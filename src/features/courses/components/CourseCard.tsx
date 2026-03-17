@@ -15,6 +15,12 @@ interface CourseCardProps {
     course: Course;
 }
 
+function normalizeImageSrc(src?: string): string {
+    if (!src) return '/assets/img/courses/01.jpg';
+    if (/^(https?:\/\/|data:|blob:)/i.test(src)) return src;
+    return src.startsWith('/') ? src : `/${src}`;
+}
+
 const CourseCard: React.FC<CourseCardProps> = ({ course }) => {
     const { t } = useLanguage();
 
@@ -24,7 +30,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ course }) => {
             <div className="courses-card-items" style={{ marginTop: '15px' }}>
                 <div className="courses-image" style={{ position: 'relative', height: '140px', overflow: 'hidden' }}>
                     <Image
-                        src={course.image.startsWith('/') ? course.image : `/${course.image}`}
+                        src={normalizeImageSrc(course.image)}
                         alt={course.title}
                         fill
                         style={{ objectFit: 'cover' }}

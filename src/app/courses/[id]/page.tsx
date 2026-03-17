@@ -8,7 +8,36 @@ import HeaderTwo from '@/components/layout/headers/HeaderTwo';
 import BreadcrumbCoursesDetails from '@/components/common/breadcrumb/BreadcrumbCoursesDetails';
 import { CoursesDetailsArea, RelatedCourses } from '@/features/courses';
 import { coursesService } from '@/features/courses/services/coursesApi';
-import { COURSES_DATA } from '@/features/courses/data/mockData';
+
+function toNumber(value: unknown): number {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function formatDurationFromMinutes(minutesValue: unknown): string {
+    const totalMinutes = Math.round(toNumber(minutesValue));
+    if (totalMinutes <= 0) return '-';
+
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+
+    if (hours > 0 && minutes > 0) return `${hours} ชม. ${minutes} นาที`;
+    if (hours > 0) return `${hours} ชม.`;
+    return `${minutes} นาที`;
+}
+
+function formatDisplayDate(value: unknown): string {
+    if (!value) return '-';
+
+    const date = new Date(String(value));
+    if (Number.isNaN(date.getTime())) return '-';
+
+    return date.toLocaleDateString('th-TH', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
+    });
+}
 
 // Dynamic Open Graph & Metadata generation
 export async function generateMetadata({
@@ -19,28 +48,10 @@ export async function generateMetadata({
     const resolvedParams = await params;
 
     try {
-        // Find course data either from API or mock
-        // For phase 3 we try API first
-        let courseTitle = "รายละเอียดคอร์ส - Pharmacy Academy";
-        let courseDesc = "รายละเอียดคอร์สเรียน";
-        let courseImage = "assets/img/courses/01.jpg";
-
-        try {
-            const apiCourse = await coursesService.getCourseDetail(Number(resolvedParams.id));
-            if (apiCourse) {
-                courseTitle = `${apiCourse.title} - Pharmacy Academy`;
-                courseDesc = apiCourse.description || courseDesc;
-                courseImage = apiCourse.thumbnail || courseImage;
-            }
-        } catch (e) {
-            // Fallback to mock
-            const mockCourse = COURSES_DATA.find(c => c.id.toString() === resolvedParams.id);
-            if (mockCourse) {
-                courseTitle = `${mockCourse.title} - Pharmacy Academy`;
-                courseDesc = mockCourse.description || courseDesc;
-                courseImage = mockCourse.image || courseImage;
-            }
-        }
+        const apiCourse = await coursesService.getCourseDetail(Number(resolvedParams.id));
+        const courseTitle = `${apiCourse.title} - Pharmacy Academy`;
+        const courseDesc = apiCourse.description || apiCourse.details || 'รายละเอียดคอร์สเรียน';
+        const courseImage = apiCourse.thumbnail || '/assets/img/courses/01.jpg';
 
         return {
             title: courseTitle,
@@ -53,8 +64,8 @@ export async function generateMetadata({
         };
     } catch (error) {
         return {
-            title: "รายละเอียดคอร์ส - Pharmacy Academy",
-            description: "รายละเอียดคอร์สเรียน",
+            title: 'รายละเอียดคอร์ส - Pharmacy Academy',
+            description: 'รายละเอียดคอร์สเรียน',
         };
     }
 }
@@ -75,36 +86,85 @@ export default async function CourseDetailsPage({
     let initialCourseData = null;
 
     try {
-        // Attempt SSR Fetch
         const apiCourse = await coursesService.getCourseDetail(courseId);
         if (apiCourse) {
-            // Map API response to Component UI Format (Zero UI Breakage Pattern)
+            const course = apiCourse as any;
+            const categoryValue = course.category;
+            const categoryName =
+                typeof categoryValue === 'object'
+                    ? categoryValue?.name
+                    : categoryValue;
+
+            const lessons = Array.isArray(course.lessons) ? course.lessons : [];
+            const lessonsCount = toNumber(course.lessonsCount) || lessons.length;
+            const lessonVideoDurationSeconds = lessons.reduce(
+                (sum: number, lesson: any) => sum + toNumber(lesson?.video?.duration),
+                0
+            );
+            const durationMinutes =
+                toNumber(course.duration) || Math.round(lessonVideoDurationSeconds / 60);
+            const normalizedSkillLevel = String(
+                course.skillLevel || course.level || course.difficulty || ''
+            ).toLowerCase();
+            const skillLevelLabel =
+                normalizedSkillLevel === 'beginner'
+                    ? 'Beginner'
+                    : normalizedSkillLevel === 'intermediate'
+                        ? 'Intermediate'
+                        : normalizedSkillLevel === 'advanced'
+                            ? 'Advanced'
+                            : 'All Level';
+            const studentsCount =
+                toNumber(course.studentsCount) ||
+                toNumber(course.enrollmentsCount) ||
+                toNumber(course.enrollments) ||
+                toNumber(course.reviewsCount);
+            const certifications =
+                typeof course.hasCertificate === 'boolean'
+                    ? course.hasCertificate
+                        ? 'Yes'
+                        : 'No'
+                    : typeof course.certifications === 'string'
+                        ? course.certifications
+                        : '-';
+            const fullDetails =
+                (typeof course.details === 'string' && course.details.trim()) ||
+                (typeof apiCourse.details === 'string' && apiCourse.details.trim()) ||
+                apiCourse.description ||
+                'คอร์สเรียนคุณภาพ';
+
             initialCourseData = {
                 id: apiCourse.id,
                 title: apiCourse.title,
                 titleEn: apiCourse.title,
-                category: apiCourse.category || 'อื่นๆ',
-                categoryEn: apiCourse.category || 'Other',
-                instructor: apiCourse.instructor?.name || 'Unknown Instructor',
+                category: categoryName || 'อื่นๆ',
+                categoryEn: categoryName || 'Other',
+                instructor: apiCourse.instructor?.name || course.authorName || 'ผู้สอน',
                 cpe: apiCourse.cpeCredits || 0,
-                price: apiCourse.price,
-                level: 'All Level',
-                rating: apiCourse.rating || 5,
-                students: apiCourse.reviewsCount || 0,
-                duration: `${Math.round((apiCourse.duration || 0) / 60)} ชั่วโมง`,
-                image: apiCourse.thumbnail || 'assets/img/courses/01.jpg',
+                price: toNumber(apiCourse.price),
+                level: skillLevelLabel,
+                rating: toNumber(apiCourse.rating),
+                students: studentsCount,
+                lessonsCount,
+                duration: formatDurationFromMinutes(durationMinutes),
+                language: course.language || '-',
+                deadline: formatDisplayDate(
+                    course.enrollmentDeadline ||
+                    course.deadline ||
+                    course.publishedAt ||
+                    course.updatedAt ||
+                    course.createdAt
+                ),
+                certifications,
+                image: apiCourse.thumbnail || '/assets/img/courses/01.jpg',
                 description: apiCourse.description || 'คอร์สเรียนคุณภาพ',
+                details: fullDetails,
             };
-        } else {
-            // If api returned success but null data, fallback to mock directly
-            initialCourseData = COURSES_DATA.find((c) => c.id === courseId) || null;
         }
     } catch (e) {
-        console.warn(`SSR API Fetch failed for course ${courseId}, falling back to mock data.`, e);
-        initialCourseData = COURSES_DATA.find((c) => c.id === courseId) || null;
+        // API failed — course not found
     }
 
-    // If course really doesn't exist anywhere
     if (!initialCourseData) {
         notFound();
     }

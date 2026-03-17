@@ -63,7 +63,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
         try {
             const response = await authService.login(credentials, rememberMe || false);
-            console.log('DEBUG: AuthProvider.login response:', response);
 
             if (response.success && response.user) {
                 setUser(response.user);

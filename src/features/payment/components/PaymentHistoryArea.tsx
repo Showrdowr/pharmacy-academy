@@ -2,14 +2,22 @@
 import Link from 'next/link';
 import React from 'react';
 import { useLanguage } from '@/features/i18n';
+import { usePaymentHistory } from '../hooks';
 
 const PaymentHistoryArea = () => {
     const { t } = useLanguage();
-    const payments = [
-        { id: 'PA-2024-001234', course: 'เภสัชวิทยาคลินิกเบื้องต้น', date: '19 ธ.ค. 2567', amount: 1500, status: 'success' },
-        { id: 'PA-2024-001233', course: 'การบริบาลเภสัชกรรมผู้ป่วยเบาหวาน', date: '15 ธ.ค. 2567', amount: 2000, status: 'success' },
-        { id: 'PA-2024-001232', course: 'กฎหมายเภสัชกรรมเบื้องต้น', date: '10 ธ.ค. 2567', amount: 1200, status: 'success' },
-    ];
+    const { orders, isLoading } = usePaymentHistory();
+
+    const payments = orders.map(o => ({
+        id: o.orderNumber,
+        course: o.items.map(i => i.title).join(', ') || 'ไม่ระบุชื่อคอร์ส',
+        date: new Date(o.createdAt).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' }),
+        amount: o.total,
+        status: o.status,
+    }));
+
+    const totalAmount = payments.reduce((sum, p) => sum + p.amount, 0);
+    const totalCourses = orders.reduce((sum, o) => sum + o.items.length, 0);
 
     return (
         <section className="payment-history-section section-padding">
@@ -164,15 +172,15 @@ const PaymentHistoryArea = () => {
                                     gap: '0'
                                 }}>
                                     <div style={{ flex: 1, textAlign: 'center', padding: '15px', borderRight: '1px solid rgba(0, 71, 54, 0.1)' }}>
-                                        <h5 className="text-resp-h3 text-force-bold" style={{ color: '#004736', marginBottom: '4px' }}>฿4,700</h5>
+                                        <h5 className="text-resp-h3 text-force-bold" style={{ color: '#004736', marginBottom: '4px' }}>฿{totalAmount.toLocaleString()}</h5>
                                         <p className="text-resp-body" style={{ color: '#666', marginBottom: '0' }}>{t('ยอดรวมทั้งหมด', 'Total Amount')}</p>
                                     </div>
                                     <div style={{ flex: 1, textAlign: 'center', padding: '15px', borderRight: '1px solid rgba(0, 71, 54, 0.1)' }}>
-                                        <h5 className="text-resp-h3 text-force-bold" style={{ color: '#004736', marginBottom: '4px' }}>3</h5>
+                                        <h5 className="text-resp-h3 text-force-bold" style={{ color: '#004736', marginBottom: '4px' }}>{totalCourses}</h5>
                                         <p className="text-resp-body" style={{ color: '#666', marginBottom: '0' }}>{t('คอร์สที่ซื้อ', 'Courses Purchased')}</p>
                                     </div>
                                     <div style={{ flex: 1, textAlign: 'center', padding: '15px' }}>
-                                        <h5 className="text-resp-h3 text-force-bold" style={{ color: '#004736', marginBottom: '4px' }}>7.5</h5>
+                                        <h5 className="text-resp-h3 text-force-bold" style={{ color: '#004736', marginBottom: '4px' }}>{totalCourses}</h5>
                                         <p className="text-resp-body" style={{ color: '#666', marginBottom: '0' }}>{t('หน่วยกิต CPE', 'CPE Credits')}</p>
                                     </div>
                                 </div>

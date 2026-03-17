@@ -61,11 +61,11 @@ const CoursesHomeTwo = () => {
                                             คลินิก
                                         </h3>
                                         <div className="icon">
-                                            <img src="assets/img/live-courses/figma.png" alt="img" />
+                                            <img src="/assets/img/live-courses/figma.png" alt="img" />
                                         </div>
                                     </div>
                                     <div className="live-courses-image">
-                                        <img src="assets/img/live-courses/01.png" alt="img" />
+                                        <img src="/assets/img/live-courses/01.png" alt="img" />
                                     </div>
                                 </div>
                                 <div className="content">
@@ -98,11 +98,11 @@ const CoursesHomeTwo = () => {
                                             เภสัชกรรม
                                         </h3>
                                         <div className="icon">
-                                            <img src="assets/img/live-courses/wp.png" alt="img" />
+                                            <img src="/assets/img/live-courses/wp.png" alt="img" />
                                         </div>
                                     </div>
                                     <div className="live-courses-image">
-                                        <img src="assets/img/live-courses/02.png" alt="img" />
+                                        <img src="/assets/img/live-courses/02.png" alt="img" />
                                     </div>
                                 </div>
                                 <div className="content">
@@ -135,11 +135,11 @@ const CoursesHomeTwo = () => {
                                             ชุมชน
                                         </h3>
                                         <div className="icon">
-                                            <img src="assets/img/live-courses/fi.png" alt="img" />
+                                            <img src="/assets/img/live-courses/fi.png" alt="img" />
                                         </div>
                                     </div>
                                     <div className="live-courses-image">
-                                        <img src="assets/img/live-courses/03.png" alt="img" />
+                                        <img src="/assets/img/live-courses/03.png" alt="img" />
                                     </div>
                                 </div>
                                 <div className="content">
@@ -172,11 +172,11 @@ const CoursesHomeTwo = () => {
                                             เภสัชกรรม
                                         </h3>
                                         <div className="icon">
-                                            <img src="assets/img/live-courses/wp.png" alt="img" />
+                                            <img src="/assets/img/live-courses/wp.png" alt="img" />
                                         </div>
                                     </div>
                                     <div className="live-courses-image">
-                                        <img src="assets/img/live-courses/02.png" alt="img" />
+                                        <img src="/assets/img/live-courses/02.png" alt="img" />
                                     </div>
                                 </div>
                                 <div className="content">

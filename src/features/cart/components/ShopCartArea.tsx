@@ -48,7 +48,7 @@ const ShopCartArea = () => {
                                         <td>
                                             <div className="cart-item-thumb d-flex align-items-center gap-4">
                                                 <i className="fas fa-times"></i>
-                                                <img className="w-100" src="assets/img/courses/01.jpg" alt="product" />
+                                                <img className="w-100" src="/assets/img/courses/01.jpg" alt="product" />
                                                 <span className="head text-nowrap">{t('เภสัชวิทยาคลินิกเบื้องต้น', 'Clinical Pharmacology Basics')}</span>
                                             </div>
                                         </td>
@@ -88,7 +88,7 @@ const ShopCartArea = () => {
                                         <td>
                                             <div className="cart-item-thumb d-flex align-items-center gap-4">
                                                 <i className="fas fa-times"></i>
-                                                <img className="w-100" src="assets/img/courses/02.jpg" alt="product" />
+                                                <img className="w-100" src="/assets/img/courses/02.jpg" alt="product" />
                                                 <span className="head text-nowrap">{t('การบริบาลผู้ป่วยเบาหวาน', 'Diabetes Patient Care')}</span>
                                             </div>
                                         </td>

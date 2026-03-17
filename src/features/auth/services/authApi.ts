@@ -6,8 +6,7 @@ import type {
     AuthResponse,
     User,
 } from '../types';
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
+import { API_BASE_URL } from '@/config';
 
 // Helper: get the correct storage based on rememberMe preference
 function getStorage(): Storage {
@@ -16,13 +15,20 @@ function getStorage(): Storage {
     return remember === 'true' ? localStorage : sessionStorage;
 }
 
+// Helper: get token from whichever storage has it
+function getToken(): string | null {
+    if (typeof window === 'undefined') return null;
+    return getStorage().getItem('token')
+        || localStorage.getItem('token')
+        || sessionStorage.getItem('token');
+}
+
 export const authService = {
     /**
      * Login
      */
     async login(credentials: LoginCredentials, rememberMe: boolean = false): Promise<AuthResponse> {
         try {
-            console.log('DEBUG: Sending login request to API Proxy:', `/api/auth/login`);
             // Forward login request to Next.js API Route (Proxy) which sets the HttpOnly cookie
             const response = await fetch(`/api/auth/login`, {
                 method: 'POST',
@@ -31,7 +37,6 @@ export const authService = {
             });
 
             const data = await response.json();
-            console.log('DEBUG: Login API RAW response:', { status: response.status, ok: response.ok, data });
 
             if (!response.ok) {
                 return {
@@ -46,9 +51,7 @@ export const authService = {
             const storage = rememberMe ? localStorage : sessionStorage;
 
             if (data.token) {
-                // We no longer necessarily need to store the raw token in LS
-                // if we are fully migrating to HttpOnly cookies.
-                // But for now, we leave ontrack_user and rememberMe alone.
+                storage.setItem('token', data.token);
                 storage.setItem('ontrack_user', JSON.stringify(data.user));
             }
 
@@ -68,7 +71,7 @@ export const authService = {
         error?: string
     }> {
         try {
-            const response = await fetch(`${API_BASE_URL}/auth/captcha`);
+            const response = await fetch(`/api/auth/captcha`);
             const data = await response.json();
             if (data.success) {
                 return {
@@ -88,7 +91,7 @@ export const authService = {
      */
     async register(data: RegisterData): Promise<AuthResponse> {
         try {
-            const response = await fetch(`${API_BASE_URL}/auth/register`, {
+            const response = await fetch(`/api/auth/register`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -106,8 +109,9 @@ export const authService = {
             }
 
             if (result.token) {
-                localStorage.setItem('token', result.token);
-                localStorage.setItem('ontrack_user', JSON.stringify(result.user));
+                const storage = getStorage();
+                storage.setItem('token', result.token);
+                storage.setItem('ontrack_user', JSON.stringify(result.user));
             }
 
             return { success: true, user: result.user, token: result.token };
@@ -121,7 +125,7 @@ export const authService = {
      */
     async registerPharmacist(data: RegisterPharmacistData): Promise<AuthResponse> {
         try {
-            const response = await fetch(`${API_BASE_URL}/auth/register`, {
+            const response = await fetch(`/api/auth/register`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -140,8 +144,9 @@ export const authService = {
             }
 
             if (result.token) {
-                localStorage.setItem('token', result.token);
-                localStorage.setItem('ontrack_user', JSON.stringify(result.user));
+                const storage = getStorage();
+                storage.setItem('token', result.token);
+                storage.setItem('ontrack_user', JSON.stringify(result.user));
             }
 
             return { success: true, user: result.user, token: result.token };
@@ -172,19 +177,18 @@ export const authService = {
      * Get current user from token
      */
     async getCurrentUser(): Promise<User | null> {
-        const storage = getStorage();
-        const token = storage.getItem('token') || localStorage.getItem('token') || sessionStorage.getItem('token');
+        const token = getToken();
         if (!token) return null;
 
         try {
-            const response = await fetch(`${API_BASE_URL}/auth/me`, {
+            const response = await fetch(`/api/auth/me`, {
                 headers: { 'Authorization': `Bearer ${token}` },
             });
 
             if (response.ok) {
                 const data = await response.json();
                 if (data.success && data.user) {
-                    storage.setItem('ontrack_user', JSON.stringify(data.user));
+                    getStorage().setItem('ontrack_user', JSON.stringify(data.user));
                     return data.user;
                 }
             } else {
@@ -205,14 +209,62 @@ export const authService = {
      * Update profile
      */
     async updateProfile(data: Partial<User>): Promise<AuthResponse> {
-        throw new Error('Not implemented');
+        const token = getToken();
+        if (!token) return { success: false, error: 'กรุณาเข้าสู่ระบบก่อน' };
+
+        try {
+            const response = await fetch(`/api/auth/profile`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: JSON.stringify(data),
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                return { success: false, error: result.error || 'อัปเดตโปรไฟล์ล้มเหลว' };
+            }
+
+            if (result.user) {
+                getStorage().setItem('ontrack_user', JSON.stringify(result.user));
+            }
+
+            return { success: true, user: result.user };
+        } catch (error) {
+            return { success: false, error: 'เกิดข้อผิดพลาดในการเชื่อมต่อ' };
+        }
     },
 
     /**
      * Change password
      */
     async changePassword(oldPassword: string, newPassword: string): Promise<AuthResponse> {
-        throw new Error('Not implemented');
+        const token = getToken();
+        if (!token) return { success: false, error: 'กรุณาเข้าสู่ระบบก่อน' };
+
+        try {
+            const response = await fetch(`/api/auth/change-password`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: JSON.stringify({ oldPassword, newPassword }),
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                return { success: false, error: result.error || 'เปลี่ยนรหัสผ่านล้มเหลว' };
+            }
+
+            return { success: true };
+        } catch (error) {
+            return { success: false, error: 'เกิดข้อผิดพลาดในการเชื่อมต่อ' };
+        }
     },
 
     /**
@@ -220,7 +272,7 @@ export const authService = {
      */
     async forgotPassword(email: string): Promise<{ success: boolean; message?: string }> {
         try {
-            const response = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
+            const response = await fetch(`/api/auth/forgot-password`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email }),
@@ -243,7 +295,7 @@ export const authService = {
      */
     async verifyOtp(email: string, otp: string): Promise<{ success: boolean; message?: string }> {
         try {
-            const response = await fetch(`${API_BASE_URL}/auth/verify-otp`, {
+            const response = await fetch(`/api/auth/verify-otp`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, otp }),
@@ -266,7 +318,7 @@ export const authService = {
      */
     async resetPassword(email: string, newPassword: string, captchaAnswer: string, captchaToken: string): Promise<{ success: boolean; message?: string }> {
         try {
-            const response = await fetch(`${API_BASE_URL}/auth/reset-password`, {
+            const response = await fetch(`/api/auth/reset-password`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, newPassword, captchaAnswer, captchaToken }),

@@ -49,7 +49,7 @@ export const COURSES_DATA: Course[] = [
         rating: 4.8,
         students: 245,
         duration: '6 ชั่วโมง',
-        image: 'assets/img/courses/01.jpg',
+        image: '/assets/img/courses/01.jpg',
         description: 'เรียนรู้หลักการเภสัชวิทยาคลินิกขั้นพื้นฐาน การออกฤทธิ์ของยา และผลข้างเคียง',
     },
     {
@@ -65,7 +65,7 @@ export const COURSES_DATA: Course[] = [
         rating: 4.9,
         students: 189,
         duration: '8 ชั่วโมง',
-        image: 'assets/img/courses/02.jpg',
+        image: '/assets/img/courses/02.jpg',
         description: 'แนวทางการดูแลผู้ป่วยเบาหวาน การปรับขนาดยา และการให้คำปรึกษา',
     },
     {
@@ -81,7 +81,7 @@ export const COURSES_DATA: Course[] = [
         rating: 4.7,
         students: 312,
         duration: '4 ชั่วโมง',
-        image: 'assets/img/courses/03.jpg',
+        image: '/assets/img/courses/03.jpg',
         description: 'ความรู้ด้านกฎหมายเภสัชกรรมและจรรยาบรรณวิชาชีพ',
     },
     {
@@ -97,7 +97,7 @@ export const COURSES_DATA: Course[] = [
         rating: 4.6,
         students: 156,
         duration: '10 ชั่วโมง',
-        image: 'assets/img/courses/04.jpg',
+        image: '/assets/img/courses/04.jpg',
         description: 'การเลือกใช้ยาปฏิชีวนะอย่างเหมาะสม และปัญหาเชื้อดื้อยา',
     },
     {
@@ -113,7 +113,7 @@ export const COURSES_DATA: Course[] = [
         rating: 4.5,
         students: 198,
         duration: '5 ชั่วโมง',
-        image: 'assets/img/courses/05.jpg',
+        image: '/assets/img/courses/05.jpg',
         description: 'เทคนิคการบริหารจัดการร้านยา สต็อกสินค้า และการบริการ',
     },
 ];

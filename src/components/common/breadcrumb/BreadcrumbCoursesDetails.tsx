@@ -7,16 +7,16 @@ const BreadcrumbCoursesDetails = () => {
         <>
             <section className="breadcrumb-wrapper style-2">
                 <div className="shape-1">
-                    <img src="assets/img/breadcrumb/shape-1.png" alt="img" />
+                    <img src="/assets/img/breadcrumb/shape-1.png" alt="img" />
                 </div>
                 <div className="shape-2">
-                    <img src="assets/img/breadcrumb/shape-2.png" alt="img" />
+                    <img src="/assets/img/breadcrumb/shape-2.png" alt="img" />
                 </div>
                 <div className="dot-shape">
-                    <img src="assets/img/breadcrumb/dot-shape.png" alt="img" />
+                    <img src="/assets/img/breadcrumb/dot-shape.png" alt="img" />
                 </div>
                 <div className="vector-shape">
-                    <img src="assets/img/breadcrumb/Vector.png" alt="img" />
+                    <img src="/assets/img/breadcrumb/Vector.png" alt="img" />
                 </div>
                 <div className="container">
                     <div className="page-heading">
@@ -29,7 +29,7 @@ const BreadcrumbCoursesDetails = () => {
                             <h1>Advance UX/UI Design Using Figma</h1>
                             <div className="courses-breadcrumb-items">
                                 <div className="client-image-items">
-                                    <img src="assets/img/courses/client-3.png" alt="img" />
+                                    <img src="/assets/img/courses/client-3.png" alt="img" />
                                     <div className="client-content">
                                         <span>Instructor</span>
                                         <h5>Patrick C. Amore</h5>

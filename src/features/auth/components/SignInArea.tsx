@@ -102,22 +102,18 @@ const SignInArea: React.FC = () => {
     };
 
     const handleCaptchaSuccess = async (answer: string, token: string) => {
-        console.log('DEBUG: SignInArea handleCaptchaSuccess triggered', { answer, tokenLength: token.length });
         setShowCaptchaModal(false);
         setIsSubmitting(true);
 
         try {
-            console.log('DEBUG: Calling login() from SignInArea...');
             const result = await login({
                 email, 
                 password, 
                 captchaAnswer: answer,
                 captchaToken: token
             }, undefined, rememberMe);
-            console.log('DEBUG: Login result received in SignInArea:', result);
 
             if (result.success) {
-                console.log('DEBUG: Login successful, redirecting...');
                 // Check if there's a redirect URL stored
                 const redirectUrl = sessionStorage.getItem("redirectAfterLogin");
                 if (redirectUrl) {
@@ -127,7 +123,6 @@ const SignInArea: React.FC = () => {
                     router.push("/");
                 }
             } else {
-                console.log('DEBUG: Login failed in SignInArea:', result.error);
                 setLoginFailed(true);
                 const errorMsg = (result.error || '').toLowerCase();
                 
@@ -154,14 +149,13 @@ const SignInArea: React.FC = () => {
                 setIsSubmitting(false);
             }
         } catch (err) {
-            console.error('DEBUG: Exception caught in handleCaptchaSuccess:', err);
+            console.error('Login error:', err);
             setLoginFailed(true);
             setIsSubmitting(false);
         }
     };
 
     const handleGoogleLogin = () => {
-        console.log("Google login");
         router.push("/");
     };
 
