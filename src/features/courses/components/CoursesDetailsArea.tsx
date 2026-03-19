@@ -2,7 +2,7 @@
 import VideoPopup from '@/components/common/VideoPopup';
 import Link from 'next/link';
 import Image from 'next/image';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { useRouter } from 'next/navigation';
 import { useAddToCart } from '@/features/cart/hooks';
@@ -11,6 +11,10 @@ import type { CartItem } from '@/features/cart/types';
 interface CoursesDetailsAreaProps {
     initialData?: any; // To allow flexibility for Zero UI Breakage Pattern
 }
+
+const FALLBACK_IMAGE = '/assets/img/courses/01.jpg';
+const EXTERNAL_IMAGE_PATTERN = /^(https?:\/\/|data:|blob:)/i;
+const BASE64_PATTERN = /^[A-Za-z0-9+/=\r\n]+$/;
 
 function getCategoryLabel(category: unknown): string {
     if (typeof category === 'string') return category;
@@ -22,9 +26,19 @@ function getCategoryLabel(category: unknown): string {
 }
 
 function normalizeImageSrc(src?: string): string {
-    if (!src) return '/assets/img/courses/01.jpg';
-    if (/^(https?:\/\/|data:|blob:)/i.test(src)) return src;
-    return src.startsWith('/') ? src : `/${src}`;
+    if (!src) return FALLBACK_IMAGE;
+
+    const normalized = src.trim();
+    if (!normalized) return FALLBACK_IMAGE;
+    if (EXTERNAL_IMAGE_PATTERN.test(normalized)) return normalized;
+    if (normalized.startsWith('/')) return normalized;
+
+    const sanitized = normalized.replace(/\s+/g, '');
+    if (sanitized.length > 100 && BASE64_PATTERN.test(sanitized)) {
+        return `data:image/jpeg;base64,${sanitized}`;
+    }
+
+    return `/${normalized}`;
 }
 
 const CoursesDetailsArea: React.FC<CoursesDetailsAreaProps> = ({ initialData }) => {
@@ -38,6 +52,8 @@ const CoursesDetailsArea: React.FC<CoursesDetailsAreaProps> = ({ initialData }) 
     const instructorName = initialData?.instructor || "Mario S. Davis";
     const coverImage = initialData?.image || "/assets/img/courses/details-1.jpg";
     const sidebarImage = initialData?.image || "/assets/img/courses/22.jpg";
+    const [coverImageSrc, setCoverImageSrc] = useState(() => normalizeImageSrc(coverImage));
+    const [sidebarImageSrc, setSidebarImageSrc] = useState(() => normalizeImageSrc(sidebarImage));
     const shortDescription = initialData?.description || "UX/UI design focuses on creating user-friendly and visually appealing digital experiences...";
     const fullDescription = initialData?.details || shortDescription;
     const sidebarDescription =
@@ -74,6 +90,14 @@ const CoursesDetailsArea: React.FC<CoursesDetailsAreaProps> = ({ initialData }) 
         typeof initialData?.certifications === 'string' && initialData.certifications.trim()
             ? initialData.certifications
             : '-';
+
+    useEffect(() => {
+        setCoverImageSrc(normalizeImageSrc(coverImage));
+    }, [coverImage]);
+
+    useEffect(() => {
+        setSidebarImageSrc(normalizeImageSrc(sidebarImage));
+    }, [sidebarImage]);
 
     const courseData: CartItem = {
         id: initialData?.id || 999,
@@ -117,14 +141,24 @@ const CoursesDetailsArea: React.FC<CoursesDetailsAreaProps> = ({ initialData }) 
                             <div className="col-lg-8">
                                 <div className="courses-details-items">
                                     <div className="courses-image" style={{ position: 'relative', height: '500px', overflow: 'hidden', width: '100%' }}>
-                                        <Image
-                                            src={normalizeImageSrc(coverImage)}
-                                            alt="cover"
-                                            fill
-                                            style={{ objectFit: 'cover' }}
-                                            sizes="(max-width: 768px) 100vw, 800px"
-                                            priority
-                                        />
+                                        {coverImageSrc.startsWith('data:') ? (
+                                            <img
+                                                src={coverImageSrc}
+                                                alt="cover"
+                                                style={{ objectFit: 'cover', width: '100%', height: '100%' }}
+                                                onError={() => setCoverImageSrc(FALLBACK_IMAGE)}
+                                            />
+                                        ) : (
+                                            <Image
+                                                src={coverImageSrc}
+                                                alt="cover"
+                                                fill
+                                                style={{ objectFit: 'cover' }}
+                                                sizes="(max-width: 768px) 100vw, 800px"
+                                                priority
+                                                onError={() => setCoverImageSrc(FALLBACK_IMAGE)}
+                                            />
+                                        )}
                                         <a
                                             onClick={() => setIsVideoOpen(true)}
                                             style={{ cursor: "pointer" }}
@@ -542,13 +576,23 @@ const CoursesDetailsArea: React.FC<CoursesDetailsAreaProps> = ({ initialData }) 
                                 <div className="courses-sidebar-area sticky-style">
                                     <div className="courses-items">
                                         <div className="courses-image" style={{ position: 'relative', paddingBottom: '60%', overflow: 'hidden' }}>
-                                            <Image
-                                                src={normalizeImageSrc(sidebarImage)}
-                                                alt="sidebar cover"
-                                                fill
-                                                style={{ objectFit: 'cover' }}
-                                                sizes="(max-width: 768px) 100vw, 400px"
-                                            />
+                                            {sidebarImageSrc.startsWith('data:') ? (
+                                                <img
+                                                    src={sidebarImageSrc}
+                                                    alt="sidebar cover"
+                                                    style={{ objectFit: 'cover', width: '100%', height: '100%', position: 'absolute', inset: 0 }}
+                                                    onError={() => setSidebarImageSrc(FALLBACK_IMAGE)}
+                                                />
+                                            ) : (
+                                                <Image
+                                                    src={sidebarImageSrc}
+                                                    alt="sidebar cover"
+                                                    fill
+                                                    style={{ objectFit: 'cover' }}
+                                                    sizes="(max-width: 768px) 100vw, 400px"
+                                                    onError={() => setSidebarImageSrc(FALLBACK_IMAGE)}
+                                                />
+                                            )}
                                             <h3 className="courses-title">{category}</h3>
                                             <h4 className="topic-title">{title}</h4>
                                             <div className="arrow-items">

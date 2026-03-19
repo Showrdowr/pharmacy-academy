@@ -6,7 +6,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import EnrollButton from '@/components/common/EnrollButton';
 import { useLanguage } from '@/features/i18n';
 import type { Course } from '../data/mockData';
@@ -15,27 +15,56 @@ interface CourseCardProps {
     course: Course;
 }
 
+const FALLBACK_IMAGE = '/assets/img/courses/01.jpg';
+const EXTERNAL_IMAGE_PATTERN = /^(https?:\/\/|data:|blob:)/i;
+const BASE64_PATTERN = /^[A-Za-z0-9+/=\r\n]+$/;
+
 function normalizeImageSrc(src?: string): string {
-    if (!src) return '/assets/img/courses/01.jpg';
-    if (/^(https?:\/\/|data:|blob:)/i.test(src)) return src;
-    return src.startsWith('/') ? src : `/${src}`;
+    if (!src) return FALLBACK_IMAGE;
+
+    const normalized = src.trim();
+    if (!normalized) return FALLBACK_IMAGE;
+    if (EXTERNAL_IMAGE_PATTERN.test(normalized)) return normalized;
+    if (normalized.startsWith('/')) return normalized;
+
+    const sanitized = normalized.replace(/\s+/g, '');
+    if (sanitized.length > 100 && BASE64_PATTERN.test(sanitized)) {
+        return `data:image/jpeg;base64,${sanitized}`;
+    }
+
+    return `/${normalized}`;
 }
 
 const CourseCard: React.FC<CourseCardProps> = ({ course }) => {
     const { t } = useLanguage();
+    const [imageSrc, setImageSrc] = useState(() => normalizeImageSrc(course.image));
+
+    useEffect(() => {
+        setImageSrc(normalizeImageSrc(course.image));
+    }, [course.image]);
 
     return (
         <div className="courses-card-main-items">
             {/* Default card state */}
             <div className="courses-card-items" style={{ marginTop: '15px' }}>
                 <div className="courses-image" style={{ position: 'relative', height: '140px', overflow: 'hidden' }}>
-                    <Image
-                        src={normalizeImageSrc(course.image)}
-                        alt={course.title}
-                        fill
-                        style={{ objectFit: 'cover' }}
-                        sizes="(max-width: 768px) 100vw, 300px"
-                    />
+                    {imageSrc.startsWith('data:') ? (
+                        <img
+                            src={imageSrc}
+                            alt={course.title}
+                            style={{ objectFit: 'cover', width: '100%', height: '100%' }}
+                            onError={() => setImageSrc(FALLBACK_IMAGE)}
+                        />
+                    ) : (
+                        <Image
+                            src={imageSrc}
+                            alt={course.title}
+                            fill
+                            style={{ objectFit: 'cover' }}
+                            sizes="(max-width: 768px) 100vw, 300px"
+                            onError={() => setImageSrc(FALLBACK_IMAGE)}
+                        />
+                    )}
                     <h3 className="courses-title" style={{ fontSize: '30px' }}>{course.categoryEn}</h3>
                     <h4 className="topic-title">{course.cpe} CPE</h4>
                     <div className="arrow-items">

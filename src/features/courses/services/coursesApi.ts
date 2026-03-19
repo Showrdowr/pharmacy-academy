@@ -33,7 +33,7 @@ export const coursesService = {
             queryParams.set('maxPrice', String(params.priceRange.max));
         }
 
-        const response = await api.get<CoursesListResponse>(`/courses?${queryParams}`);
+        const response = await api.get<CoursesListResponse>(`/public/courses?${queryParams}`);
         if (!response.success) throw new Error(response.message || 'Failed to fetch courses');
         return response.data;
     },
@@ -42,7 +42,7 @@ export const coursesService = {
      * ดึงข้อมูลคอร์สตาม ID
      */
     async getCourseDetail(id: number): Promise<Course> {
-        const response = await api.get<Course>(`/courses/${id}`);
+        const response = await api.get<Course>(`/public/courses/${id}`);
         if (!response.success) throw new Error(response.message || 'ไม่พบคอร์สที่ต้องการ');
         return response.data;
     },

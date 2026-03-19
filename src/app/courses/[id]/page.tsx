@@ -51,7 +51,10 @@ export async function generateMetadata({
         const apiCourse = await coursesService.getCourseDetail(Number(resolvedParams.id));
         const courseTitle = `${apiCourse.title} - Pharmacy Academy`;
         const courseDesc = apiCourse.description || apiCourse.details || 'รายละเอียดคอร์สเรียน';
-        const courseImage = apiCourse.thumbnail || '/assets/img/courses/01.jpg';
+        const rawCourseImage = apiCourse.thumbnail || '/assets/img/courses/01.jpg';
+        const courseImage = /^(data:|blob:)/i.test(rawCourseImage)
+            ? '/assets/img/courses/01.jpg'
+            : rawCourseImage;
 
         return {
             title: courseTitle,
