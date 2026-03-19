@@ -1,9 +1,27 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/features/auth';
 import { useLanguage } from '@/features/i18n';
+import { api } from '@/lib/api';
+
+interface EnrolledCourseData {
+    id: number;
+    courseId: number;
+    progressPercent: string;
+    isCompleted: boolean;
+    enrolledAt: string;
+    course: {
+        id: number;
+        title: string;
+        authorName: string | null;
+        cpeCredits: number;
+        thumbnail: string | null;
+        category?: { name: string } | null;
+        lessons?: any[];
+    };
+}
 
 const UserProfileArea = () => {
     const { user, isAuthenticated, updateProfile } = useAuth();
@@ -13,39 +31,34 @@ const UserProfileArea = () => {
     const [isEditingName, setIsEditingName] = useState(false);
     const [editedName, setEditedName] = useState('');
 
-    // Mock data for courses
-    const enrolledCourses = [
-        {
-            id: 1,
-            title: 'เภสัชวิทยาคลินิกเบื้องต้น',
-            instructor: 'ภก.สมชาย ใจดี',
-            cpe: 2.5,
-            progress: 75,
-            status: 'in_progress'
-        },
-        {
-            id: 2,
-            title: 'การบริบาลเภสัชกรรมผู้ป่วยเบาหวาน',
-            instructor: 'ภก.วิชัย สุขใจ',
-            cpe: 3.0,
-            progress: 30,
-            status: 'in_progress'
-        },
-        {
-            id: 3,
-            title: 'กฎหมายเภสัชกรรมเบื้องต้น',
-            instructor: 'ภก.ประสิทธิ์ นิติกร',
-            cpe: 2.0,
-            progress: 100,
-            status: 'completed'
-        },
-    ];
+    // Real enrolled courses from API
+    const [enrolledCourses, setEnrolledCourses] = useState<EnrolledCourseData[]>([]);
+    const [isLoadingCourses, setIsLoadingCourses] = useState(true);
 
+    useEffect(() => {
+        if (!isAuthenticated) return;
+        const fetchEnrolled = async () => {
+            try {
+                setIsLoadingCourses(true);
+                const response = await api.get<EnrolledCourseData[]>('/courses/my-courses');
+                if (response.success && response.data) {
+                    setEnrolledCourses(response.data);
+                }
+            } catch (err) {
+                console.error('Failed to fetch enrolled courses:', err);
+            } finally {
+                setIsLoadingCourses(false);
+            }
+        };
+        fetchEnrolled();
+    }, [isAuthenticated]);
+
+    // Compute stats from real data
     const stats = {
-        totalCourses: 3,
-        inProgress: 2,
-        completed: 1,
-        totalCPE: 7.5
+        totalCourses: enrolledCourses.length,
+        inProgress: enrolledCourses.filter(e => !e.isCompleted).length,
+        completed: enrolledCourses.filter(e => e.isCompleted).length,
+        totalCPE: enrolledCourses.reduce((sum, e) => sum + (e.course?.cpeCredits || 0), 0),
     };
 
     if (!isAuthenticated || !user) {
@@ -261,118 +274,141 @@ const UserProfileArea = () => {
                             </div>
 
                             <div className="course-cards-list" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                                {enrolledCourses.map((course) => (
-                                    <div key={course.id} className="course-card" style={{
-                                        background: '#fff',
-                                        border: '1px solid #e5e7eb',
-                                        borderRadius: '12px',
-                                        padding: '20px',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '20px',
-                                        transition: 'box-shadow 0.3s ease',
-                                        position: 'relative',
-                                    }}>
-                                        {/* Course Icon */}
-                                        <div className="course-card-icon" style={{
-                                            width: '80px',
-                                            height: '80px',
-                                            borderRadius: '12px',
-                                            background: 'linear-gradient(135deg, #004736 0%, #006B52 100%)',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            flexShrink: 0
-                                        }}>
-                                            <i className="fas fa-book-open" style={{ fontSize: '28px', color: '#fff' }}></i>
-                                        </div>
-
-                                        {/* Course Info */}
-                                        <div className="course-card-info" style={{ flex: 1, minWidth: 0 }}>
-                                            <div className="course-card-header" style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
-                                                <h5 className="course-card-title text-resp-body-lg" style={{ margin: 0, color: '#333', fontWeight: '600' }}>
-                                                    {course.title}
-                                                </h5>
-                                                {course.status === 'completed' && (
-                                                    <span className="course-card-badge completed" style={{
-                                                        background: '#dcfce7',
-                                                        color: '#22c55e',
-                                                        padding: '3px 10px',
-                                                        borderRadius: '20px',
-                                                        fontSize: '11px',
-                                                        fontWeight: '600',
-                                                        whiteSpace: 'nowrap'
-                                                    }}>
-                                                        <i className="fas fa-check me-1"></i>{t('เรียนจบแล้ว', 'Completed')}
-                                                    </span>
-                                                )}
-                                                {course.status === 'in_progress' && (
-                                                    <span className="course-card-badge in-progress" style={{
-                                                        background: '#fef3c7',
-                                                        color: '#f59e0b',
-                                                        padding: '4px 12px',
-                                                        borderRadius: '20px',
-                                                        fontSize: '14px',
-                                                        fontWeight: '600',
-                                                        whiteSpace: 'nowrap'
-                                                    }}>
-                                                        {t('กำลังเรียน', 'In Progress')}
-                                                    </span>
-                                                )}
-                                            </div>
-                                            <p className="course-card-meta text-resp-body-lg" style={{ margin: '0 0 10px', color: '#666' }}>
-                                                <i className="fas fa-user me-2"></i>{course.instructor}
-                                                <span style={{ margin: '0 10px', color: '#ddd' }}>|</span>
-                                                <i className="fas fa-certificate me-1"></i>{course.cpe} {t('หน่วยกิต', 'Credits')}
-                                            </p>
-                                            {/* Progress Bar */}
-                                            <div className="course-card-progress" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                                <div style={{
-                                                    flex: 1,
-                                                    height: '8px',
-                                                    background: '#e5e7eb',
-                                                    borderRadius: '4px',
-                                                    overflow: 'hidden'
-                                                }}>
-                                                    <div style={{
-                                                        width: `${course.progress}%`,
-                                                        height: '100%',
-                                                        background: course.progress === 100 ? '#22c55e' : '#004736',
-                                                        borderRadius: '4px'
-                                                    }}></div>
-                                                </div>
-                                                <span style={{ color: '#666', fontSize: '13px', fontWeight: '500', whiteSpace: 'nowrap' }}>
-                                                    {course.progress}%
-                                                </span>
-                                            </div>
-                                        </div>
-
-                                        {/* Action Buttons */}
-                                        <div className="course-card-actions" style={{ display: 'flex', gap: '10px', flexShrink: 0 }}>
-                                            {course.progress === 100 ? (
-                                                <>
-                                                    <DownloadButton t={t} />
-                                                </>
-                                            ) : (
-                                                <Link
-                                                    href={`/course-learning?id=${course.id}`}
-                                                    className="course-card-btn text-resp-btn"
-                                                    style={{
-                                                        padding: '12px 24px',
-                                                        background: '#004736',
-                                                        color: '#fff',
-                                                        borderRadius: '8px',
-                                                        textDecoration: 'none',
-                                                        fontWeight: 'bold',
-                                                        whiteSpace: 'nowrap'
-                                                    }}
-                                                >
-                                                    {t('เรียนต่อ', 'Continue')}
-                                                </Link>
-                                            )}
-                                        </div>
+                                {isLoadingCourses ? (
+                                    <div className="text-center py-5">
+                                        <i className="fas fa-spinner fa-spin" style={{ fontSize: '32px', color: '#004736' }}></i>
+                                        <p className="mt-3" style={{ color: '#666' }}>{t('กำลังโหลดข้อมูลคอร์ส...', 'Loading courses...')}</p>
                                     </div>
-                                ))}
+                                ) : enrolledCourses.length === 0 ? (
+                                    <div className="text-center py-5">
+                                        <i className="fas fa-book-open" style={{ fontSize: '48px', color: '#ddd', marginBottom: '16px' }}></i>
+                                        <h5 style={{ color: '#666' }}>{t('ยังไม่มีคอร์สเรียน', 'No courses yet')}</h5>
+                                        <p style={{ color: '#999' }}>{t('เริ่มต้นเรียนรู้กับคอร์สดีๆ ได้เลย', 'Start learning with great courses')}</p>
+                                        <Link href="/courses-grid" className="theme-btn mt-2">
+                                            {t('ค้นหาคอร์ส', 'Browse Courses')}
+                                        </Link>
+                                    </div>
+                                ) : (
+                                    enrolledCourses.map((enrollment) => {
+                                        const course = enrollment.course;
+                                        const progress = Math.round(parseFloat(enrollment.progressPercent || '0'));
+                                        const isCompleted = enrollment.isCompleted || progress >= 100;
+                                        const status = isCompleted ? 'completed' : 'in_progress';
+
+                                        return (
+                                            <div key={enrollment.id} className="course-card" style={{
+                                                background: '#fff',
+                                                border: '1px solid #e5e7eb',
+                                                borderRadius: '12px',
+                                                padding: '20px',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '20px',
+                                                transition: 'box-shadow 0.3s ease',
+                                                position: 'relative',
+                                            }}>
+                                                {/* Course Icon */}
+                                                <div className="course-card-icon" style={{
+                                                    width: '80px',
+                                                    height: '80px',
+                                                    borderRadius: '12px',
+                                                    background: 'linear-gradient(135deg, #004736 0%, #006B52 100%)',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    flexShrink: 0
+                                                }}>
+                                                    <i className="fas fa-book-open" style={{ fontSize: '28px', color: '#fff' }}></i>
+                                                </div>
+
+                                                {/* Course Info */}
+                                                <div className="course-card-info" style={{ flex: 1, minWidth: 0 }}>
+                                                    <div className="course-card-header" style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
+                                                        <h5 className="course-card-title text-resp-body-lg" style={{ margin: 0, color: '#333', fontWeight: '600' }}>
+                                                            {course?.title || 'คอร์สเรียน'}
+                                                        </h5>
+                                                        {status === 'completed' && (
+                                                            <span className="course-card-badge completed" style={{
+                                                                background: '#dcfce7',
+                                                                color: '#22c55e',
+                                                                padding: '3px 10px',
+                                                                borderRadius: '20px',
+                                                                fontSize: '11px',
+                                                                fontWeight: '600',
+                                                                whiteSpace: 'nowrap'
+                                                            }}>
+                                                                <i className="fas fa-check me-1"></i>{t('เรียนจบแล้ว', 'Completed')}
+                                                            </span>
+                                                        )}
+                                                        {status === 'in_progress' && (
+                                                            <span className="course-card-badge in-progress" style={{
+                                                                background: '#fef3c7',
+                                                                color: '#f59e0b',
+                                                                padding: '4px 12px',
+                                                                borderRadius: '20px',
+                                                                fontSize: '14px',
+                                                                fontWeight: '600',
+                                                                whiteSpace: 'nowrap'
+                                                            }}>
+                                                                {t('กำลังเรียน', 'In Progress')}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <p className="course-card-meta text-resp-body-lg" style={{ margin: '0 0 10px', color: '#666' }}>
+                                                        <i className="fas fa-user me-2"></i>{course?.authorName || '-'}
+                                                        <span style={{ margin: '0 10px', color: '#ddd' }}>|</span>
+                                                        <i className="fas fa-certificate me-1"></i>{course?.cpeCredits || 0} {t('หน่วยกิต', 'Credits')}
+                                                    </p>
+                                                    {/* Progress Bar */}
+                                                    <div className="course-card-progress" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                                        <div style={{
+                                                            flex: 1,
+                                                            height: '8px',
+                                                            background: '#e5e7eb',
+                                                            borderRadius: '4px',
+                                                            overflow: 'hidden'
+                                                        }}>
+                                                            <div style={{
+                                                                width: `${progress}%`,
+                                                                height: '100%',
+                                                                background: progress >= 100 ? '#22c55e' : '#004736',
+                                                                borderRadius: '4px'
+                                                            }}></div>
+                                                        </div>
+                                                        <span style={{ color: '#666', fontSize: '13px', fontWeight: '500', whiteSpace: 'nowrap' }}>
+                                                            {progress}%
+                                                        </span>
+                                                    </div>
+                                                </div>
+
+                                                {/* Action Buttons */}
+                                                <div className="course-card-actions" style={{ display: 'flex', gap: '10px', flexShrink: 0 }}>
+                                                    {progress >= 100 ? (
+                                                        <>
+                                                            <DownloadButton t={t} />
+                                                        </>
+                                                    ) : (
+                                                        <Link
+                                                            href={`/course-learning?id=${course?.id || enrollment.courseId}`}
+                                                            className="course-card-btn text-resp-btn"
+                                                            style={{
+                                                                padding: '12px 24px',
+                                                                background: '#004736',
+                                                                color: '#fff',
+                                                                borderRadius: '8px',
+                                                                textDecoration: 'none',
+                                                                fontWeight: 'bold',
+                                                                whiteSpace: 'nowrap'
+                                                            }}
+                                                        >
+                                                            {t('เรียนต่อ', 'Continue')}
+                                                        </Link>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        );
+                                    })
+                                )}
                             </div>
                         </div>
                     </div>
