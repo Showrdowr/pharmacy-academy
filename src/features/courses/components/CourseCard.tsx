@@ -146,7 +146,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ course }) => {
                             {course.title}
                         </span>
                     </h5>
-                    <h4 className="text-force-20 text-force-bold" style={{ marginBottom: '-4px' }}>฿{course.price.toLocaleString()}</h4>
+                    <h4 className="text-force-20 text-force-bold" style={{ marginBottom: '-4px' }}>{course.price === 0 ? 'ฟรี' : `฿${course.price.toLocaleString()}`}</h4>
                     <span className="text-force-16" style={{ display: 'block', marginBottom: '2px', lineHeight: '1.4' }}>{course.description}</span>
                     <div className="client-items" style={{ marginTop: '0' }}>
                         <div

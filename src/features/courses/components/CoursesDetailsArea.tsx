@@ -7,6 +7,8 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAddToCart } from '@/features/cart/hooks';
 import type { CartItem } from '@/features/cart/types';
+import { coursesService } from '@/features/courses/services/coursesApi';
+import { useAuth } from '@/features/auth';
 
 interface CoursesDetailsAreaProps {
     initialData?: any; // To allow flexibility for Zero UI Breakage Pattern
@@ -45,10 +47,12 @@ const CoursesDetailsArea: React.FC<CoursesDetailsAreaProps> = ({ initialData }) 
     const [isVideoOpen, setIsVideoOpen] = useState(false);
     const router = useRouter();
     const { addToCart } = useAddToCart();
+    const { isAuthenticated } = useAuth();
 
     const title = initialData?.title || initialData?.titleEn || "Web Development";
     const parsedPrice = Number(initialData?.price);
     const price = Number.isFinite(parsedPrice) ? parsedPrice : 0;
+    const isFree = price === 0;
     const instructorName = initialData?.instructor || "Mario S. Davis";
     const coverImage = initialData?.image || "/assets/img/courses/details-1.jpg";
     const sidebarImage = initialData?.image || "/assets/img/courses/22.jpg";
@@ -122,6 +126,28 @@ const CoursesDetailsArea: React.FC<CoursesDetailsAreaProps> = ({ initialData }) 
         e.preventDefault();
         addToCart(courseData);
         router.push('/checkout');
+    };
+
+    const [enrolling, setEnrolling] = React.useState(false);
+
+    const handleStartFreeCourse = async (e: React.MouseEvent) => {
+        e.preventDefault();
+        if (!isAuthenticated) {
+            sessionStorage.setItem('redirectAfterLogin', `/courses/${initialData?.id}`);
+            router.push('/sign-in');
+            return;
+        }
+        try {
+            setEnrolling(true);
+            await coursesService.enrollCourse(initialData?.id);
+            router.push(`/course-learning?id=${initialData?.id}`);
+        } catch (err) {
+            console.error('Enroll failed:', err);
+            // Fallback: navigate anyway so user doesn't get stuck
+            router.push(`/course-learning?id=${initialData?.id}`);
+        } finally {
+            setEnrolling(false);
+        }
     };
 
     return (
@@ -617,12 +643,32 @@ const CoursesDetailsArea: React.FC<CoursesDetailsAreaProps> = ({ initialData }) 
                                             </div>
                                         </div>
                                         <div className="courses-content">
-                                            <h3 className="text-force-bold mb-2" style={{ color: '#014d40', fontSize: '36px' }}>฿{price.toLocaleString()}</h3>
+                                            <h3 className="text-force-bold mb-2" style={{ color: '#014d40', fontSize: '36px' }}>{isFree ? 'ฟรี' : `฿${price.toLocaleString()}`}</h3>
                                             <p style={{ fontSize: '18px' }} dangerouslySetInnerHTML={{ __html: sidebarDescription }}>
                                             </p>
                                             <div className="courses-btn">
-                                                <button onClick={handleAddToCart} className="theme-btn" style={{ fontSize: '22px', width: '100%', padding: '14px', fontWeight: 'bold' }}>Add to Cart</button>
-                                                <button onClick={handleBuyCourse} className="theme-btn style-2" style={{ fontSize: '22px', width: '100%', padding: '14px', fontWeight: 'bold' }}>Buy Course</button>
+                                                {isFree ? (
+                                                    <button
+                                                        onClick={handleStartFreeCourse}
+                                                        disabled={enrolling}
+                                                        className="theme-btn"
+                                                        style={{
+                                                            fontSize: '22px',
+                                                            width: '100%',
+                                                            padding: '14px',
+                                                            fontWeight: 'bold',
+                                                            background: '#22c55e',
+                                                            borderColor: '#22c55e',
+                                                        }}
+                                                    >
+                                                        {enrolling ? 'กำลังลงทะเบียน...' : 'เริ่มเรียนฟรี'}
+                                                    </button>
+                                                ) : (
+                                                    <>
+                                                        <button onClick={handleAddToCart} className="theme-btn" style={{ fontSize: '22px', width: '100%', padding: '14px', fontWeight: 'bold' }}>Add to Cart</button>
+                                                        <button onClick={handleBuyCourse} className="theme-btn style-2" style={{ fontSize: '22px', width: '100%', padding: '14px', fontWeight: 'bold' }}>Buy Course</button>
+                                                    </>
+                                                )}
                                             </div>
                                         </div>
                                     </div>
