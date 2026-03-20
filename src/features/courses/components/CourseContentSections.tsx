@@ -19,7 +19,7 @@ export const DescriptionSection: React.FC<{
         <div className="short-description mb-4">
             <div className="d-flex align-items-center gap-2 mb-3">
                 <i className="fas fa-bookmark" style={{ fontSize: '28px', color: '#14b8a6', fontWeight: 'bold' }}></i>
-                <h3 style={{ margin: 0, fontSize: '28px', fontWeight: 'bold', color: '#333' }}>บทสรุพคอร์ส</h3>
+                <h3 style={{ margin: 0, fontSize: '28px', fontWeight: 'bold', color: '#333' }}>คำอธิบายโดยย่อ</h3>
             </div>
             <p style={{
                 fontSize: '22px',
@@ -29,7 +29,8 @@ export const DescriptionSection: React.FC<{
                 backgroundColor: '#f0fdf4',
                 borderRadius: '8px',
                 borderLeft: '4px solid #14b8a6',
-                margin: 0
+                margin: 0,
+                whiteSpace: 'pre-line'
             }}>
                 {shortDescription || 'ยังไม่มีบทสรุป'}
             </p>
@@ -50,7 +51,7 @@ export const DescriptionSection: React.FC<{
                 borderRadius: '8px',
                 borderLeft: '4px solid #3b82f6',
             }}>
-                <div dangerouslySetInnerHTML={{
+                <div style={{ whiteSpace: 'pre-line' }} dangerouslySetInnerHTML={{
                     __html: fullDescription || 'ยังไม่มีรายละเอียด'
                 }} />
             </div>

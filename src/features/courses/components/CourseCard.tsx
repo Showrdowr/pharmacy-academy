@@ -65,24 +65,8 @@ const CourseCard: React.FC<CourseCardProps> = ({ course }) => {
                             onError={() => setImageSrc(FALLBACK_IMAGE)}
                         />
                     )}
-                    <h3 className="courses-title" style={{ fontSize: '30px' }}>{course.categoryEn}</h3>
-                    <h4 className="topic-title">{course.cpe} CPE</h4>
-                    <div className="arrow-items">
-                        {[1, 2, 3, 4, 5, 6].map((num) => (
-                            <div
-                                key={num}
-                                className={`GlidingArrow${num > 1 ? ` delay${num - 1}` : ''}`}
-                            >
-                                <Image
-                                    src={`/assets/img/courses/a${num}.png`}
-                                    alt="img"
-                                    width={40}
-                                    height={40}
-                                    style={{ width: 'auto', height: 'auto' }}
-                                />
-                            </div>
-                        ))}
-                    </div>
+                    
+                    
                 </div>
                 <div className="courses-content">
                     <ul className="post-cat">
