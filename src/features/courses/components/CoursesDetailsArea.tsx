@@ -9,6 +9,7 @@ import { useAddToCart } from '@/features/cart/hooks';
 import type { CartItem } from '@/features/cart/types';
 import { coursesService } from '@/features/courses/services/coursesApi';
 import { useAuth } from '@/features/auth';
+import './CoursesDetailsArea.css';
 import {
     PriceCard,
     CPECard,

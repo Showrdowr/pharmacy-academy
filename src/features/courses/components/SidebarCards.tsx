@@ -31,7 +31,7 @@ export const PriceCard: React.FC<{
     enrolling: boolean;
 }> = ({ isFree, price, onAddToCart, onBuyCourse, onStartFreeCourse, enrolling }) => (
     <div className="courses-items mb-4">
-        <div className="courses-content p-4" style={{ border: '1px solid #e0e0e0', borderRadius: '12px', backgroundColor: '#f9f9f9' }}>
+        <div className="courses-content p-4 interactive-card" style={{ border: '1px solid #e0e0e0', borderRadius: '12px', backgroundColor: '#f9f9f9' }}>
             <div className="d-flex align-items-center gap-2 mb-3">
                 <i className="fas fa-tag" style={{ fontSize: '28px', color: '#14b8a6' }}></i>
                 <h5 style={{ margin: 0, fontSize: '28px', fontWeight: 'bold', color: '#333' }}>ราคา</h5>
