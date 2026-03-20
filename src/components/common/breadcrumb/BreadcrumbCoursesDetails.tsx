@@ -2,7 +2,11 @@
 import Link from 'next/link';
 import React from 'react';
 
-const BreadcrumbCoursesDetails = () => {
+interface BreadcrumbCoursesDetailsProps {
+    courseTitle?: string;
+}
+
+const BreadcrumbCoursesDetails: React.FC<BreadcrumbCoursesDetailsProps> = ({ courseTitle = 'Course Details' }) => {
     return (
         <>
             <section className="breadcrumb-wrapper style-2">
@@ -26,7 +30,7 @@ const BreadcrumbCoursesDetails = () => {
                             <li className="style-2"> Course Details</li>
                         </ul>
                         <div className="breadcrumb-content">
-                            <h1>Advance UX/UI Design Using Figma</h1>
+                            <h1>{courseTitle}</h1>
                         </div>
                     </div>
                 </div>
