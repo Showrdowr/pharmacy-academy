@@ -71,10 +71,14 @@ const CoursesDetailsArea: React.FC<CoursesDetailsAreaProps> = ({ initialData }) 
     const shortDescription = initialData?.description || "คอร์สเรียนคุณภาพ";
     const fullDescription = initialData?.details || shortDescription;
     const category = getCategoryLabel(initialData?.category);
+    const subcategoryName = typeof initialData?.subcategory === 'string' 
+        ? initialData.subcategory 
+        : initialData?.subcategory?.name || undefined;
     const lessonsCount = Number.isFinite(Number(initialData?.lessonsCount))
         ? Number(initialData.lessonsCount)
         : initialData?.lessons?.length || 0;
     const cpeCredits = Number(initialData?.cpeCredits) || 0;
+    const rating = Number(initialData?.rating) || 4.5;
     const conferenceCode = initialData?.conferenceCode || '-';
     const skillLevelText = typeof initialData?.level === 'string' ? initialData.level : 'All Level';
     const languageText = typeof initialData?.language === 'string' ? initialData.language : '-';
@@ -218,14 +222,14 @@ const CoursesDetailsArea: React.FC<CoursesDetailsAreaProps> = ({ initialData }) 
                                     {/* Category Card */}
                                     <CategoryCard
                                         category={category}
-                                        status={status}
+                                        subcategory={subcategoryName}
                                     />
 
                                     {/* Course Info Card */}
                                     <CourseInfoCard
                                         instructor={instructorName}
                                         lessonsCount={lessonsCount}
-                                        status={status}
+                                        rating={rating}
                                         conferenceCode={conferenceCode}
                                         skillLevel={skillLevelText}
                                         language={languageText}

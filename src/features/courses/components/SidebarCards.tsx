@@ -117,8 +117,8 @@ export const CPECard: React.FC<{ cpe: number }> = ({ cpe }) => {
  */
 export const CategoryCard: React.FC<{
     category: string;
-    status: string;
-}> = ({ category, status }) => (
+    subcategory?: string;
+}> = ({ category, subcategory }) => (
     <div className="courses-items mb-4">
         <div className="courses-content p-4" style={{ border: '1px solid #e0e0e0', borderRadius: '12px', backgroundColor: '#f9f9f9' }}>
             <div className="d-flex align-items-center gap-2 mb-3">
@@ -131,10 +131,8 @@ export const CategoryCard: React.FC<{
                     <span style={{ fontSize: '24px', fontWeight: 'bold', color: '#014d40', marginLeft: '8px' }}>{category}</span>
                 </li>
                 <li style={{ fontSize: '20px' }}>
-                    <span style={{ color: '#666', fontWeight: '500' }}>สถานะ</span>
-                    <span style={{ fontSize: '24px', fontWeight: 'bold', color: '#14b8a6', marginLeft: '8px' }}>
-                        {status === 'PUBLISHED' ? 'ตีพิมพ์แล้ว' : status === 'DRAFT' ? 'ร่างค่า' : 'จัดเก็บไว้'}
-                    </span>
+                    <span style={{ color: '#666', fontWeight: '500' }}>หมวดหมู่ย่อย</span>
+                    <span style={{ fontSize: '24px', fontWeight: 'bold', color: '#014d40', marginLeft: '8px' }}>{subcategory || '-'}</span>
                 </li>
             </ul>
         </div>
@@ -147,11 +145,11 @@ export const CategoryCard: React.FC<{
 export const CourseInfoCard: React.FC<{
     instructor: string;
     lessonsCount: number;
-    status: string;
+    rating?: number;
     conferenceCode: string;
     skillLevel: string;
     language: string;
-}> = ({ instructor, lessonsCount, status, conferenceCode, skillLevel, language }) => (
+}> = ({ instructor, lessonsCount, rating = 4.5, conferenceCode, skillLevel, language }) => (
     <div className="courses-items mb-4">
         <div className="courses-content p-4" style={{ border: '1px solid #e0e0e0', borderRadius: '12px', backgroundColor: '#f9f9f9' }}>
             <div className="d-flex align-items-center gap-2 mb-3">
@@ -167,9 +165,12 @@ export const CourseInfoCard: React.FC<{
                     <span style={{ color: '#666', fontWeight: '500' }}>บทเรียน</span>
                     <span style={{ fontWeight: '600', color: '#333' }}>{lessonsCount} บท</span>
                 </li>
-                <li style={{ marginBottom: '16px', display: 'flex', justifyContent: 'space-between' }}>
-                    <span style={{ color: '#666', fontWeight: '500' }}>ความพร้อม</span>
-                    <span style={{ fontWeight: '600', color: '#14b8a6' }}>{status === 'PUBLISHED' ? 'ตีพิมพ์' : 'ร่าง'}</span>
+                <li style={{ marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ color: '#666', fontWeight: '500' }}>คะแนนรีวิว</span>
+                    <span style={{ fontWeight: '600', color: '#f59e0b', fontSize: '22px' }}>
+                        {rating.toFixed(1)} 
+                        <i className="fas fa-star" style={{ marginLeft: '4px', fontSize: '18px' }}></i>
+                    </span>
                 </li>
                 <li style={{ marginBottom: '16px', display: 'flex', justifyContent: 'space-between' }}>
                     <span style={{ color: '#666', fontWeight: '500' }}>ระดับ</span>
