@@ -1208,37 +1208,15 @@ label[for] {
     }
   }
 
-  /* Reduce height of hover modal (green card) */
+  /* Hover card - let flexbox handle layout */
   .courses-card-main-items .courses-card-items-hover {
-    max-height: 350px !important;
     overflow: hidden !important;
   }
 
-  /* Modal title styling - 16px bold */
+  /* Modal title styling */
   .courses-card-main-items .courses-card-items-hover h5 {
     font-size: 20px !important;
     font-weight: 700 !important;
-  }
-
-  /* Responsive hover modal size - Tablet */
-  @media (max-width: 1024px) {
-    .courses-card-main-items .courses-card-items-hover {
-      max-height: 320px !important;
-    }
-  }
-
-  /* Responsive hover modal size - Mobile */
-  @media (max-width: 768px) {
-    .courses-card-main-items .courses-card-items-hover {
-      max-height: 300px !important;
-    }
-  }
-
-  /* Responsive hover modal size - Small Mobile */
-  @media (max-width: 576px) {
-    .courses-card-main-items .courses-card-items-hover {
-      max-height: 280px !important;
-    }
   }
 
   /* Cart icon smaller */
@@ -4615,14 +4593,7 @@ label[for] {
   }
 
   /* --- Course Card Hover (Green Box) --- */
-  /* Move Content Up */
-  .courses-card-items-hover {
-    align-items: flex-start !important;
-    padding-top: 25px !important;
-    /* Reduced from 50px to move it up more */
-  }
-
-  /* Fix Content Structure to allow button push */
+  /* Content Structure */
   .courses-card-items-hover .courses-content {
     display: flex !important;
     flex-direction: column !important;
@@ -4631,47 +4602,36 @@ label[for] {
   }
 
   .courses-card-items-hover h5 span {
-    font-size: 26px !important;
-    /* Title: 22px -> 26px (Fill space) */
+    font-size: 22px !important;
     line-height: 1.3 !important;
   }
 
   .courses-card-items-hover h4 {
-    font-size: 24px !important;
-    /* Price: 22px -> 24px */
+    font-size: 22px !important;
     color: #FFB013 !important;
-    margin-top: 8px !important;
   }
 
   .courses-card-items-hover .post-cat li a {
-    font-size: 18px !important;
-    /* Category Badge */
+    font-size: 16px !important;
   }
 
   .courses-card-items-hover .text-force-16 {
-    font-size: 16px !important;
-    line-height: 1.6 !important;
-    margin-top: 8px !important;
+    font-size: 15px !important;
+    line-height: 1.5 !important;
   }
 
   .courses-card-items-hover .client-items {
-    margin-top: 20px !important;
-    /* Push down to avoid overlap with long description */
+    margin-top: 0 !important;
   }
 
   .courses-card-items-hover .theme-btn {
-    font-size: 22px !important;
-    /* Button Text */
+    font-size: 20px !important;
     color: #004736 !important;
-    margin-top: auto !important;
-    /* Push to bottom */
     width: 100% !important;
-    margin-bottom: 60px !important;
-    /* Lifted up significantly to avoid cutoff */
   }
 
   .courses-card-items-hover .theme-btn span {
-    font-size: 22px !important;
+    font-size: 20px !important;
   }
 }
 
