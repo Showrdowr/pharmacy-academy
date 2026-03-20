@@ -140,7 +140,7 @@ const CoursesDetailsArea: React.FC<CoursesDetailsAreaProps> = ({ initialData }) 
                 videoId={"Ml4XCF-JS0k"}
             />
 
-            <section className="courses-details-section section-padding pt-0">
+            <section className="courses-details-section section-padding pt-0" style={{ fontSize: '30px' }}>
                 <div className="container">
                     <div className="courses-details-wrapper">
                         <div className="row g-4">
@@ -246,12 +246,13 @@ const CoursesDetailsArea: React.FC<CoursesDetailsAreaProps> = ({ initialData }) 
                                                 alignItems: 'center',
                                                 justifyContent: 'center',
                                                 gap: '8px',
-                                                padding: '12px 16px',
+                                                padding: '16px 20px',
                                                 backgroundColor: '#e8f5e9',
                                                 borderRadius: '8px',
                                                 textDecoration: 'none',
                                                 color: '#14b8a6',
                                                 fontWeight: '600',
+                                                fontSize: '24px',
                                                 transition: 'all 0.3s ease'
                                             }}
                                         >

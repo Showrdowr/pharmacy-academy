@@ -18,11 +18,11 @@ export const DescriptionSection: React.FC<{
         {/* Short Description */}
         <div className="short-description mb-4">
             <div className="d-flex align-items-center gap-2 mb-3">
-                <i className="fas fa-bookmark" style={{ fontSize: '24px', color: '#14b8a6', fontWeight: 'bold' }}></i>
-                <h3 style={{ margin: 0, fontSize: '24px', fontWeight: 'bold', color: '#333' }}>บทสรุพคอร์ส</h3>
+                <i className="fas fa-bookmark" style={{ fontSize: '28px', color: '#14b8a6', fontWeight: 'bold' }}></i>
+                <h3 style={{ margin: 0, fontSize: '28px', fontWeight: 'bold', color: '#333' }}>บทสรุพคอร์ส</h3>
             </div>
             <p style={{
-                fontSize: '16px',
+                fontSize: '22px',
                 lineHeight: '1.6',
                 color: '#555',
                 padding: '16px',
@@ -38,11 +38,11 @@ export const DescriptionSection: React.FC<{
         {/* Full Description */}
         <div className="full-description">
             <div className="d-flex align-items-center gap-2 mb-3">
-                <i className="fas fa-book-open" style={{ fontSize: '24px', color: '#3b82f6', fontWeight: 'bold' }}></i>
-                <h3 style={{ margin: 0, fontSize: '24px', fontWeight: 'bold', color: '#333' }}>รายละเอียดคอร์ส</h3>
+                <i className="fas fa-book-open" style={{ fontSize: '28px', color: '#3b82f6', fontWeight: 'bold' }}></i>
+                <h3 style={{ margin: 0, fontSize: '28px', fontWeight: 'bold', color: '#333' }}>รายละเอียดคอร์ส</h3>
             </div>
             <div style={{
-                fontSize: '16px',
+                fontSize: '22px',
                 lineHeight: '1.8',
                 color: '#555',
                 padding: '16px',
@@ -69,10 +69,10 @@ export const LessonsSection: React.FC<{
         return (
             <div className="lessons-section mb-5">
                 <div className="d-flex align-items-center gap-2 mb-3">
-                    <i className="fas fa-list-check" style={{ fontSize: '24px', color: '#f59e0b', fontWeight: 'bold' }}></i>
-                    <h3 style={{ margin: 0, fontSize: '24px', fontWeight: 'bold', color: '#333' }}>{title}</h3>
+                    <i className="fas fa-list-check" style={{ fontSize: '28px', color: '#f59e0b', fontWeight: 'bold' }}></i>
+                    <h3 style={{ margin: 0, fontSize: '28px', fontWeight: 'bold', color: '#333' }}>{title}</h3>
                 </div>
-                <p style={{ fontSize: '16px', color: '#999', fontStyle: 'italic' }}>ยังไม่มีบทเรียน</p>
+                <p style={{ fontSize: '22px', color: '#999', fontStyle: 'italic' }}>ยังไม่มีบทเรียน</p>
             </div>
         );
     }
@@ -85,11 +85,11 @@ export const LessonsSection: React.FC<{
         return `${minutes} นาที`;
     };
 
-    return (
+        return (
         <div className="lessons-section mb-5">
             <div className="d-flex align-items-center gap-2 mb-4">
-                <i className="fas fa-list-check" style={{ fontSize: '24px', color: '#f59e0b', fontWeight: 'bold' }}></i>
-                <h3 style={{ margin: 0, fontSize: '24px', fontWeight: 'bold', color: '#333' }}>
+                <i className="fas fa-list-check" style={{ fontSize: '28px', color: '#f59e0b', fontWeight: 'bold' }}></i>
+                <h3 style={{ margin: 0, fontSize: '28px', fontWeight: 'bold', color: '#333' }}>
                     {title} ({lessons.length} บท)
                 </h3>
             </div>
@@ -114,8 +114,8 @@ export const LessonsSection: React.FC<{
                     >
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                             <div style={{
-                                width: '32px',
-                                height: '32px',
+                                width: '44px',
+                                height: '44px',
                                 backgroundColor: '#f59e0b',
                                 color: 'white',
                                 borderRadius: '50%',
@@ -123,14 +123,14 @@ export const LessonsSection: React.FC<{
                                 alignItems: 'center',
                                 justifyContent: 'center',
                                 fontWeight: 'bold',
-                                fontSize: '14px'
+                                fontSize: '22px'
                             }}>
                                 {index + 1}
                             </div>
                             <div>
                                 <h5 style={{
                                     margin: 0,
-                                    fontSize: '16px',
+                                    fontSize: '22px',
                                     fontWeight: '600',
                                     color: '#333'
                                 }}>
@@ -139,7 +139,7 @@ export const LessonsSection: React.FC<{
                                 {lesson.description && (
                                     <p style={{
                                         margin: '4px 0 0 0',
-                                        fontSize: '14px',
+                                        fontSize: '18px',
                                         color: '#666'
                                     }}>
                                         {lesson.description}
@@ -152,7 +152,7 @@ export const LessonsSection: React.FC<{
                             alignItems: 'center',
                             gap: '8px',
                             color: '#666',
-                            fontSize: '14px',
+                            fontSize: '20px',
                             fontWeight: '500',
                             whiteSpace: 'nowrap'
                         }}>
