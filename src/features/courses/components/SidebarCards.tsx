@@ -22,6 +22,7 @@ const FALLBACK_IMAGE = '/assets/img/courses/01.jpg';
 /**
  * Price Card Component
  */
+/** Price Card Component */
 export const PriceCard: React.FC<{
     isFree: boolean;
     price: number;
@@ -30,7 +31,12 @@ export const PriceCard: React.FC<{
     onBuyCourse: (e: React.MouseEvent) => void;
     onStartFreeCourse: (e: React.MouseEvent) => void;
     enrolling: boolean;
-}> = ({ isFree, price, shortDescription, onAddToCart, onBuyCourse, onStartFreeCourse, enrolling }) => (
+}> = ({ isFree, price, shortDescription, onAddToCart, onBuyCourse, onStartFreeCourse, enrolling }) => {
+    React.useEffect(() => {
+        console.log('PriceCard shortDescription:', shortDescription);
+    }, [shortDescription]);
+    
+    return (
     <div className="courses-items mb-4">
         <div className="courses-content p-4 interactive-card" style={{ border: '1px solid #e0e0e0', borderRadius: '12px', backgroundColor: '#f9f9f9' }}>
             <div className="d-flex align-items-center gap-2 mb-3">
@@ -40,11 +46,9 @@ export const PriceCard: React.FC<{
             <h3 className="text-force-bold mb-3" style={{ color: '#014d40', fontSize: '54px', fontWeight: '700' }}>
                 {isFree ? 'ฟรี' : `฿${price.toLocaleString()}`}
             </h3>
-            {shortDescription && (
-                <p style={{ fontSize: '20px', color: '#666', marginBottom: '20px', lineHeight: '1.5', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }}>
-                    {shortDescription}
-                </p>
-            )}
+            <p style={{ fontSize: '20px', color: '#666', marginBottom: '20px', lineHeight: '1.5', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }}>
+                {shortDescription || 'ไม่มีรายละเอียด'}
+            </p>
             <div className="courses-btn d-flex gap-2 flex-column">
                 {isFree ? (
                     <button
@@ -83,7 +87,8 @@ export const PriceCard: React.FC<{
             </div>
         </div>
     </div>
-);
+    );
+};
 
 /**
  * CPE Credits Card (Conditional)
