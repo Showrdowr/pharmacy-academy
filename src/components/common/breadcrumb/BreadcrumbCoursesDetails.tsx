@@ -27,40 +27,6 @@ const BreadcrumbCoursesDetails = () => {
                         </ul>
                         <div className="breadcrumb-content">
                             <h1>Advance UX/UI Design Using Figma</h1>
-                            <div className="courses-breadcrumb-items">
-                                <div className="client-image-items">
-                                    <img src="/assets/img/courses/client-3.png" alt="img" />
-                                    <div className="client-content">
-                                        <span>Instructor</span>
-                                        <h5>Patrick C. Amore</h5>
-                                    </div>
-                                </div>
-                                <div className="client-image-items">
-                                    <div className="client-content">
-                                        <span>Instructor</span>
-                                        <h5>Web Design</h5>
-                                    </div>
-                                </div>
-                                <div className="client-image-items">
-                                    <div className="client-content">
-                                        <span>Price</span>
-                                        <h5>$100.00</h5>
-                                    </div>
-                                </div>
-                                <div className="client-image-items">
-                                    <div className="client-content">
-                                        <span>Reviews</span>
-                                        <div className="star">
-                                            <i className="fas fa-star"></i>
-                                            <i className="fas fa-star"></i>
-                                            <i className="fas fa-star"></i>
-                                            <i className="fas fa-star"></i>
-                                            <i className="fas fa-star"></i>
-                                            <b>(15)</b>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>

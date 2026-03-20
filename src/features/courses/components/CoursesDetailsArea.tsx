@@ -241,31 +241,6 @@ const CoursesDetailsArea: React.FC<CoursesDetailsAreaProps> = ({ initialData }) 
                                         createdAt={createdAt}
                                         updatedAt={updatedAt}
                                     />
-
-                                    {/* Share Button */}
-                                    <div className="courses-items mt-4">
-                                        <Link 
-                                            href={`/courses/${initialData?.id || ''}`} 
-                                            className="share-btn"
-                                            style={{
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                gap: '8px',
-                                                padding: '16px 20px',
-                                                backgroundColor: '#e8f5e9',
-                                                borderRadius: '8px',
-                                                textDecoration: 'none',
-                                                color: '#14b8a6',
-                                                fontWeight: '600',
-                                                fontSize: '24px',
-                                                transition: 'all 0.3s ease'
-                                            }}
-                                        >
-                                            <i className="fas fa-share"></i>
-                                            <span>แชร์คอร์สนี้</span>
-                                        </Link>
-                                    </div>
                                 </div>
                             </div>
                         </div>
