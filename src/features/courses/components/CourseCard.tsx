@@ -147,7 +147,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ course }) => {
                         </span>
                     </h5>
                     <h4 className="text-force-20 text-force-bold" style={{ marginBottom: '-4px' }}>{course.price === 0 ? 'ฟรี' : `฿${course.price.toLocaleString()}`}</h4>
-                    <span className="text-force-16" style={{ display: 'block', marginBottom: '2px', lineHeight: '1.4' }}>{course.description}</span>
+                    <span className="text-force-16" style={{ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden', maxHeight: '96px', marginBottom: '12px', lineHeight: '1.6' }}>{course.description}</span>
                     <div className="client-items" style={{ marginTop: '0' }}>
                         <div
                             className="client-img bg-cover"
