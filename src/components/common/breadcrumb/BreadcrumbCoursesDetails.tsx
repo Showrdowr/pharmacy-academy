@@ -29,8 +29,8 @@ const BreadcrumbCoursesDetails: React.FC<BreadcrumbCoursesDetailsProps> = ({ cou
                             <li><Link href="/courses-grid">Courses</Link></li>
                             <li className="style-2"> Course Details</li>
                         </ul>
-                        <div className="breadcrumb-content">
-                            <h1>{courseTitle}</h1>
+                        <div className="breadcrumb-content" style={{ textAlign: 'center' }}>
+                            <h1 style={{ fontSize: '480px' }}>{courseTitle}</h1>
                         </div>
                     </div>
                 </div>
