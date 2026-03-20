@@ -46,7 +46,7 @@ export const PriceCard: React.FC<{
             <h3 className="text-force-bold mb-3" style={{ color: '#014d40', fontSize: '54px', fontWeight: '700' }}>
                 {isFree ? 'ฟรี' : `฿${price.toLocaleString()}`}
             </h3>
-            <p style={{ fontSize: '20px', color: '#666', marginBottom: '20px', lineHeight: '1.5', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }}>
+            <p style={{ fontSize: '20px', color: '#666', marginBottom: '20px', lineHeight: '1.6', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', maxHeight: '96px' }}>
                 {shortDescription || 'ไม่มีรายละเอียด'}
             </p>
             <div className="courses-btn d-flex gap-2 flex-column">
