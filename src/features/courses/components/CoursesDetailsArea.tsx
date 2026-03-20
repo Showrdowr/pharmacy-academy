@@ -9,6 +9,17 @@ import { useAddToCart } from '@/features/cart/hooks';
 import type { CartItem } from '@/features/cart/types';
 import { coursesService } from '@/features/courses/services/coursesApi';
 import { useAuth } from '@/features/auth';
+import {
+    PriceCard,
+    CPECard,
+    CategoryCard,
+    CourseInfoCard,
+    TimelineCard,
+} from './SidebarCards';
+import {
+    DescriptionSection,
+    LessonsSection,
+} from './CourseContentSections';
 
 interface CoursesDetailsAreaProps {
     initialData?: any; // To allow flexibility for Zero UI Breakage Pattern
@@ -53,73 +64,44 @@ const CoursesDetailsArea: React.FC<CoursesDetailsAreaProps> = ({ initialData }) 
     const parsedPrice = Number(initialData?.price);
     const price = Number.isFinite(parsedPrice) ? parsedPrice : 0;
     const isFree = price === 0;
-    const instructorName = initialData?.instructor || "Mario S. Davis";
+    const instructorName = initialData?.instructor || initialData?.authorName || "Mario S. Davis";
     const coverImage = initialData?.image || "/assets/img/courses/details-1.jpg";
-    const sidebarImage = initialData?.image || "/assets/img/courses/22.jpg";
     const [coverImageSrc, setCoverImageSrc] = useState(() => normalizeImageSrc(coverImage));
-    const [sidebarImageSrc, setSidebarImageSrc] = useState(() => normalizeImageSrc(sidebarImage));
-    const shortDescription = initialData?.description || "UX/UI design focuses on creating user-friendly and visually appealing digital experiences...";
+    const shortDescription = initialData?.description || "คอร์สเรียนคุณภาพ";
     const fullDescription = initialData?.details || shortDescription;
-    const sidebarDescription =
-        shortDescription.length > 100
-            ? `${shortDescription.substring(0, 100)}...`
-            : shortDescription;
     const category = getCategoryLabel(initialData?.category);
     const lessonsCount = Number.isFinite(Number(initialData?.lessonsCount))
         ? Number(initialData.lessonsCount)
-        : 0;
-    const durationText =
-        typeof initialData?.duration === 'string' && initialData.duration.trim()
-            ? initialData.duration
-            : '-';
-    const studentsText =
-        typeof initialData?.students === 'number'
-            ? initialData.students.toLocaleString()
-            : typeof initialData?.students === 'string' && initialData.students.trim()
-                ? initialData.students
-                : '-';
-    const languageText =
-        typeof initialData?.language === 'string' && initialData.language.trim()
-            ? initialData.language
-            : '-';
-    const deadlineText =
-        typeof initialData?.deadline === 'string' && initialData.deadline.trim()
-            ? initialData.deadline
-            : '-';
-    const skillLevelText =
-        typeof initialData?.level === 'string' && initialData.level.trim()
-            ? initialData.level
-            : '-';
-    const certificationsText =
-        typeof initialData?.certifications === 'string' && initialData.certifications.trim()
-            ? initialData.certifications
-            : '-';
+        : initialData?.lessons?.length || 0;
+    const cpeCredits = Number(initialData?.cpeCredits) || 0;
+    const conferenceCode = initialData?.conferenceCode || '-';
+    const skillLevelText = typeof initialData?.level === 'string' ? initialData.level : 'All Level';
+    const languageText = typeof initialData?.language === 'string' ? initialData.language : '-';
+    const status = initialData?.status || 'DRAFT';
+    const publishedAt = initialData?.publishedAt || null;
+    const createdAt = initialData?.createdAt || new Date().toISOString();
+    const updatedAt = initialData?.updatedAt || new Date().toISOString();
 
     useEffect(() => {
         setCoverImageSrc(normalizeImageSrc(coverImage));
     }, [coverImage]);
 
-    useEffect(() => {
-        setSidebarImageSrc(normalizeImageSrc(sidebarImage));
-    }, [sidebarImage]);
-
     const courseData: CartItem = {
         id: initialData?.id || 999,
         title: title,
         price: price,
-        originalPrice: price + 500, // mock original price
-        image: sidebarImage,
+        originalPrice: price + 500,
+        image: coverImage,
         instructor: instructorName,
         rating: initialData?.rating || 4.8,
         category: category,
-        credits: initialData?.cpe || 2.5,
-        cpe: initialData?.cpe || 2.0
+        credits: cpeCredits,
+        cpe: cpeCredits
     };
 
     const handleAddToCart = (e: React.MouseEvent) => {
         e.preventDefault();
         addToCart(courseData);
-        // Optional: Show success toast or feedback
     };
 
     const handleBuyCourse = (e: React.MouseEvent) => {
@@ -143,7 +125,6 @@ const CoursesDetailsArea: React.FC<CoursesDetailsAreaProps> = ({ initialData }) 
             router.push(`/course-learning?id=${initialData?.id}`);
         } catch (err) {
             console.error('Enroll failed:', err);
-            // Fallback: navigate anyway so user doesn't get stuck
             router.push(`/course-learning?id=${initialData?.id}`);
         } finally {
             setEnrolling(false);
@@ -152,21 +133,29 @@ const CoursesDetailsArea: React.FC<CoursesDetailsAreaProps> = ({ initialData }) 
 
     return (
         <>
-
-            {/* video modal start */}
+            {/* Video Modal */}
             <VideoPopup
                 isVideoOpen={isVideoOpen}
                 setIsVideoOpen={setIsVideoOpen}
                 videoId={"Ml4XCF-JS0k"}
             />
-            {/* video modal end */}
+
             <section className="courses-details-section section-padding pt-0">
                 <div className="container">
                     <div className="courses-details-wrapper">
                         <div className="row g-4">
+                            {/* Main Content Area (8 columns) */}
                             <div className="col-lg-8">
                                 <div className="courses-details-items">
-                                    <div className="courses-image" style={{ position: 'relative', height: '500px', overflow: 'hidden', width: '100%' }}>
+                                    {/* Video Player Section */}
+                                    <div className="courses-image" style={{
+                                        position: 'relative',
+                                        height: '500px',
+                                        overflow: 'hidden',
+                                        width: '100%',
+                                        marginBottom: '40px',
+                                        borderRadius: '12px'
+                                    }}>
                                         {coverImageSrc.startsWith('data:') ? (
                                             <img
                                                 src={coverImageSrc}
@@ -192,547 +181,83 @@ const CoursesDetailsArea: React.FC<CoursesDetailsAreaProps> = ({ initialData }) 
                                             <i className="fas fa-play"></i>
                                         </a>
                                     </div>
+
+                                    {/* New Sections: Description & Lessons */}
                                     <div className="courses-details-content">
-                                        <ul className="nav" role="tablist">
-                                            <li className="nav-item wow fadeInUp" data-wow-delay=".3s" role="presentation">
-                                                <a href="#Course" data-bs-toggle="tab" className="nav-link active" style={{ fontSize: '30px', fontWeight: 'bold' }} role="tab" aria-selected="true" tabIndex={0}>
-                                                    รายละเอียดคอร์ส
-                                                </a>
-                                            </li>
-                                            <li className="nav-item wow fadeInUp" data-wow-delay=".5s" role="presentation">
-                                                <a href="#Curriculum" data-bs-toggle="tab" className="nav-link" style={{ fontSize: '30px', fontWeight: 'bold' }} role="tab" aria-selected="false" tabIndex={-1}>
-                                                    Curriculum
-                                                </a>
-                                            </li>
-                                            <li className="nav-item wow fadeInUp" data-wow-delay=".5s" role="presentation">
-                                                <a href="#Instructors" data-bs-toggle="tab" className="nav-link" style={{ fontSize: '30px', fontWeight: 'bold' }} role="tab" aria-selected="false" tabIndex={-1}>
-                                                    Instructors
-                                                </a>
-                                            </li>
-                                            <li className="nav-item wow fadeInUp" data-wow-delay=".5s" role="presentation">
-                                                <a href="#Reviews" data-bs-toggle="tab" className="nav-link bb-none" style={{ fontSize: '30px', fontWeight: 'bold' }} role="tab" aria-selected="false" tabIndex={-1}>
-                                                    Reviews
-                                                </a>
-                                            </li>
-                                        </ul>
-                                        <div className="tab-content">
-                                            <div id="Course" className="tab-pane fade show active" role="tabpanel">
-                                                <div className="description-content">
-                                                    <h3 className="font-bold" style={{ fontSize: '30px' }}>รายละเอียดคอร์ส</h3>
-                                                    <p className="mb-3" style={{ fontSize: '20px', lineHeight: '1.6' }} dangerouslySetInnerHTML={{ __html: fullDescription }}>
-                                                    </p>
-                                                    <h3 className="mt-5 font-bold" style={{ fontSize: '30px' }}>What you'll learn in this course?</h3>
-                                                    <p className="mb-4" style={{ fontSize: '20px', lineHeight: '1.6' }}>
-                                                        Together, UX and UI design ensure that digital products are not only functional and accessible but also engaging and visually coherent, enhancing both usability and overall user satisfaction.
-                                                    </p>
-                                                    <div className="row g-4 mb-5">
-                                                        <div className="col-lg-6">
-                                                            <ul className="list-item">
-                                                                <li>
-                                                                    <i className="fas fa-check-circle"></i>
-                                                                    <span className="text-force-18">Introduction to UX/UI Design</span>
-                                                                </li>
-                                                                <li>
-                                                                    <i className="fas fa-check-circle"></i>
-                                                                    <span className="text-force-18">Design Thinking & User Research</span>
-                                                                </li>
-                                                                <li>
-                                                                    <i className="fas fa-check-circle"></i>
-                                                                    Wireframing & Prototyping
-                                                                </li>
-                                                                <li>
-                                                                    <i className="fas fa-check-circle"></i>
-                                                                    Visual Design Principles
-                                                                </li>
-                                                                <li>
-                                                                    <i className="fas fa-check-circle"></i>
-                                                                    Interaction Design & Usability
-                                                                </li>
-                                                            </ul>
-                                                        </div>
-                                                        <div className="col-lg-6">
-                                                            <ul className="list-item">
-                                                                <li>
-                                                                    <i className="fas fa-check-circle"></i>
-                                                                    UX Writing & Content Strategy
-                                                                </li>
-                                                                <li>
-                                                                    <i className="fas fa-check-circle"></i>
-                                                                    Usability Testing & Iteration
-                                                                </li>
-                                                                <li>
-                                                                    <i className="fas fa-check-circle"></i>
-                                                                    UI Design Tools
-                                                                </li>
-                                                                <li>
-                                                                    <i className="fas fa-check-circle"></i>
-                                                                    Mobile & Responsive Design
-                                                                </li>
-                                                                <li>
-                                                                    <i className="fas fa-check-circle"></i>
-                                                                    Capstone Project
-                                                                </li>
-                                                            </ul>
-                                                        </div>
-                                                    </div>
-                                                    <h3>How to Benefits in this Courses</h3>
-                                                    <p>
-                                                        UI (User Interface) Design is the process of creating the visual elements of product, including layout
-                                                        olor schemes, typography, and interactive features like buttons and icons design focuses aesthetics, consistency, and ensuring that the user can easily navigate and interact with the product.
-                                                    </p>
-                                                </div>
-                                            </div>
-                                            <div id="Curriculum" className="tab-pane fade" role="tabpanel">
-                                                <div className="course-curriculum-items">
-                                                    <h3 className="font-bold mb-4" style={{ fontSize: '30px' }}>Course Curriculum</h3>
-                                                    <div className="courses-faq-items">
-                                                        <div className="accordion" id="accordionExample">
-                                                            <div className="accordion-item">
-                                                                <h2 className="accordion-header" id="headingOne">
-                                                                    <button className="accordion-button" type="button" data-bs-toggle="collapse"
-                                                                        data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-                                                                        Intro to UX/UI Design
-                                                                    </button>
-                                                                </h2>
-                                                                <div id="collapseOne" className="accordion-collapse collapse show"
-                                                                    aria-labelledby="headingOne" data-bs-parent="#accordionExample">
-                                                                    <div className="accordion-body">
-                                                                        <ul>
-                                                                            <li>
-                                                                                <span>
-                                                                                    <i className="fas fa-file-alt"></i>
-                                                                                    Lesson 1 : Introduction to UX/UI Design
-                                                                                </span>
-                                                                                <span>
-                                                                                    <i className="far fa-lock"></i>  (45:00 m)
-                                                                                </span>
-                                                                            </li>
-                                                                            <li>
-                                                                                <span>
-                                                                                    <i className="fas fa-file-alt"></i>
-                                                                                    Lesson 2 : Design Thinking & User Research
-                                                                                </span>
-                                                                                <span>
-                                                                                    <i className="far fa-lock"></i>  (45:00 m)
-                                                                                </span>
-                                                                            </li>
-                                                                            <li>
-                                                                                <span>
-                                                                                    <i className="fas fa-file-alt"></i>
-                                                                                    Lesson 3 : Wireframing & Prototyping
-                                                                                </span>
-                                                                                <span>
-                                                                                    <i className="far fa-lock"></i>  (45:00 m)
-                                                                                </span>
-                                                                            </li>
-                                                                            <li>
-                                                                                <span>
-                                                                                    <i className="fas fa-file-alt"></i>
-                                                                                    Lesson 4 : Visual Design Principles
-                                                                                </span>
-                                                                                <span>
-                                                                                    <i className="far fa-lock"></i>  (45:00 m)
-                                                                                </span>
-                                                                            </li>
-                                                                        </ul>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                            <div className="accordion-item">
-                                                                <h2 className="accordion-header" id="headingTwo">
-                                                                    <button className="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                                                                        data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-                                                                        Q.  How do I get started with CRM software?
-                                                                    </button>
-                                                                </h2>
-                                                                <div id="collapseTwo" className="accordion-collapse collapse" aria-labelledby="headingTwo"
-                                                                    data-bs-parent="#accordionExample">
-                                                                    <div className="accordion-body">
-                                                                        <ul>
-                                                                            <li>
-                                                                                <span>
-                                                                                    <i className="fas fa-file-alt"></i>
-                                                                                    Lesson 1 : Introduction to UX/UI Design
-                                                                                </span>
-                                                                                <span>
-                                                                                    <i className="far fa-lock"></i>  (45:00 m)
-                                                                                </span>
-                                                                            </li>
-                                                                            <li>
-                                                                                <span>
-                                                                                    <i className="fas fa-file-alt"></i>
-                                                                                    Lesson 2 : Design Thinking & User Research
-                                                                                </span>
-                                                                                <span>
-                                                                                    <i className="far fa-lock"></i>  (45:00 m)
-                                                                                </span>
-                                                                            </li>
-                                                                            <li>
-                                                                                <span>
-                                                                                    <i className="fas fa-file-alt"></i>
-                                                                                    Lesson 3 : Wireframing & Prototyping
-                                                                                </span>
-                                                                                <span>
-                                                                                    <i className="far fa-lock"></i>  (45:00 m)
-                                                                                </span>
-                                                                            </li>
-                                                                            <li>
-                                                                                <span>
-                                                                                    <i className="fas fa-file-alt"></i>
-                                                                                    Lesson 4 : Visual Design Principles
-                                                                                </span>
-                                                                                <span>
-                                                                                    <i className="far fa-lock"></i>  (45:00 m)
-                                                                                </span>
-                                                                            </li>
-                                                                        </ul>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                            <div className="accordion-item mb-0">
-                                                                <h2 className="accordion-header" id="headingthree">
-                                                                    <button className="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                                                                        data-bs-target="#collapsethree" aria-expanded="false"
-                                                                        aria-controls="collapsethree">
-                                                                        Q. Can I customize CRM software my business needs?
-                                                                    </button>
-                                                                </h2>
-                                                                <div id="collapsethree" className="accordion-collapse collapse"
-                                                                    aria-labelledby="headingthree" data-bs-parent="#accordionExample">
-                                                                    <div className="accordion-body">
-                                                                        <ul>
-                                                                            <li>
-                                                                                <span>
-                                                                                    <i className="fas fa-file-alt"></i>
-                                                                                    Lesson 1 : Introduction to UX/UI Design
-                                                                                </span>
-                                                                                <span>
-                                                                                    <i className="far fa-lock"></i>  (45:00 m)
-                                                                                </span>
-                                                                            </li>
-                                                                            <li>
-                                                                                <span>
-                                                                                    <i className="fas fa-file-alt"></i>
-                                                                                    Lesson 2 : Design Thinking & User Research
-                                                                                </span>
-                                                                                <span>
-                                                                                    <i className="far fa-lock"></i>  (45:00 m)
-                                                                                </span>
-                                                                            </li>
-                                                                            <li>
-                                                                                <span>
-                                                                                    <i className="fas fa-file-alt"></i>
-                                                                                    Lesson 3 : Wireframing & Prototyping
-                                                                                </span>
-                                                                                <span>
-                                                                                    <i className="far fa-lock"></i>  (45:00 m)
-                                                                                </span>
-                                                                            </li>
-                                                                            <li>
-                                                                                <span>
-                                                                                    <i className="fas fa-file-alt"></i>
-                                                                                    Lesson 4 : Visual Design Principles
-                                                                                </span>
-                                                                                <span>
-                                                                                    <i className="far fa-lock"></i>  (45:00 m)
-                                                                                </span>
-                                                                            </li>
-                                                                        </ul>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div id="Instructors" className="tab-pane fade" role="tabpanel">
-                                                <div className="instructors-items">
-                                                    <h3>Instructors</h3>
-                                                    <div className="instructors-box-items">
-                                                        <div className="thumb">
-                                                            <img src="/assets/img/courses/instructors-1.png" alt="img" />
-                                                        </div>
-                                                        <div className="content">
-                                                            <h4>Norman K. Zapata</h4>
-                                                            <span>Lead UX/UI Designer</span>
-                                                            <p>
-                                                                UX/UI design courses offer a comprehensive introduction to the world of user experience and user interface design
-                                                            </p>
-                                                            <div className="social-icon">
-                                                                <a href="#"><i className="fab fa-facebook-f"></i></a>
-                                                                <a href="#"><i className="fab fa-instagram"></i></a>
-                                                                <a href="#"><i className="fab fa-dribbble"></i></a>
-                                                                <a href="#"><i className="fab fa-behance"></i></a>
-                                                                <a href="#"><i className="fab fa-linkedin-in"></i></a>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div className="instructors-box-items style-2">
-                                                        <div className="thumb">
-                                                            <img src="/assets/img/courses/instructors-2.png" alt="img" />
-                                                        </div>
-                                                        <div className="content">
-                                                            <h4>Ryan M. Carmichael</h4>
-                                                            <span>Product Designer</span>
-                                                            <p>
-                                                                UX/UI design courses offer a comprehensive introduction to the world of user experience and user interface design
-                                                            </p>
-                                                            <div className="social-icon">
-                                                                <a href="#"><i className="fab fa-facebook-f"></i></a>
-                                                                <a href="#"><i className="fab fa-instagram"></i></a>
-                                                                <a href="#"><i className="fab fa-dribbble"></i></a>
-                                                                <a href="#"><i className="fab fa-behance"></i></a>
-                                                                <a href="#"><i className="fab fa-linkedin-in"></i></a>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div id="Reviews" className="tab-pane fade" role="tabpanel">
-                                                <div className="courses-reviews-items">
-                                                    <h3>Course Reviews</h3>
-                                                    <div className="courses-reviews-box-items">
-                                                        <div className="courses-reviews-box">
-                                                            <div className="reviews-box">
-                                                                <h2 className="text-5xl font-bold text-primary mb-2"><span className="count">4.8</span></h2>
-                                                                <div className="star">
-                                                                    <i className="fas fa-star"></i>
-                                                                    <i className="fas fa-star"></i>
-                                                                    <i className="fas fa-star"></i>
-                                                                    <i className="fas fa-star"></i>
-                                                                    <i className="fas fa-star"></i>
-                                                                </div>
-                                                                <p>856+ Reviews</p>
-                                                            </div>
-                                                            <div className="reviews-ratting-right">
-                                                                <div className="reviews-ratting-item">
-                                                                    <div className="star">
-                                                                        <i className="fas fa-star"></i>
-                                                                        <i className="fas fa-star"></i>
-                                                                        <i className="fas fa-star"></i>
-                                                                        <i className="fas fa-star"></i>
-                                                                        <i className="fas fa-star"></i>
-                                                                    </div>
-                                                                    <div className="progress">
-                                                                        <div className="progress-value style-two"></div>
-                                                                    </div>
-                                                                    <span>(10)</span>
-                                                                </div>
-                                                                <div className="reviews-ratting-item">
-                                                                    <div className="star">
-                                                                        <i className="fas fa-star"></i>
-                                                                        <i className="fas fa-star"></i>
-                                                                        <i className="fas fa-star"></i>
-                                                                        <i className="fas fa-star"></i>
-                                                                        <i className="fas fa-star color-2"></i>
-                                                                    </div>
-                                                                    <div className="progress">
-                                                                        <div className="progress-value style-three"></div>
-                                                                    </div>
-                                                                    <span>(08)</span>
-                                                                </div>
-                                                                <div className="reviews-ratting-item">
-                                                                    <div className="star">
-                                                                        <i className="fas fa-star"></i>
-                                                                        <i className="fas fa-star"></i>
-                                                                        <i className="fas fa-star"></i>
-                                                                        <i className="fas fa-star color-2"></i>
-                                                                        <i className="fas fa-star color-2"></i>
-                                                                    </div>
-                                                                    <div className="progress">
-                                                                        <div className="progress-value style-three"></div>
-                                                                    </div>
-                                                                    <span>(08)</span>
-                                                                </div>
-                                                                <div className="reviews-ratting-item">
-                                                                    <div className="star">
-                                                                        <i className="fas fa-star"></i>
-                                                                        <i className="fas fa-star"></i>
-                                                                        <i className="fas fa-star color-2"></i>
-                                                                        <i className="fas fa-star color-2"></i>
-                                                                        <i className="fas fa-star color-2"></i>
-                                                                    </div>
-                                                                    <div className="progress">
-                                                                        <div className="progress-value style-four"></div>
-                                                                    </div>
-                                                                    <span>(01)</span>
-                                                                </div>
-                                                                <div className="reviews-ratting-item">
-                                                                    <div className="star">
-                                                                        <i className="fas fa-star"></i>
-                                                                        <i className="fas fa-star color-2"></i>
-                                                                        <i className="fas fa-star color-2"></i>
-                                                                        <i className="fas fa-star color-2"></i>
-                                                                        <i className="fas fa-star color-2"></i>
-                                                                    </div>
-                                                                    <div className="progress">
-                                                                        <div className="progress-value style-five"></div>
-                                                                    </div>
-                                                                    <span>(00)</span>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        <div className="instructors-box-items">
-                                                            <div className="thumb">
-                                                                <img src="/assets/img/courses/instructors-3.png" alt="img" />
-                                                            </div>
-                                                            <div className="content">
-                                                                <h4>Maria L</h4>
-                                                                <span>Junior UX Designer</span>
-                                                                <div className="star">
-                                                                    <i className="fas fa-star"></i>
-                                                                    <i className="fas fa-star"></i>
-                                                                    <i className="fas fa-star"></i>
-                                                                    <i className="fas fa-star"></i>
-                                                                    <i className="fas fa-star"></i>
-                                                                </div>
-                                                                <p>
-                                                                    "I enrolled in this UX/UI design course with minimal knowledge the field, and it completely transformed my understanding."
-                                                                </p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
+                                        <DescriptionSection
+                                            shortDescription={shortDescription}
+                                            fullDescription={fullDescription}
+                                        />
+
+                                        <LessonsSection
+                                            lessons={initialData?.lessons || []}
+                                            title="เนื้อหาในบทเรียน"
+                                        />
                                     </div>
                                 </div>
                             </div>
+
+                            {/* Sidebar Area (4 columns) - New Card-Based Layout */}
                             <div className="col-lg-4">
                                 <div className="courses-sidebar-area sticky-style">
-                                    <div className="courses-items">
-                                        <div className="courses-image" style={{ position: 'relative', paddingBottom: '60%', overflow: 'hidden' }}>
-                                            {sidebarImageSrc.startsWith('data:') ? (
-                                                <img
-                                                    src={sidebarImageSrc}
-                                                    alt="sidebar cover"
-                                                    style={{ objectFit: 'cover', width: '100%', height: '100%', position: 'absolute', inset: 0 }}
-                                                    onError={() => setSidebarImageSrc(FALLBACK_IMAGE)}
-                                                />
-                                            ) : (
-                                                <Image
-                                                    src={sidebarImageSrc}
-                                                    alt="sidebar cover"
-                                                    fill
-                                                    style={{ objectFit: 'cover' }}
-                                                    sizes="(max-width: 768px) 100vw, 400px"
-                                                    onError={() => setSidebarImageSrc(FALLBACK_IMAGE)}
-                                                />
-                                            )}
-                                            <h3 className="courses-title">{category}</h3>
-                                            <h4 className="topic-title">{title}</h4>
-                                            <div className="arrow-items">
-                                                <div className="GlidingArrow">
-                                                    <img src="/assets/img/courses/a1.png" alt="img" />
-                                                </div>
-                                                <div className="GlidingArrow delay1">
-                                                    <img src="/assets/img/courses/a2.png" alt="img" />
-                                                </div>
-                                                <div className="GlidingArrow delay2">
-                                                    <img src="/assets/img/courses/a3.png" alt="img" />
-                                                </div>
-                                                <div className="GlidingArrow delay3">
-                                                    <img src="/assets/img/courses/a4.png" alt="img" />
-                                                </div>
-                                                <div className="GlidingArrow delay4">
-                                                    <img src="/assets/img/courses/a5.png" alt="img" />
-                                                </div>
-                                                <div className="GlidingArrow delay5">
-                                                    <img src="/assets/img/courses/a6.png" alt="img" />
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className="courses-content">
-                                            <h3 className="text-force-bold mb-2" style={{ color: '#014d40', fontSize: '36px' }}>{isFree ? 'ฟรี' : `฿${price.toLocaleString()}`}</h3>
-                                            <p style={{ fontSize: '18px' }} dangerouslySetInnerHTML={{ __html: sidebarDescription }}>
-                                            </p>
-                                            <div className="courses-btn">
-                                                {isFree ? (
-                                                    <button
-                                                        onClick={handleStartFreeCourse}
-                                                        disabled={enrolling}
-                                                        className="theme-btn"
-                                                        style={{
-                                                            fontSize: '22px',
-                                                            width: '100%',
-                                                            padding: '14px',
-                                                            fontWeight: 'bold',
-                                                            background: '#22c55e',
-                                                            borderColor: '#22c55e',
-                                                        }}
-                                                    >
-                                                        {enrolling ? 'กำลังลงทะเบียน...' : 'เริ่มเรียนฟรี'}
-                                                    </button>
-                                                ) : (
-                                                    <>
-                                                        <button onClick={handleAddToCart} className="theme-btn" style={{ fontSize: '22px', width: '100%', padding: '14px', fontWeight: 'bold' }}>Add to Cart</button>
-                                                        <button onClick={handleBuyCourse} className="theme-btn style-2" style={{ fontSize: '22px', width: '100%', padding: '14px', fontWeight: 'bold' }}>Buy Course</button>
-                                                    </>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="courses-category-items">
-                                        <h5>Course Includes:</h5>
-                                        <ul style={{ fontSize: '18px' }}>
-                                            <li style={{ marginBottom: '12px' }}>
-                                                <span>
-                                                    <i className="far fa-chalkboard-teacher" style={{ fontSize: '20px' }}></i>
-                                                    Instructor
-                                                </span>
-                                                <span className="text" style={{ fontSize: '18px', fontWeight: '500' }}>{instructorName}</span>
-                                            </li>
-                                            <li style={{ marginBottom: '12px' }}>
-                                                <span>
-                                                    <i className="far fa-user" style={{ fontSize: '20px' }}></i>
-                                                    Lesson
-                                                </span>
-                                                <span className="text" style={{ fontSize: '18px', fontWeight: '500' }}>{lessonsCount}</span>
-                                            </li>
-                                            <li style={{ marginBottom: '12px' }}>
-                                                <span>
-                                                    <i className="far fa-clock" style={{ fontSize: '20px' }}></i>
-                                                    Duration
-                                                </span>
-                                                <span className="text" style={{ fontSize: '18px', fontWeight: '500' }}>{durationText}</span>
-                                            </li>
-                                            <li style={{ marginBottom: '12px' }}>
-                                                <span>
-                                                    <i className="far fa-user" style={{ fontSize: '20px' }}></i>
-                                                    Students
-                                                </span>
-                                                <span className="text" style={{ fontSize: '18px', fontWeight: '500' }}>{studentsText}</span>
-                                            </li>
-                                            <li style={{ marginBottom: '12px' }}>
-                                                <span>
-                                                    <i className="far fa-globe" style={{ fontSize: '20px' }}></i>
-                                                    Language
-                                                </span>
-                                                <span className="text" style={{ fontSize: '18px', fontWeight: '500' }}>{languageText}</span>
-                                            </li>
-                                            <li style={{ marginBottom: '12px' }}>
-                                                <span>
-                                                    <i className="far fa-calendar-alt" style={{ fontSize: '20px' }}></i>
-                                                    Deadline
-                                                </span>
-                                                <span className="text" style={{ fontSize: '18px', fontWeight: '500' }}>{deadlineText}</span>
-                                            </li>
-                                            <li style={{ marginBottom: '12px' }}>
-                                                <span>
-                                                    <i className="far fa-signal-alt" style={{ fontSize: '20px' }}></i>
-                                                    Skill Level
-                                                </span>
-                                                <span className="text" style={{ fontSize: '18px', fontWeight: '500' }}>{skillLevelText}</span>
-                                            </li>
-                                            <li>
-                                                <span>
-                                                    <i className="fal fa-medal" style={{ fontSize: '20px' }}></i>
-                                                    Certifications
-                                                </span>
-                                                <span className="text" style={{ fontSize: '18px', fontWeight: '500' }}>{certificationsText}</span>
-                                            </li>
-                                        </ul>
-                                        <Link href={`/courses/${initialData?.id || ''}`} className="share-btn"><i className="fas fa-share"></i> Share this courses</Link>
+                                    {/* Price Card */}
+                                    <PriceCard
+                                        isFree={isFree}
+                                        price={price}
+                                        onAddToCart={handleAddToCart}
+                                        onBuyCourse={handleBuyCourse}
+                                        onStartFreeCourse={handleStartFreeCourse}
+                                        enrolling={enrolling}
+                                    />
+
+                                    {/* CPE Credits Card (Conditional) */}
+                                    <CPECard cpe={cpeCredits} />
+
+                                    {/* Category Card */}
+                                    <CategoryCard
+                                        category={category}
+                                        status={status}
+                                    />
+
+                                    {/* Course Info Card */}
+                                    <CourseInfoCard
+                                        instructor={instructorName}
+                                        lessonsCount={lessonsCount}
+                                        status={status}
+                                        conferenceCode={conferenceCode}
+                                        skillLevel={skillLevelText}
+                                        language={languageText}
+                                    />
+
+                                    {/* Timeline Card */}
+                                    <TimelineCard
+                                        publishedAt={publishedAt}
+                                        createdAt={createdAt}
+                                        updatedAt={updatedAt}
+                                    />
+
+                                    {/* Share Button */}
+                                    <div className="courses-items mt-4">
+                                        <Link 
+                                            href={`/courses/${initialData?.id || ''}`} 
+                                            className="share-btn"
+                                            style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                gap: '8px',
+                                                padding: '12px 16px',
+                                                backgroundColor: '#e8f5e9',
+                                                borderRadius: '8px',
+                                                textDecoration: 'none',
+                                                color: '#14b8a6',
+                                                fontWeight: '600',
+                                                transition: 'all 0.3s ease'
+                                            }}
+                                        >
+                                            <i className="fas fa-share"></i>
+                                            <span>แชร์คอร์สนี้</span>
+                                        </Link>
                                     </div>
                                 </div>
                             </div>
