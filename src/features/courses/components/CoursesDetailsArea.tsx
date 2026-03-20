@@ -205,6 +205,7 @@ const CoursesDetailsArea: React.FC<CoursesDetailsAreaProps> = ({ initialData }) 
                                     <PriceCard
                                         isFree={isFree}
                                         price={price}
+                                        shortDescription={shortDescription}
                                         onAddToCart={handleAddToCart}
                                         onBuyCourse={handleBuyCourse}
                                         onStartFreeCourse={handleStartFreeCourse}
