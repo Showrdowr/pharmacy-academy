@@ -130,6 +130,19 @@ export default async function CourseDetailsPage({
                     : typeof course.certifications === 'string'
                         ? course.certifications
                         : '-';
+            const previewVideo = course.previewVideo
+                ? {
+                    id: Number(course.previewVideo.id),
+                    provider: String(course.previewVideo.provider || 'VIMEO'),
+                    resourceId: String(course.previewVideo.resourceId || ''),
+                    duration: toNumber(course.previewVideo.duration),
+                    name: typeof course.previewVideo.name === 'string' ? course.previewVideo.name : null,
+                    status: course.previewVideo.status === 'READY' || course.previewVideo.status === 'FAILED'
+                        ? course.previewVideo.status
+                        : 'PROCESSING',
+                    playbackUrl: typeof course.previewVideo.playbackUrl === 'string' ? course.previewVideo.playbackUrl : null,
+                }
+                : null;
             const fullDetails =
                 (typeof course.details === 'string' && course.details.trim()) ||
                 (typeof apiCourse.details === 'string' && apiCourse.details.trim()) ||
@@ -162,6 +175,12 @@ export default async function CourseDetailsPage({
                 image: apiCourse.thumbnail || '/assets/img/courses/01.jpg',
                 description: apiCourse.description || 'คอร์สเรียนคุณภาพ',
                 details: fullDetails,
+                isFree: toNumber(apiCourse.price) <= 0,
+                enrolledCount: studentsCount,
+                hasCertificate: Boolean(course.hasCertificate),
+                previewVideo,
+                lessons,
+                rawCourse: apiCourse,
             };
         }
     } catch (e) {

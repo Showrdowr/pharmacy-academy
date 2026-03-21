@@ -57,6 +57,10 @@ export function useAddToCart() {
 
     const handleAddToCart = useCallback(
         (item: CartItem) => {
+            if (!Number.isFinite(Number(item.price)) || Number(item.price) <= 0) {
+                return false;
+            }
+
             if (!isInCart(item.id)) {
                 addToCart(item);
                 return true;

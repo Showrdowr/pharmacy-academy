@@ -7,10 +7,59 @@ interface RequestOptions extends RequestInit {
     params?: Record<string, string>;
 }
 
-interface ApiResponse<T> {
+export interface ApiResponse<T> {
     data: T;
     success: boolean;
     message?: string;
+    statusCode?: number;
+    code?: string;
+    details?: unknown;
+}
+
+export class ApiError extends Error {
+    statusCode: number;
+    code?: string;
+    details?: unknown;
+
+    constructor(message: string, options?: { statusCode?: number; code?: string; details?: unknown }) {
+        super(message);
+        this.name = 'ApiError';
+        this.statusCode = options?.statusCode || 500;
+        this.code = options?.code;
+        this.details = options?.details;
+    }
+}
+
+export function toApiError<T>(response: ApiResponse<T>, fallbackMessage: string) {
+    return new ApiError(response.message || fallbackMessage, {
+        statusCode: response.statusCode,
+        code: response.code,
+        details: response.details,
+    });
+}
+
+function parseResponseBody(rawBody: string) {
+    if (!rawBody) {
+        return null;
+    }
+
+    try {
+        return JSON.parse(rawBody);
+    } catch {
+        return rawBody;
+    }
+}
+
+function buildRequestBody(body: unknown): BodyInit | undefined {
+    if (body === undefined) {
+        return undefined;
+    }
+
+    if (body instanceof FormData || typeof body === 'string' || body instanceof Blob) {
+        return body;
+    }
+
+    return JSON.stringify(body);
 }
 
 class ApiClient {
@@ -33,17 +82,22 @@ class ApiClient {
             url += `?${searchParams.toString()}`;
         }
 
-        // Default headers
-        const headers: HeadersInit = {
-            'Content-Type': 'application/json',
-            ...fetchOptions.headers,
-        };
+        const headers = new Headers(fetchOptions.headers);
+        const hasBody = fetchOptions.body !== undefined;
+
+        if (hasBody && !(fetchOptions.body instanceof FormData) && !headers.has('Content-Type')) {
+            headers.set('Content-Type', 'application/json');
+        }
+
+        if (!hasBody && headers.has('Content-Type')) {
+            headers.delete('Content-Type');
+        }
 
         // Add auth token if available
         if (typeof window !== 'undefined') {
             const token = localStorage.getItem('token') || sessionStorage.getItem('token');
             if (token) {
-                (headers as Record<string, string>)['Authorization'] = `Bearer ${token}`;
+                headers.set('Authorization', `Bearer ${token}`);
             }
         }
 
@@ -54,21 +108,44 @@ class ApiClient {
                 credentials: 'include', // Ensure cookies are sent
             });
 
-            const data = await response.json();
+            const rawBody = await response.text();
+            const data = parseResponseBody(rawBody);
 
             if (!response.ok) {
-                throw new Error(data.message || 'API request failed');
+                const message = typeof data === 'object' && data !== null
+                    ? (data as { message?: string; error?: string }).message
+                        || (data as { message?: string; error?: string }).error
+                        || 'API request failed'
+                    : rawBody || 'API request failed';
+
+                return {
+                    data: null as T,
+                    success: false,
+                    message,
+                    statusCode: response.status,
+                    code: typeof data === 'object' && data !== null ? (data as { code?: string }).code : undefined,
+                    details: typeof data === 'object' && data !== null ? (data as { details?: unknown }).details : undefined,
+                };
             }
 
             return {
-                data: data.data !== undefined ? data.data : data,
+                data: typeof data === 'object' && data !== null && 'data' in data
+                    ? (data as { data: T }).data
+                    : data as T,
                 success: true,
             };
         } catch (error) {
+            const apiError = error instanceof ApiError
+                ? error
+                : new ApiError(error instanceof Error ? error.message : 'Unknown error');
+
             return {
                 data: null as T,
                 success: false,
-                message: error instanceof Error ? error.message : 'Unknown error',
+                message: apiError.message,
+                statusCode: apiError.statusCode,
+                code: apiError.code,
+                details: apiError.details,
             };
         }
     }
@@ -80,14 +157,21 @@ class ApiClient {
     async post<T>(endpoint: string, body?: unknown) {
         return this.request<T>(endpoint, {
             method: 'POST',
-            body: JSON.stringify(body),
+            body: buildRequestBody(body),
         });
     }
 
     async put<T>(endpoint: string, body?: unknown) {
         return this.request<T>(endpoint, {
             method: 'PUT',
-            body: JSON.stringify(body),
+            body: buildRequestBody(body),
+        });
+    }
+
+    async patch<T>(endpoint: string, body?: unknown) {
+        return this.request<T>(endpoint, {
+            method: 'PATCH',
+            body: buildRequestBody(body),
         });
     }
 
