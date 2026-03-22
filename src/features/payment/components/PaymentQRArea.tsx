@@ -3,13 +3,21 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '@/features/i18n';
+import { useOrderStore } from '@/stores/useOrderStore';
 
 const PaymentQRArea = () => {
     const { t } = useLanguage();
     const router = useRouter();
-    const [timeLeft, setTimeLeft] = useState(1 * 60); // 5 minutes
-    const orderTotal = 364.35;
-    const orderId = 'REF212560350598';
+    const { orderId: storeOrderId, orderTotal: storeTotal, reference } = useOrderStore();
+    const [timeLeft, setTimeLeft] = useState(1 * 60); // 1 minute
+    const orderTotal = storeTotal || 0;
+    const orderId = reference || storeOrderId || '';
+
+    useEffect(() => {
+        if (!storeOrderId) {
+            router.replace('/checkout');
+        }
+    }, [storeOrderId, router]);
 
     const handleCancel = () => {
         if (confirm(t('คุณต้องการยกเลิกคำสั่งซื้อหรือไม่?', 'Are you sure you want to cancel this order?'))) {

@@ -8,7 +8,7 @@ import type {
     EnrolledCourse
 } from '../types';
 
-import { api } from '@/lib/api';
+import { api, toApiError } from '@/lib/api';
 
 /**
  * Courses API Service
@@ -34,7 +34,7 @@ export const coursesService = {
         }
 
         const response = await api.get<CoursesListResponse>(`/public/courses?${queryParams}`);
-        if (!response.success) throw new Error(response.message || 'Failed to fetch courses');
+        if (!response.success) throw toApiError(response, 'Failed to fetch courses');
         return response.data;
     },
 
@@ -43,7 +43,7 @@ export const coursesService = {
      */
     async getCourseDetail(id: number): Promise<Course> {
         const response = await api.get<Course>(`/public/courses/${id}`);
-        if (!response.success) throw new Error(response.message || 'ไม่พบคอร์สที่ต้องการ');
+        if (!response.success) throw toApiError(response, 'ไม่พบคอร์สที่ต้องการ');
         return response.data;
     },
 
@@ -52,7 +52,7 @@ export const coursesService = {
      */
     async getCourseBySlug(slug: string): Promise<Course> {
         const response = await api.get<Course>(`/courses/slug/${slug}`);
-        if (!response.success) throw new Error(response.message || 'ไม่พบคอร์สที่ต้องการ');
+        if (!response.success) throw toApiError(response, 'ไม่พบคอร์สที่ต้องการ');
         return response.data;
     },
 
@@ -61,7 +61,7 @@ export const coursesService = {
      */
     async getEnrolledCourses(): Promise<EnrolledCourse[]> {
         const response = await api.get<EnrolledCourse[]>('/courses/enrolled');
-        if (!response.success) throw new Error(response.message || 'Failed to fetch enrolled courses');
+        if (!response.success) throw toApiError(response, 'Failed to fetch enrolled courses');
         return response.data;
     },
 
@@ -70,7 +70,7 @@ export const coursesService = {
      */
     async enrollCourse(courseId: number): Promise<void> {
         const response = await api.post<void>(`/courses/${courseId}/enroll`);
-        if (!response.success) throw new Error(response.message || 'Failed to enroll course');
+        if (!response.success) throw toApiError(response, 'Failed to enroll course');
     },
 
     /**
@@ -78,7 +78,7 @@ export const coursesService = {
      */
     async getCourseProgress(courseId: number): Promise<CourseProgress> {
         const response = await api.get<CourseProgress>(`/courses/${courseId}/progress`);
-        if (!response.success) throw new Error(response.message || 'Failed to fetch progress');
+        if (!response.success) throw toApiError(response, 'Failed to fetch progress');
         return response.data;
     },
 
@@ -87,7 +87,7 @@ export const coursesService = {
      */
     async markLessonComplete(courseId: number, lessonId: number): Promise<void> {
         const response = await api.post<void>(`/courses/${courseId}/lessons/${lessonId}/complete`);
-        if (!response.success) throw new Error(response.message || 'Failed to mark lesson as complete');
+        if (!response.success) throw toApiError(response, 'Failed to mark lesson as complete');
     },
 
     /**
@@ -95,7 +95,7 @@ export const coursesService = {
      */
     async getRelatedCourses(courseId: number, limit = 4): Promise<CourseCard[]> {
         const response = await api.get<CourseCard[]>(`/courses/${courseId}/related?limit=${limit}`);
-        if (!response.success) throw new Error(response.message || 'Failed to fetch related courses');
+        if (!response.success) throw toApiError(response, 'Failed to fetch related courses');
         return response.data;
     },
 
@@ -104,7 +104,7 @@ export const coursesService = {
      */
     async getFeaturedCourses(limit = 6): Promise<CourseCard[]> {
         const response = await api.get<CourseCard[]>(`/courses/featured?limit=${limit}`);
-        if (!response.success) throw new Error(response.message || 'Failed to fetch featured courses');
+        if (!response.success) throw toApiError(response, 'Failed to fetch featured courses');
         return response.data;
     },
 
@@ -113,7 +113,7 @@ export const coursesService = {
      */
     async getPopularCourses(limit = 8): Promise<CourseCard[]> {
         const response = await api.get<CourseCard[]>(`/courses/popular?limit=${limit}`);
-        if (!response.success) throw new Error(response.message || 'Failed to fetch popular courses');
+        if (!response.success) throw toApiError(response, 'Failed to fetch popular courses');
         return response.data;
     },
 };

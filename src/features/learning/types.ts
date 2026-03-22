@@ -218,6 +218,8 @@ export interface LearningCourseData {
     cpeCredits: number;
     enrolledAt: string;
     lastAccessedAt?: string | null;
+    watchPercent: number;
+    completionPercent: number;
     progressPercent: number;
     completedLessons: number[];
     lastAccessedLessonId?: number | null;
@@ -229,6 +231,8 @@ export interface CourseProgressResponse {
     courseId: number;
     completedLessons: number[];
     lastAccessedLessonId?: number;
+    watchPercent: number;
+    completionPercent: number;
     progressPercent: number;
     startedAt: string;
     lastAccessedAt: string;

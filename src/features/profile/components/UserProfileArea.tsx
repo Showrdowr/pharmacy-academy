@@ -264,8 +264,10 @@ const UserProfileArea = () => {
                                     </div>
                                 ) : (
                                     enrolledCourses.map((course) => {
-                                        const progressPercent = Number(course.progressPercent ?? course.progress ?? 0);
+                                        const watchPercent = Number(course.watchPercent ?? 0);
+                                        const completionPercent = Number(course.completionPercent ?? course.progressPercent ?? course.progress ?? 0);
                                         const isCompleted = course.status === 'completed';
+                                        const isArchived = course.courseStatus === 'ARCHIVED';
 
                                         return (
                                             <div key={course.courseId || course.id} className="course-card" style={{
@@ -324,13 +326,28 @@ const UserProfileArea = () => {
                                                                 {t('กำลังเรียน', 'In Progress')}
                                                             </span>
                                                         )}
+                                                        {isArchived && (
+                                                            <span className="course-card-badge archived" style={{
+                                                                background: '#e2e8f0',
+                                                                color: '#475569',
+                                                                padding: '4px 12px',
+                                                                borderRadius: '20px',
+                                                                fontSize: '12px',
+                                                                fontWeight: '600',
+                                                                whiteSpace: 'nowrap'
+                                                            }}>
+                                                                {t('เก็บถาวร', 'Archived')}
+                                                            </span>
+                                                        )}
                                                     </div>
                                                     <p className="course-card-meta text-resp-body-lg" style={{ margin: '0 0 10px', color: '#666' }}>
                                                         <i className="fas fa-user me-2"></i>{course.authorName || course.instructor || '-'}
                                                         <span style={{ margin: '0 10px', color: '#ddd' }}>|</span>
                                                         <i className="fas fa-certificate me-1"></i>{Number(course.cpeCredits || course.cpe || 0)} {t('หน่วยกิต', 'Credits')}
                                                     </p>
-                                                    {/* Progress Bar */}
+                                                    <p className="text-resp-body" style={{ margin: '0 0 10px', color: '#64748b', fontSize: '13px' }}>
+                                                        {t('ดูจริง', 'Watch')}: {watchPercent}% • {t('จบบท', 'Completed')}: {completionPercent}%
+                                                    </p>
                                                     <div className="course-card-progress" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                                                         <div style={{
                                                             flex: 1,
@@ -340,14 +357,14 @@ const UserProfileArea = () => {
                                                             overflow: 'hidden'
                                                         }}>
                                                             <div style={{
-                                                                width: `${progressPercent}%`,
+                                                                width: `${watchPercent}%`,
                                                                 height: '100%',
-                                                                background: progressPercent >= 100 ? '#22c55e' : '#004736',
+                                                                background: isCompleted || watchPercent >= 100 ? '#22c55e' : '#004736',
                                                                 borderRadius: '4px'
                                                             }}></div>
                                                         </div>
                                                         <span style={{ color: '#666', fontSize: '13px', fontWeight: '500', whiteSpace: 'nowrap' }}>
-                                                            {progressPercent}%
+                                                            {watchPercent}%
                                                         </span>
                                                     </div>
                                                 </div>

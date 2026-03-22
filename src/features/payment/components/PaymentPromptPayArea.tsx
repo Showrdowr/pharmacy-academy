@@ -3,13 +3,21 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '@/features/i18n';
+import { useOrderStore } from '@/stores/useOrderStore';
 
 const PaymentPromptPayArea = () => {
     const { t } = useLanguage();
     const router = useRouter();
+    const { orderId: storeOrderId, orderTotal: storeTotal } = useOrderStore();
     const [timeLeft, setTimeLeft] = useState(1 * 60); // 1 minutes in seconds
-    const orderTotal = 8990;
-    const orderId = 'ORD-2025-8842';
+    const orderTotal = storeTotal || 0;
+    const orderId = storeOrderId || '';
+
+    useEffect(() => {
+        if (!storeOrderId) {
+            router.replace('/checkout');
+        }
+    }, [storeOrderId, router]);
 
     useEffect(() => {
         if (timeLeft <= 0) {

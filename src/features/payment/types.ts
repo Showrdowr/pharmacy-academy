@@ -88,3 +88,59 @@ export interface PaymentHistory {
     page: number;
     limit: number;
 }
+
+// --- Checkout-specific types (moved from mockData.ts) ---
+
+/**
+ * วิธีชำระเงินหน้า checkout
+ */
+export type CheckoutPaymentMethod = 'promptpay' | 'card';
+
+/**
+ * ประเภทใบเสร็จ
+ */
+export type ReceiptType = 'personal' | 'company';
+
+/**
+ * ข้อมูลที่อยู่
+ */
+export interface AddressInfo {
+    addressNo: string;
+    village: string;
+    moo: string;
+    soi: string;
+    road: string;
+    subDistrict: string;
+    district: string;
+    province: string;
+    postalCode: string;
+}
+
+/**
+ * ข้อมูลบริษัท
+ */
+export interface CompanyInfo {
+    name: string;
+    taxId: string;
+    address: string;
+    branch: string;
+}
+
+export const createInitialAddressInfo = (): AddressInfo => ({
+    addressNo: '',
+    village: '',
+    moo: '',
+    soi: '',
+    road: '',
+    subDistrict: '',
+    district: '',
+    province: '',
+    postalCode: ''
+});
+
+export const createInitialCompanyInfo = (): CompanyInfo => ({
+    name: '',
+    taxId: '',
+    address: '',
+    branch: ''
+});

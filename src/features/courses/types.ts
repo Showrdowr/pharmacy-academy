@@ -124,6 +124,8 @@ export interface CourseProgress {
     courseId: number;
     completedLessons: number[];
     lastAccessedLessonId?: number;
+    watchPercent: number;
+    completionPercent: number;
     progressPercent: number;
     startedAt: string;
     lastAccessedAt: string;
@@ -141,11 +143,15 @@ export interface EnrolledCourse {
     instructor?: string | null;
     cpeCredits?: number;
     cpe?: number;
+    watchPercent: number;
+    completionPercent: number;
     progressPercent: number;
     progress?: number;
     status: 'in_progress' | 'completed';
+    courseStatus?: 'PUBLISHED' | 'ARCHIVED';
     enrolledAt: string;
     lastAccessedAt?: string | null;
+    lastAccessedLessonId?: number | null;
     completedAt?: string | null;
     certificateUrl?: string | null;
     courseTitle?: string;

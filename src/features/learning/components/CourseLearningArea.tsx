@@ -22,6 +22,7 @@ import type {
     LearningCourseData,
     LearningInteractiveQuestion,
     LearningLessonData,
+    LearningLessonDocument,
 } from '../types';
 
 function formatFileSize(sizeBytes?: number | null) {
@@ -40,6 +41,10 @@ function formatFileSize(sizeBytes?: number | null) {
 function parseCourseId(value: string | null) {
     const courseId = Number(value);
     return Number.isInteger(courseId) && courseId > 0 ? courseId : null;
+}
+
+function isDataUrl(value?: string | null) {
+    return typeof value === 'string' && value.startsWith('data:');
 }
 
 type LoadCourseLearningMode = 'followServerCurrentLesson' | 'preserveSelectedLesson';
@@ -112,6 +117,7 @@ function logInteractiveDebug(event: string, payload?: Record<string, unknown>) {
 
 const CourseLearningArea = () => {
     const SEEK_AHEAD_TOLERANCE_SECONDS = 2;
+    const NATURAL_PLAYBACK_GRACE_SECONDS = 2;
     const router = useRouter();
     const searchParams = useSearchParams();
     const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
@@ -136,6 +142,7 @@ const CourseLearningArea = () => {
     const answeredIdsRef = useRef<Set<number>>(new Set());
     const watchedSecondsByLessonRef = useRef(new Map<number, number>());
     const maxReachedSecondsByLessonRef = useRef(new Map<number, number>());
+    const lastPlaybackObservationByLessonRef = useRef(new Map<number, { seconds: number; observedAt: number }>());
     const lastRequestedSecondsByLessonRef = useRef(new Map<number, number>());
     const progressRequestVersionByLessonRef = useRef(new Map<number, number>());
 
@@ -161,10 +168,10 @@ const CourseLearningArea = () => {
         () => getNextPendingInteractive(activeLesson, answeredIds, currentTime),
         [activeLesson, answeredIds, currentTime]
     );
-    const courseWatchPercent = useMemo(
-        () => calculateCourseWatchPercent(course, { activeLessonId, currentTime }),
-        [course, activeLessonId, currentTime]
-    );
+    const courseWatchPercent = useMemo(() => {
+        const derivedWatchPercent = calculateCourseWatchPercent(course, { activeLessonId, currentTime });
+        return Math.max(Number(course?.watchPercent ?? 0), derivedWatchPercent);
+    }, [course, activeLessonId, currentTime]);
     const activeLessonWatchPercent = useMemo(
         () => calculateWatchPercent(
             Math.max(
@@ -176,8 +183,139 @@ const CourseLearningArea = () => {
         [activeLesson, currentTime]
     );
     const roundedCourseWatchPercent = Math.round(courseWatchPercent);
-    const roundedCourseCompletionPercent = Math.round(Number(course?.progressPercent ?? 0));
+    const roundedCourseCompletionPercent = Math.round(Number(course?.completionPercent ?? course?.progressPercent ?? 0));
     const roundedActiveLessonWatchPercent = Math.round(activeLessonWatchPercent);
+
+    const previewLessonDocument = useCallback(async (lessonDocument: LearningLessonDocument) => {
+        if (typeof window === 'undefined' || !lessonDocument.fileUrl) {
+            return;
+        }
+
+        const previewWindow = window.open('', '_blank', 'noopener,noreferrer');
+        if (!previewWindow) {
+            setLessonNotice('เบราว์เซอร์บล็อกการเปิดเอกสาร กรุณาอนุญาต pop-up แล้วลองใหม่');
+            return;
+        }
+
+        try {
+            if (!isDataUrl(lessonDocument.fileUrl)) {
+                previewWindow.location.href = lessonDocument.fileUrl;
+                return;
+            }
+
+            const response = await fetch(lessonDocument.fileUrl);
+            const fileBlob = await response.blob();
+            const objectUrl = window.URL.createObjectURL(fileBlob);
+            previewWindow.location.href = objectUrl;
+
+            window.setTimeout(() => {
+                window.URL.revokeObjectURL(objectUrl);
+            }, 60_000);
+        } catch (error) {
+            previewWindow.close();
+            console.error('Failed to preview lesson document', error);
+            setLessonNotice('ไม่สามารถเปิดเอกสารได้ กรุณาลองใหม่อีกครั้ง');
+        }
+    }, []);
+
+    const downloadLessonDocument = useCallback(async (lessonDocument: LearningLessonDocument) => {
+        if (typeof window === 'undefined' || !lessonDocument.fileUrl) {
+            return;
+        }
+
+        try {
+            if (isDataUrl(lessonDocument.fileUrl)) {
+                const immediateDownloadLink = document.createElement('a');
+                immediateDownloadLink.href = lessonDocument.fileUrl;
+                immediateDownloadLink.download = lessonDocument.fileName;
+                immediateDownloadLink.rel = 'noreferrer';
+                immediateDownloadLink.style.display = 'none';
+                document.body.appendChild(immediateDownloadLink);
+                immediateDownloadLink.click();
+                immediateDownloadLink.remove();
+                return;
+            }
+
+            const downloadLink = document.createElement('a');
+            downloadLink.href = lessonDocument.fileUrl;
+            downloadLink.download = lessonDocument.fileName;
+            downloadLink.rel = 'noreferrer';
+            downloadLink.style.display = 'none';
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            downloadLink.remove();
+        } catch (error) {
+            console.error('Failed to download lesson document', error);
+            setLessonNotice('ไม่สามารถดาวน์โหลดเอกสารได้ กรุณาลองใหม่อีกครั้ง');
+        }
+    }, []);
+
+    const getKnownMaxReachedSeconds = (lesson: LearningLessonData, fallbackSeconds = 0) => Math.max(
+        maxReachedSecondsByLessonRef.current.get(lesson.id)
+            ?? normalizePlaybackSecond(lesson.progress.lastWatchedSeconds || fallbackSeconds),
+        0,
+    );
+
+    const recordPlaybackObservation = (lessonId: number, seconds: number) => {
+        lastPlaybackObservationByLessonRef.current.set(lessonId, {
+            seconds,
+            observedAt: Date.now(),
+        });
+    };
+
+    const syncPlaybackState = (lessonId: number, seconds: number, options?: { updateMaxReached?: boolean }) => {
+        watchedSecondsByLessonRef.current.set(lessonId, seconds);
+        currentTimeRef.current = seconds;
+        setCurrentTime(seconds);
+        recordPlaybackObservation(lessonId, seconds);
+
+        if (options?.updateMaxReached) {
+            maxReachedSecondsByLessonRef.current.set(
+                lessonId,
+                Math.max(maxReachedSecondsByLessonRef.current.get(lessonId) ?? 0, seconds),
+            );
+        }
+    };
+
+    function rollbackForwardSeek(lesson: LearningLessonData, attemptedSeconds: number) {
+        const rollbackSeconds = getKnownMaxReachedSeconds(lesson);
+        syncPlaybackState(lesson.id, rollbackSeconds);
+        setLessonNotice('ไม่สามารถกรอข้ามวิดีโอได้ กรุณาเรียนตามลำดับเวลา');
+        logInteractiveDebug('blocked-forward-seek', {
+            lessonId: lesson.id,
+            attemptedSeconds,
+            rollbackSeconds,
+        });
+
+        void playerRef.current?.setCurrentTime(rollbackSeconds).catch(() => undefined);
+        void maybeOpenInteractive(rollbackSeconds);
+    }
+
+    const shouldTreatAsForwardSkip = (lesson: LearningLessonData, nextSeconds: number) => {
+        const maxReachedSeconds = getKnownMaxReachedSeconds(lesson);
+        if (nextSeconds <= maxReachedSeconds) {
+            return false;
+        }
+
+        const lastObservation = lastPlaybackObservationByLessonRef.current.get(lesson.id);
+        if (!lastObservation) {
+            return nextSeconds > maxReachedSeconds + SEEK_AHEAD_TOLERANCE_SECONDS;
+        }
+
+        const elapsedSinceObservationSeconds = Math.max(
+            0,
+            (Date.now() - lastObservation.observedAt) / 1000,
+        );
+        const maxNaturalAdvanceSeconds = Math.max(
+            maxReachedSeconds,
+            lastObservation.seconds,
+        ) + Math.max(
+            SEEK_AHEAD_TOLERANCE_SECONDS,
+            Math.ceil(elapsedSinceObservationSeconds) + NATURAL_PLAYBACK_GRACE_SECONDS,
+        );
+
+        return nextSeconds > maxNaturalAdvanceSeconds;
+    };
 
     const persistProgress = useCallback(async (lessonId: number, seconds: number, force = false) => {
         const roundedSeconds = normalizePlaybackSecond(seconds);
@@ -306,6 +444,7 @@ const CourseLearningArea = () => {
                     normalizePlaybackSecond(activeLesson.progress.lastWatchedSeconds || 0)
                 );
             }
+            recordPlaybackObservation(activeLesson.id, resolvedLessonSeconds);
         }
 
         setPageError('');
@@ -332,6 +471,41 @@ const CourseLearningArea = () => {
             void persistProgress(lessonId, trackedSeconds, true);
         };
     }, [activeLesson?.id, persistProgress]);
+
+    useEffect(() => {
+        if (!activeLesson || !playableVideo) {
+            return;
+        }
+
+        const pausePlaybackWhenPageIsHidden = () => {
+            const visibilityState = typeof document.visibilityState === 'string'
+                ? document.visibilityState
+                : (document.hidden ? 'hidden' : 'visible');
+            if (visibilityState === 'visible') {
+                return;
+            }
+
+            const trackedSeconds = watchedSecondsByLessonRef.current.get(activeLesson.id)
+                ?? normalizePlaybackSecond(currentTimeRef.current || activeLesson.progress.lastWatchedSeconds || 0);
+            void playerRef.current?.pause().catch(() => undefined);
+            void persistProgress(activeLesson.id, trackedSeconds, true);
+        };
+
+        const handlePageHide = () => {
+            const trackedSeconds = watchedSecondsByLessonRef.current.get(activeLesson.id)
+                ?? normalizePlaybackSecond(currentTimeRef.current || activeLesson.progress.lastWatchedSeconds || 0);
+            void playerRef.current?.pause().catch(() => undefined);
+            void persistProgress(activeLesson.id, trackedSeconds, true);
+        };
+
+        document.addEventListener('visibilitychange', pausePlaybackWhenPageIsHidden);
+        window.addEventListener('pagehide', handlePageHide);
+
+        return () => {
+            document.removeEventListener('visibilitychange', pausePlaybackWhenPageIsHidden);
+            window.removeEventListener('pagehide', handlePageHide);
+        };
+    }, [activeLesson, persistProgress, playableVideo]);
 
     const maybeOpenInteractive = useCallback(async (seconds: number) => {
         const lesson = activeLessonRef.current;
@@ -516,10 +690,13 @@ const CourseLearningArea = () => {
 
     if (isLoading || isAuthLoading) {
         return (
-            <section className="py-16" style={{ background: '#f7faf9', minHeight: '70vh' }}>
-                <div className="container text-center">
-                    <div className="mx-auto h-14 w-14 animate-spin rounded-full border-4 border-slate-200 border-t-[#004736]" />
-                    <p className="mt-4 text-slate-600">กำลังโหลดเนื้อหาการเรียน</p>
+            <section className="flex min-h-[70vh] items-center justify-center" style={{ background: 'linear-gradient(135deg, #f7faf9 0%, #edf7f4 100%)' }}>
+                <div className="text-center">
+                    <div className="relative mx-auto h-16 w-16">
+                        <div className="absolute inset-0 animate-spin rounded-full border-4 border-slate-200 border-t-[#004736]" />
+                        <div className="absolute inset-2 animate-spin rounded-full border-4 border-transparent border-b-[#40C7A9]" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }} />
+                    </div>
+                    <p className="mt-5 text-sm font-medium text-slate-500">กำลังโหลดเนื้อหาการเรียน</p>
                 </div>
             </section>
         );
@@ -527,16 +704,19 @@ const CourseLearningArea = () => {
 
     if (pageError || !course || !activeLesson) {
         return (
-            <section className="py-16" style={{ background: '#f7faf9', minHeight: '70vh' }}>
-                <div className="container max-w-3xl">
-                    <div className="rounded-3xl border border-red-200 bg-white p-8 shadow-sm">
-                        <h2 className="text-2xl font-bold text-slate-900">เข้าเรียนไม่ได้</h2>
-                        <p className="mt-3 text-slate-600">{pageError || 'ไม่พบข้อมูลคอร์สที่ต้องการเรียน'}</p>
-                        <div className="mt-6 flex flex-wrap gap-3">
-                            <Link href="/courses-grid" className="rounded-xl bg-[#004736] px-5 py-3 font-semibold text-white">
+            <section className="flex min-h-[70vh] items-center justify-center px-4" style={{ background: 'linear-gradient(135deg, #f7faf9 0%, #edf7f4 100%)' }}>
+                <div className="w-full max-w-lg">
+                    <div className="rounded-2xl border border-red-100 bg-white p-8 shadow-lg shadow-red-500/5">
+                        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-red-50">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-red-500"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                        </div>
+                        <h2 className="text-center text-2xl font-bold text-slate-900">เข้าเรียนไม่ได้</h2>
+                        <p className="mt-2 text-center text-slate-500">{pageError || 'ไม่พบข้อมูลคอร์สที่ต้องการเรียน'}</p>
+                        <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
+                            <Link href="/courses-grid" className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-[#004736] to-[#006650] px-6 py-3 font-semibold text-white shadow-md shadow-[#004736]/20 transition-all hover:shadow-lg">
                                 กลับไปหน้าคอร์ส
                             </Link>
-                            <Link href="/profile" className="rounded-xl border border-slate-300 px-5 py-3 font-semibold text-slate-700">
+                            <Link href="/profile" className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-6 py-3 font-semibold text-slate-700 transition-all hover:bg-slate-50">
                                 ไปที่โปรไฟล์
                             </Link>
                         </div>
@@ -553,34 +733,44 @@ const CourseLearningArea = () => {
                 aria-hidden={isInteractiveModalOpen}
             >
                 <div className="grid gap-6 xl:grid-cols-[320px_minmax(0,1fr)]">
-                    <aside className="space-y-5">
-                        <div className="rounded-3xl bg-[#004736] p-6 text-white shadow-lg">
-                            <p className="text-sm text-white/80">กำลังเรียนอยู่</p>
-                            <h1 className="mt-2 text-2xl font-bold">{course.title}</h1>
-                            <p className="mt-3 text-sm text-white/80">ผู้สอน: {course.authorName || 'ไม่ระบุ'}</p>
-                            <div className="mt-5 rounded-2xl bg-white/10 p-4">
-                                <div className="mb-2 flex items-center justify-between text-sm">
-                                    <span>ความคืบหน้าการรับชม</span>
-                                    <span>{roundedCourseWatchPercent}%</span>
+                    <aside className="space-y-4 xl:sticky xl:top-6 xl:self-start">
+                        <div className="overflow-hidden rounded-2xl bg-gradient-to-br from-[#003d2e] via-[#004736] to-[#005a45] text-white shadow-xl">
+                            <div className="px-5 pt-5 pb-4">
+                                <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-emerald-300/80">
+                                    <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                                    กำลังเรียนอยู่
                                 </div>
-                                <div className="h-2 rounded-full bg-white/20">
-                                    <div className="h-2 rounded-full bg-[#40C7A9]" style={{ width: `${roundedCourseWatchPercent}%` }} />
+                                <h1 className="mt-2 text-lg font-bold leading-snug">{course.title}</h1>
+                                <p className="mt-1.5 text-sm text-white/60">ผู้สอน: {course.authorName || 'ไม่ระบุ'}</p>
+                            </div>
+                            <div className="mx-4 mb-4 rounded-xl bg-white/[0.08] backdrop-blur-sm p-4">
+                                <div className="flex items-center gap-4">
+                                    <div className="relative flex-shrink-0">
+                                        <svg width="56" height="56" viewBox="0 0 56 56" className="-rotate-90">
+                                            <circle cx="28" cy="28" r="24" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="4" />
+                                            <circle cx="28" cy="28" r="24" fill="none" stroke="#40C7A9" strokeWidth="4" strokeLinecap="round" strokeDasharray={`${roundedCourseWatchPercent * 1.508} 150.8`} className="transition-all duration-700" />
+                                        </svg>
+                                        <span className="absolute inset-0 flex items-center justify-center text-xs font-bold">{roundedCourseWatchPercent}%</span>
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                        <p className="text-sm font-semibold text-white/90">ความคืบหน้า</p>
+                                        <p className="mt-0.5 text-xs text-white/60">
+                                            จบแล้ว {course.completedLessons.length}/{course.lessons.length} บท ({roundedCourseCompletionPercent}%)
+                                        </p>
+                                        <div className="mt-2 h-1.5 rounded-full bg-white/15">
+                                            <div className="h-1.5 rounded-full bg-[#40C7A9] transition-all duration-500" style={{ width: `${roundedCourseCompletionPercent}%` }} />
+                                        </div>
+                                    </div>
                                 </div>
-                                <p className="mt-3 text-xs text-white/75">
-                                    จบบทเรียนแล้ว {roundedCourseCompletionPercent}% • {course.completedLessons.length}/{course.lessons.length} บท
-                                </p>
-                                <p className="mt-1 text-xs text-white/60">
-                                    เรียนจบแล้ว {course.completedLessons.length}/{course.lessons.length} บท
-                                </p>
                             </div>
                         </div>
 
-                        <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
-                            <div className="mb-3 flex items-center justify-between">
-                                <h2 className="text-lg font-bold text-slate-900">บทเรียน</h2>
-                                <span className="text-sm text-slate-500">{course.lessons.length} บท</span>
+                        <div className="rounded-2xl border border-slate-200/80 bg-white shadow-sm">
+                            <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
+                                <h2 className="text-sm font-bold text-slate-800">บทเรียนทั้งหมด</h2>
+                                <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-500">{course.lessons.length} บท</span>
                             </div>
-                            <div className="space-y-2">
+                            <div className="max-h-[calc(100vh-380px)] space-y-1 overflow-y-auto p-2">
                                 {course.lessons.map((lesson) => {
                                     const isActive = lesson.id === activeLesson.id;
                                     const isLocked = lesson.status === 'locked';
@@ -591,32 +781,39 @@ const CourseLearningArea = () => {
                                             key={lesson.id}
                                             onClick={() => handleLessonSelect(lesson)}
                                             disabled={isLocked}
-                                            className={`w-full rounded-2xl border p-4 text-left transition ${
+                                            className={`group w-full rounded-xl px-3 py-3 text-left transition-all duration-200 ${
                                                 isActive
-                                                    ? 'border-[#004736] bg-[#edf7f4] shadow-sm'
+                                                    ? 'bg-[#edf7f4] ring-1 ring-[#004736]/30 shadow-sm'
                                                     : isLocked
-                                                        ? 'border-slate-200 bg-slate-50 text-slate-400'
-                                                        : 'border-slate-200 bg-white hover:border-slate-300'
+                                                        ? 'opacity-50 cursor-not-allowed'
+                                                        : 'hover:bg-slate-50'
                                             }`}
                                         >
-                                            <div className="flex items-start justify-between gap-3">
-                                                <div>
-                                                    <p className="text-sm font-semibold text-slate-900">
-                                                        {lesson.sequenceOrder}. {lesson.title}
+                                            <div className="flex items-start gap-3">
+                                                <div className={`mt-0.5 flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-xs font-bold transition-colors ${
+                                                    isCompleted
+                                                        ? 'bg-emerald-500 text-white'
+                                                        : isActive
+                                                            ? 'bg-[#004736] text-white'
+                                                            : isLocked
+                                                                ? 'bg-slate-200 text-slate-400'
+                                                                : 'bg-slate-100 text-slate-500 group-hover:bg-[#004736]/10 group-hover:text-[#004736]'
+                                                }`}>
+                                                    {isCompleted ? '✓' : lesson.sequenceOrder}
+                                                </div>
+                                                <div className="min-w-0 flex-1">
+                                                    <p className={`text-sm font-semibold leading-snug ${
+                                                        isActive ? 'text-[#004736]' : isLocked ? 'text-slate-400' : 'text-slate-800'
+                                                    }`}>
+                                                        {lesson.title}
                                                     </p>
-                                                    <p className="mt-1 text-xs text-slate-500">
-                                                        {lesson.video ? formatDuration(lesson.video.duration) : 'ไม่มีวิดีโอ'} • {lesson.documents.length} เอกสาร
+                                                    <p className="mt-0.5 text-xs text-slate-400">
+                                                        {isLocked
+                                                            ? 'ล็อก'
+                                                            : `${lesson.video ? formatDuration(lesson.video.duration) : 'ไม่มีวิดีโอ'} • ${lesson.documents.length} เอกสาร`}
                                                     </p>
                                                 </div>
-                                                <span className={`rounded-full px-2 py-1 text-xs font-semibold ${
-                                                    isCompleted
-                                                        ? 'bg-emerald-100 text-emerald-700'
-                                                        : isLocked
-                                                            ? 'bg-slate-200 text-slate-500'
-                                                            : 'bg-amber-100 text-amber-700'
-                                                }`}>
-                                                    {isCompleted ? 'จบแล้ว' : isLocked ? 'ล็อก' : 'พร้อมเรียน'}
-                                                </span>
+                                                {isCompleted && <span className="mt-1 text-xs font-semibold text-emerald-600">จบแล้ว</span>}
                                             </div>
                                         </button>
                                     );
@@ -626,24 +823,27 @@ const CourseLearningArea = () => {
                     </aside>
 
                     <main className="space-y-6">
-                        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                        <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm">
                             <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
                                 <div>
                                     <p className="text-sm font-semibold text-[#004736]">บทที่ {activeLesson.sequenceOrder}</p>
-                                    <h2 className="mt-1 text-3xl font-bold text-slate-900">{activeLesson.title}</h2>
-                                    <p className="mt-2 text-slate-600">{course.description || 'เรียนผ่านวิดีโอ เอกสารประกอบ และคำถาม interactive ระหว่างบทเรียน'}</p>
+                                    <h2 className="mt-1 text-2xl font-bold text-slate-900 md:text-3xl">{activeLesson.title}</h2>
+                                    <p className="mt-2 max-w-2xl text-slate-500">{course.description || 'เรียนผ่านวิดีโอ เอกสารประกอบ และคำถาม interactive ระหว่างบทเรียน'}</p>
                                 </div>
                                 <div className="flex flex-wrap gap-2">
-                                    <span className="rounded-full bg-slate-100 px-3 py-2 text-sm font-medium text-slate-600">
-                                        เวลา {formatDuration(activeLesson.video?.duration)}
+                                    <span className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm font-medium text-slate-600">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                        {formatDuration(activeLesson.video?.duration)}
                                     </span>
                                     {course.hasCertificate && (
-                                        <span className="rounded-full bg-emerald-100 px-3 py-2 text-sm font-medium text-emerald-700">
-                                            มี Certificate
+                                        <span className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-sm font-medium text-emerald-700">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg>
+                                            Certificate
                                         </span>
                                     )}
                                     {course.cpeCredits > 0 && (
-                                        <span className="rounded-full bg-sky-100 px-3 py-2 text-sm font-medium text-sky-700">
+                                        <span className="inline-flex items-center gap-1.5 rounded-lg border border-sky-200 bg-sky-50 px-3 py-1.5 text-sm font-medium text-sky-700">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48 2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48 2.83-2.83"/></svg>
                                             {course.cpeCredits} CPE
                                         </span>
                                     )}
@@ -651,7 +851,7 @@ const CourseLearningArea = () => {
                             </div>
 
                             {playableVideo ? (
-                                <div className="overflow-hidden rounded-3xl bg-slate-950 shadow-lg">
+                                <div className="overflow-hidden rounded-2xl bg-slate-950 shadow-lg ring-1 ring-black/5">
                                     <div
                                         className={`aspect-video ${isInteractiveModalOpen ? 'pointer-events-none' : ''}`}
                                         aria-hidden={isInteractiveModalOpen}
@@ -663,24 +863,13 @@ const CourseLearningArea = () => {
                                             playbackUrl={playableVideo.playbackUrl!}
                                             title={activeLesson.title}
                                             resumeAt={activeLesson.progress.lastWatchedSeconds || 0}
-                                            disableForwardSeekUi
                                             interactionDisabled={isInteractiveModalOpen}
-                                            onBlockedSeekControlInteraction={() => {
-                                                setLessonNotice('ไม่สามารถกรอข้ามวิดีโอได้ กรุณาเรียนตามลำดับเวลา');
-                                            }}
                                             playerRef={playerRef}
                                             onInitialTimeResolved={(seconds) => {
                                                 const normalizedSeconds = normalizePlaybackSecond(seconds);
-                                                currentTimeRef.current = normalizedSeconds;
-                                                watchedSecondsByLessonRef.current.set(activeLesson.id, normalizedSeconds);
-                                                maxReachedSecondsByLessonRef.current.set(
-                                                    activeLesson.id,
-                                                    Math.max(
-                                                        maxReachedSecondsByLessonRef.current.get(activeLesson.id) ?? 0,
-                                                        normalizedSeconds,
-                                                    ),
-                                                );
-                                                setCurrentTime(normalizedSeconds);
+                                                syncPlaybackState(activeLesson.id, normalizedSeconds, {
+                                                    updateMaxReached: true,
+                                                });
                                                 logInteractiveDebug('initial-position-resolved', {
                                                     lessonId: activeLesson.id,
                                                     seconds: normalizedSeconds,
@@ -689,66 +878,42 @@ const CourseLearningArea = () => {
                                             }}
                                             onTimeUpdate={(seconds) => {
                                                 const normalizedSeconds = normalizePlaybackSecond(seconds);
-                                                currentTimeRef.current = normalizedSeconds;
-                                                watchedSecondsByLessonRef.current.set(activeLesson.id, normalizedSeconds);
-                                                maxReachedSecondsByLessonRef.current.set(
-                                                    activeLesson.id,
-                                                    Math.max(
-                                                        maxReachedSecondsByLessonRef.current.get(activeLesson.id) ?? 0,
-                                                        normalizedSeconds,
-                                                    ),
-                                                );
-                                                setCurrentTime(normalizedSeconds);
+                                                if (shouldTreatAsForwardSkip(activeLesson, normalizedSeconds)) {
+                                                    rollbackForwardSeek(activeLesson, normalizedSeconds);
+                                                    return;
+                                                }
+
+                                                const shouldExtendMaxReached = normalizedSeconds > getKnownMaxReachedSeconds(activeLesson);
+                                                syncPlaybackState(activeLesson.id, normalizedSeconds, {
+                                                    updateMaxReached: shouldExtendMaxReached,
+                                                });
                                                 void persistProgress(activeLesson.id, normalizedSeconds);
                                                 void maybeOpenInteractive(normalizedSeconds);
                                             }}
                                             onSeeked={(seconds) => {
                                                 const normalizedSeconds = normalizePlaybackSecond(seconds);
-                                                const maxReachedSeconds = Math.max(
-                                                    maxReachedSecondsByLessonRef.current.get(activeLesson.id)
-                                                        ?? normalizePlaybackSecond(activeLesson.progress.lastWatchedSeconds || 0),
-                                                    0,
-                                                );
+                                                const maxReachedSeconds = getKnownMaxReachedSeconds(activeLesson);
                                                 const maxAllowedSeconds = maxReachedSeconds + SEEK_AHEAD_TOLERANCE_SECONDS;
 
                                                 if (normalizedSeconds > maxAllowedSeconds) {
-                                                    const rollbackSeconds = maxReachedSeconds;
-                                                    currentTimeRef.current = rollbackSeconds;
-                                                    watchedSecondsByLessonRef.current.set(activeLesson.id, rollbackSeconds);
-                                                    setCurrentTime(rollbackSeconds);
-                                                    setLessonNotice('ไม่สามารถกรอข้ามวิดีโอได้ กรุณาเรียนตามลำดับเวลา');
-                                                    logInteractiveDebug('blocked-forward-seek', {
-                                                        lessonId: activeLesson.id,
-                                                        attemptedSeconds: normalizedSeconds,
-                                                        rollbackSeconds,
-                                                    });
-
-                                                    void playerRef.current?.setCurrentTime(rollbackSeconds).catch(() => undefined);
-                                                    void maybeOpenInteractive(rollbackSeconds);
+                                                    rollbackForwardSeek(activeLesson, normalizedSeconds);
                                                     return;
                                                 }
 
-                                                currentTimeRef.current = normalizedSeconds;
-                                                watchedSecondsByLessonRef.current.set(activeLesson.id, normalizedSeconds);
-                                                maxReachedSecondsByLessonRef.current.set(
-                                                    activeLesson.id,
-                                                    Math.max(maxReachedSeconds, normalizedSeconds),
-                                                );
-                                                setCurrentTime(normalizedSeconds);
+                                                syncPlaybackState(activeLesson.id, normalizedSeconds, {
+                                                    updateMaxReached: normalizedSeconds > maxReachedSeconds,
+                                                });
                                                 void persistProgress(activeLesson.id, normalizedSeconds, true);
                                                 void maybeOpenInteractive(normalizedSeconds);
                                             }}
                                             onPause={(seconds) => {
                                                 const resolvedSeconds = normalizePlaybackSecond(seconds || currentTimeRef.current || 0);
-                                                watchedSecondsByLessonRef.current.set(activeLesson.id, resolvedSeconds);
+                                                syncPlaybackState(activeLesson.id, resolvedSeconds);
                                                 void persistProgress(activeLesson.id, resolvedSeconds, true);
                                             }}
                                             onEnded={() => {
                                                 const duration = normalizePlaybackSecond(playableVideo.duration || currentTimeRef.current || 0);
-                                                currentTimeRef.current = duration;
-                                                watchedSecondsByLessonRef.current.set(activeLesson.id, duration);
-                                                maxReachedSecondsByLessonRef.current.set(activeLesson.id, duration);
-                                                setCurrentTime(duration);
+                                                syncPlaybackState(activeLesson.id, duration, { updateMaxReached: true });
                                                 void persistProgress(activeLesson.id, duration, true);
                                                 void maybeCompleteLesson();
                                             }}
@@ -756,54 +921,70 @@ const CourseLearningArea = () => {
                                     </div>
                                 </div>
                             ) : (
-                                <div className="rounded-3xl border border-dashed border-slate-300 bg-slate-50 p-10 text-center text-slate-500">
-                                    {getVideoAvailabilityMessage(activeLesson.video?.status, activeLesson.video?.duration)}
+                                <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-gradient-to-b from-slate-50 to-white px-6 py-16 text-center">
+                                    <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100">
+                                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-slate-400"><path d="m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.934a.5.5 0 0 0-.777-.416L16 11"/><rect x="2" y="6" width="14" height="12" rx="2"/></svg>
+                                    </div>
+                                    <p className="text-sm font-medium text-slate-500">{getVideoAvailabilityMessage(activeLesson.video?.status, activeLesson.video?.duration)}</p>
                                 </div>
                             )}
 
-                            <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm text-slate-600">
-                                <div className="flex items-center gap-4">
-                                    <span>ดูไปแล้ว {formatDuration(currentTime)} ({roundedActiveLessonWatchPercent}%)</span>
-                                    <span>Interactive ตอบแล้ว {activeLesson.interactiveQuestions.filter((question) => question.answered).length}/{activeLesson.interactiveQuestions.length}</span>
+                            <div className="mt-5 space-y-4">
+                                <div className="flex flex-wrap items-center justify-between gap-3">
+                                    <div className="flex items-center gap-5 text-sm text-slate-500">
+                                        <span className="flex items-center gap-1.5">
+                                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#004736]"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                            ดูไปแล้ว {formatDuration(currentTime)} ({roundedActiveLessonWatchPercent}%)
+                                        </span>
+                                        <span className="flex items-center gap-1.5">
+                                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-amber-500"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+                                            Interactive {activeLesson.interactiveQuestions.filter((question) => question.answered).length}/{activeLesson.interactiveQuestions.length}
+                                        </span>
+                                    </div>
+                                    <button
+                                        onClick={() => void maybeCompleteLesson()}
+                                        disabled={
+                                            isCompletingLesson
+                                            || activeLesson.progress.isCompleted
+                                            || !canRenderLessonVideo(activeLesson.video)
+                                            || roundedActiveLessonWatchPercent < 100
+                                        }
+                                        className={`rounded-xl px-5 py-2.5 text-sm font-semibold transition-all disabled:cursor-not-allowed disabled:opacity-50 ${
+                                            activeLesson.progress.isCompleted
+                                                ? 'border border-emerald-200 bg-emerald-50 text-emerald-700'
+                                                : 'bg-gradient-to-r from-[#004736] to-[#006650] text-white shadow-md shadow-[#004736]/20 hover:shadow-lg hover:shadow-[#004736]/30'
+                                        }`}
+                                    >
+                                        {activeLesson.progress.isCompleted
+                                            ? '✓ บทเรียนนี้จบแล้ว'
+                                            : isCompletingLesson
+                                                ? 'กำลังบันทึก...'
+                                                : activeLesson.video?.status === 'PROCESSING' || Number(activeLesson.video?.duration ?? 0) <= 0
+                                                    ? 'รอวิดีโอประมวลผลก่อน'
+                                                : activeLesson.video?.status === 'FAILED'
+                                                        ? 'วิดีโอมีปัญหา'
+                                                : roundedActiveLessonWatchPercent < 100
+                                                    ? 'ต้องดูวิดีโอให้จบก่อน'
+                                                : 'บันทึกว่าจบบทเรียน'}
+                                    </button>
                                 </div>
-                                <button
-                                    onClick={() => void maybeCompleteLesson()}
-                                    disabled={
-                                        isCompletingLesson
-                                        || activeLesson.progress.isCompleted
-                                        || !canRenderLessonVideo(activeLesson.video)
-                                        || roundedActiveLessonWatchPercent < 100
-                                    }
-                                    className="rounded-xl bg-[#004736] px-4 py-2.5 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
-                                >
-                                    {activeLesson.progress.isCompleted
-                                        ? 'บทเรียนนี้จบแล้ว'
-                                        : isCompletingLesson
-                                            ? 'กำลังบันทึก...'
-                                            : activeLesson.video?.status === 'PROCESSING' || Number(activeLesson.video?.duration ?? 0) <= 0
-                                                ? 'รอวิดีโอประมวลผลก่อน'
-                                            : activeLesson.video?.status === 'FAILED'
-                                                    ? 'วิดีโอมีปัญหา'
-                                            : roundedActiveLessonWatchPercent < 100
-                                                ? 'ต้องดูวิดีโอให้จบก่อน'
-                                            : 'บันทึกว่าจบบทเรียน'}
-                                </button>
-                            </div>
-                            <div className="mt-3">
-                                <div className="mb-2 flex items-center justify-between text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
-                                    <span>Lesson Watch Progress</span>
-                                    <span>{roundedActiveLessonWatchPercent}%</span>
-                                </div>
-                                <div className="h-2 rounded-full bg-slate-100">
-                                    <div
-                                        className="h-2 rounded-full bg-[#004736] transition-[width]"
-                                        style={{ width: `${roundedActiveLessonWatchPercent}%` }}
-                                    />
+
+                                <div>
+                                    <div className="mb-1.5 flex items-center justify-between text-xs font-medium text-slate-400">
+                                        <span>ความคืบหน้าบทเรียน</span>
+                                        <span className="font-semibold text-slate-600">{roundedActiveLessonWatchPercent}%</span>
+                                    </div>
+                                    <div className="h-2 overflow-hidden rounded-full bg-slate-100">
+                                        <div
+                                            className="h-2 rounded-full bg-gradient-to-r from-[#004736] to-[#40C7A9] transition-all duration-500"
+                                            style={{ width: `${roundedActiveLessonWatchPercent}%` }}
+                                        />
+                                    </div>
                                 </div>
                             </div>
 
                             {interactiveStatus && (
-                                <div className={`mt-4 rounded-2xl px-4 py-3 text-sm font-medium ${
+                                <div className={`mt-4 flex items-center gap-2.5 rounded-xl px-4 py-3 text-sm font-medium ${
                                     interactiveStatus.tone === 'emerald'
                                         ? 'border border-emerald-200 bg-emerald-50 text-emerald-800'
                                         : interactiveStatus.tone === 'amber'
@@ -812,60 +993,105 @@ const CourseLearningArea = () => {
                                                 ? 'border border-sky-200 bg-sky-50 text-sky-800'
                                                 : 'border border-slate-200 bg-slate-50 text-slate-700'
                                 }`}>
+                                    {interactiveStatus.tone === 'emerald' && <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>}
+                                    {interactiveStatus.tone === 'amber' && <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></svg>}
                                     {interactiveStatus.message}
                                 </div>
                             )}
                         </div>
 
                         <div className="grid gap-6 lg:grid-cols-2">
-                            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-                                <h3 className="text-xl font-bold text-slate-900">เอกสารประกอบบทเรียน</h3>
-                                <div className="mt-4 space-y-3">
+                            <div className="rounded-2xl border border-slate-200/80 bg-white shadow-sm">
+                                <div className="flex items-center gap-3 border-b border-slate-100 px-5 py-4">
+                                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#004736]/10">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#004736]"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                                    </div>
+                                    <div>
+                                        <h3 className="font-bold text-slate-900">เอกสารประกอบบทเรียน</h3>
+                                        <p className="text-xs text-slate-400">{activeLesson.documents.length} ไฟล์</p>
+                                    </div>
+                                </div>
+                                <div className="space-y-2 p-3">
                                     {activeLesson.documents.length === 0 ? (
-                                        <p className="text-sm text-slate-500">ยังไม่มีเอกสารในบทเรียนนี้</p>
+                                        <div className="px-3 py-6 text-center">
+                                            <p className="text-sm text-slate-400">ยังไม่มีเอกสารในบทเรียนนี้</p>
+                                        </div>
                                     ) : (
                                         activeLesson.documents.map((document) => (
-                                            <a
+                                            <div
                                                 key={document.id}
-                                                href={document.fileUrl}
-                                                target="_blank"
-                                                rel="noreferrer"
-                                                className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 transition hover:border-slate-300 hover:bg-slate-100"
+                                                className="group flex items-center gap-3 rounded-xl border border-transparent bg-slate-50 px-4 py-3 transition-all hover:border-[#004736]/20 hover:bg-[#edf7f4] hover:shadow-sm"
                                             >
-                                                <div>
-                                                    <p className="font-semibold text-slate-900">{document.fileName}</p>
-                                                    <p className="text-xs text-slate-500">{document.mimeType} • {formatFileSize(document.sizeBytes)}</p>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => void downloadLessonDocument(document)}
+                                                    className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-white shadow-sm transition-colors hover:bg-[#edf7f4]"
+                                                    aria-label={`ดาวน์โหลดเอกสาร ${document.fileName}`}
+                                                    title="ดาวน์โหลดเอกสาร"
+                                                >
+                                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-slate-400 transition-colors group-hover:text-[#004736]"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                                </button>
+                                                <div className="min-w-0 flex-1">
+                                                    <p className="truncate text-sm font-semibold text-slate-800 group-hover:text-[#004736]">{document.fileName}</p>
+                                                    <p className="text-xs text-slate-400">{document.mimeType} • {formatFileSize(document.sizeBytes)}</p>
                                                 </div>
-                                                <span className="text-sm font-semibold text-[#004736]">ดาวน์โหลด</span>
-                                            </a>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => void previewLessonDocument(document)}
+                                                    className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-slate-300 transition-colors hover:bg-white hover:text-[#004736]"
+                                                    aria-label={`เปิดเอกสาร ${document.fileName}`}
+                                                    title="เปิดเอกสารในแท็บใหม่"
+                                                >
+                                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="transition-colors"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                                                </button>
+                                            </div>
                                         ))
                                     )}
                                 </div>
                             </div>
 
-                            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-                                <h3 className="text-xl font-bold text-slate-900">Interactive ระหว่างวิดีโอ</h3>
-                                <div className="mt-4 space-y-3">
+                            <div className="rounded-2xl border border-slate-200/80 bg-white shadow-sm">
+                                <div className="flex items-center gap-3 border-b border-slate-100 px-5 py-4">
+                                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-500/10">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-amber-600"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+                                    </div>
+                                    <div>
+                                        <h3 className="font-bold text-slate-900">Interactive ระหว่างวิดีโอ</h3>
+                                        <p className="text-xs text-slate-400">{activeLesson.interactiveQuestions.filter((q) => q.answered).length}/{activeLesson.interactiveQuestions.length} ตอบแล้ว</p>
+                                    </div>
+                                </div>
+                                <div className="space-y-2 p-3">
                                     {activeLesson.interactiveQuestions.length === 0 ? (
-                                        <p className="text-sm text-slate-500">บทเรียนนี้ยังไม่มีคำถาม interactive</p>
+                                        <div className="px-3 py-6 text-center">
+                                            <p className="text-sm text-slate-400">บทเรียนนี้ยังไม่มีคำถาม interactive</p>
+                                        </div>
                                     ) : (
                                         activeLesson.interactiveQuestions.map((question) => (
-                                            <div key={question.id} className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
-                                                <div className="flex items-center justify-between gap-3">
-                                                    <div>
-                                                        <p className="font-semibold text-slate-900">{question.questionText}</p>
-                                                        <p className="mt-1 text-xs text-slate-500">
-                                                            เวลา {formatDuration(question.displayAtSeconds)} • {question.questionType}
-                                                        </p>
-                                                    </div>
-                                                    <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
-                                                        isQuestionAnswered(question.id)
-                                                            ? 'bg-emerald-100 text-emerald-700'
-                                                            : 'bg-amber-100 text-amber-700'
-                                                    }`}>
-                                                        {isQuestionAnswered(question.id) ? 'ตอบแล้ว' : 'รอตอบ'}
-                                                    </span>
+                                            <div key={question.id} className={`flex items-center gap-3 rounded-xl px-4 py-3 transition-all ${
+                                                isQuestionAnswered(question.id)
+                                                    ? 'bg-emerald-50/60 border border-emerald-100'
+                                                    : 'bg-slate-50 border border-transparent'
+                                            }`}>
+                                                <div className={`flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-xs font-bold ${
+                                                    isQuestionAnswered(question.id)
+                                                        ? 'bg-emerald-500 text-white'
+                                                        : 'bg-amber-100 text-amber-600'
+                                                }`}>
+                                                    {isQuestionAnswered(question.id) ? '✓' : '?'}
                                                 </div>
+                                                <div className="min-w-0 flex-1">
+                                                    <p className="text-sm font-semibold text-slate-800">{question.questionText}</p>
+                                                    <p className="mt-0.5 text-xs text-slate-400">
+                                                        เวลา {formatDuration(question.displayAtSeconds)} • {question.questionType}
+                                                    </p>
+                                                </div>
+                                                <span className={`flex-shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${
+                                                    isQuestionAnswered(question.id)
+                                                        ? 'bg-emerald-100 text-emerald-700'
+                                                        : 'bg-amber-100 text-amber-700'
+                                                }`}>
+                                                    {isQuestionAnswered(question.id) ? 'ตอบแล้ว' : 'รอตอบ'}
+                                                </span>
                                             </div>
                                         ))
                                     )}
@@ -874,12 +1100,19 @@ const CourseLearningArea = () => {
                         </div>
 
                         {activeLesson.lessonQuiz && (
-                            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-                                <h3 className="text-xl font-bold text-slate-900">สรุป Quiz ท้ายบท</h3>
-                                <p className="mt-2 text-slate-600">
-                                    คะแนนผ่าน {activeLesson.lessonQuiz.passingScorePercent}% • จำนวนคำถาม {activeLesson.lessonQuiz.questionsCount}
-                                    {activeLesson.lessonQuiz.maxAttempts ? ` • จำกัด ${activeLesson.lessonQuiz.maxAttempts} ครั้ง` : ' • ไม่จำกัดจำนวนครั้ง'}
-                                </p>
+                            <div className="rounded-2xl border border-slate-200/80 bg-white shadow-sm">
+                                <div className="flex items-center gap-3 px-5 py-4">
+                                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-violet-500/10">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-violet-600"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                                    </div>
+                                    <div>
+                                        <h3 className="font-bold text-slate-900">Quiz ท้ายบท</h3>
+                                        <p className="text-sm text-slate-500">
+                                            คะแนนผ่าน {activeLesson.lessonQuiz.passingScorePercent}% • {activeLesson.lessonQuiz.questionsCount} ข้อ
+                                            {activeLesson.lessonQuiz.maxAttempts ? ` • จำกัด ${activeLesson.lessonQuiz.maxAttempts} ครั้ง` : ' • ไม่จำกัดจำนวนครั้ง'}
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
                         )}
                     </main>

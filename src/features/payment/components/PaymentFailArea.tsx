@@ -4,12 +4,15 @@ import Link from 'next/link';
 import React, { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useLanguage } from '@/features/i18n';
+import { useOrderStore } from '@/stores/useOrderStore';
 
 const PaymentFailArea = () => {
     const { t } = useLanguage();
     const searchParams = useSearchParams();
     const paymentType = searchParams.get('type') || 'card'; // card, qr, promptpay
     const [showDetails, setShowDetails] = useState(false);
+    const { orderId, orderNumber } = useOrderStore();
+    const ref = orderNumber || orderId || 'N/A';
 
     // Error details based on payment type
     const getErrorInfo = () => {
@@ -21,7 +24,7 @@ const PaymentFailArea = () => {
                     title: t('QR Code หมดอายุ', 'QR Code Expired'),
                     message: t('QR Code หมดเวลาชำระเงิน กรุณาสร้าง QR Code ใหม่', 'QR Code payment has expired. Please generate a new QR Code.'),
                     time: new Date().toLocaleString('th-TH'),
-                    reference: 'PA-2024-QR-001234'
+                    reference: ref
                 };
             default:
                 return {
@@ -29,7 +32,7 @@ const PaymentFailArea = () => {
                     title: t('บัตรถูกปฏิเสธ', 'Card Declined'),
                     message: t('ธนาคารปฏิเสธการทำรายการ กรุณาตรวจสอบวงเงินหรือติดต่อธนาคารของท่าน', 'Your bank declined the transaction. Please check your available balance or contact your bank.'),
                     time: new Date().toLocaleString('th-TH'),
-                    reference: 'PA-2024-001234'
+                    reference: ref
                 };
         }
     };

@@ -5,7 +5,7 @@
  */
 
 import { useState, useCallback } from 'react';
-import { VOUCHER_CODES } from '../data/mockData';
+import { voucherApi } from '../services/voucherApi';
 
 interface UseVoucherReturn {
     // State
@@ -17,7 +17,7 @@ interface UseVoucherReturn {
 
     // Actions
     setVoucherCode: (code: string) => void;
-    applyVoucher: (subtotal: number, t: (th: string, en: string) => string) => void;
+    applyVoucher: (subtotal: number, t: (th: string, en: string) => string) => Promise<void>;
     removeVoucher: () => void;
 }
 
@@ -28,7 +28,7 @@ export const useVoucher = (): UseVoucherReturn => {
     const [discountError, setDiscountError] = useState('');
     const [appliedCode, setAppliedCode] = useState('');
 
-    const applyVoucher = useCallback((subtotal: number, t: (th: string, en: string) => string) => {
+    const applyVoucher = useCallback(async (subtotal: number, t: (th: string, en: string) => string) => {
         const code = voucherCode.toUpperCase().trim();
 
         if (!code) {
@@ -36,36 +36,31 @@ export const useVoucher = (): UseVoucherReturn => {
             return;
         }
 
-        const voucher = VOUCHER_CODES[code];
+        try {
+            const result = await voucherApi.validateVoucher(code, subtotal);
 
-        if (!voucher) {
-            setDiscountError(t('โค้ดส่วนลดไม่ถูกต้อง', 'Invalid voucher code'));
+            if (!result.isValid) {
+                const errorMsg = result.errorMessage?.startsWith('MIN_ORDER_')
+                    ? t(
+                          `ยอดขั้นต่ำ ${result.errorMessage.replace('MIN_ORDER_', '')} บาท`,
+                          `Minimum order ${result.errorMessage.replace('MIN_ORDER_', '')} THB`,
+                      )
+                    : t('โค้ดส่วนลดไม่ถูกต้อง', 'Invalid voucher code');
+                setDiscountError(errorMsg);
+                setDiscount(0);
+                setDiscountApplied(false);
+                return;
+            }
+
+            setDiscount(result.discount);
+            setDiscountApplied(true);
+            setDiscountError('');
+            setAppliedCode(result.appliedCode || code);
+        } catch {
+            setDiscountError(t('ไม่สามารถตรวจสอบโค้ดส่วนลดได้', 'Failed to validate voucher code'));
             setDiscount(0);
             setDiscountApplied(false);
-            return;
         }
-
-        if (voucher.minOrder && subtotal < voucher.minOrder) {
-            setDiscountError(t(
-                `ยอดขั้นต่ำ ${voucher.minOrder.toLocaleString()} บาท`,
-                `Minimum order ${voucher.minOrder.toLocaleString()} THB`
-            ));
-            setDiscount(0);
-            setDiscountApplied(false);
-            return;
-        }
-
-        let discountAmount = 0;
-        if (voucher.type === 'percent') {
-            discountAmount = Math.round(subtotal * (voucher.value / 100));
-        } else {
-            discountAmount = voucher.value;
-        }
-
-        setDiscount(discountAmount);
-        setDiscountApplied(true);
-        setDiscountError('');
-        setAppliedCode(code);
     }, [voucherCode]);
 
     const removeVoucher = useCallback(() => {

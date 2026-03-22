@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useAddToCart } from '@/features/cart/hooks';
 import type { CartItem } from '@/features/cart/types';
 import { useAuth } from '@/features/auth';
+import { ApiError } from '@/lib/api';
 import { coursesService } from '@/features/courses/services/coursesApi';
 import type { EnrolledCourse } from '@/features/courses/types';
 import { formatCoursePrice, isFreeCourse } from '../utils';
@@ -177,7 +178,7 @@ const CoursesDetailsArea: React.FC<CoursesDetailsAreaProps> = ({ initialData }) 
             router.push(`/course-learning?courseId=${courseId}`);
         } catch (error) {
             const message = error instanceof Error ? error.message : 'สมัครเรียนไม่สำเร็จ';
-            if (message.includes('COURSE_FULL') || message.toLowerCase().includes('course is full')) {
+            if (error instanceof ApiError && error.code === 'COURSE_FULL') {
                 setCtaError('คอร์สนี้เต็มแล้ว');
             } else {
                 setCtaError(message);

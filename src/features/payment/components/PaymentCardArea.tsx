@@ -3,10 +3,12 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/features/i18n';
+import { useOrderStore } from '@/stores/useOrderStore';
 
 const PaymentCardArea = () => {
     const { language, t } = useLanguage();
     const router = useRouter();
+    const { orderId, orderTotal, orderNumber } = useOrderStore();
     const [cardData, setCardData] = useState({
         cardNumber: '',
         cardName: '',
@@ -15,6 +17,12 @@ const PaymentCardArea = () => {
     });
     const [isProcessing, setIsProcessing] = useState(false);
     const [timeLeft, setTimeLeft] = useState(1 * 60); // 1 minutes in seconds
+
+    useEffect(() => {
+        if (!orderId) {
+            router.replace('/checkout');
+        }
+    }, [orderId, router]);
 
     useEffect(() => {
         if (timeLeft <= 0) {

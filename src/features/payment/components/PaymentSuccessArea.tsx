@@ -1,17 +1,25 @@
 "use client";
 
 import Link from 'next/link';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useLanguage } from '@/features/i18n';
+import { useOrderStore } from '@/stores/useOrderStore';
 
 const PaymentSuccessArea = () => {
     const { t } = useLanguage();
+    const { orderId, orderTotal, orderNumber, paymentMethod, clearCurrentOrder } = useOrderStore();
 
-    // Mock transaction data
+    // Clear order store after success page is shown
+    useEffect(() => {
+        return () => {
+            clearCurrentOrder();
+        };
+    }, [clearCurrentOrder]);
+
     const transactionData = {
-        amount: 4500,
-        transactionId: 'TXN-789123456',
-        paymentMethod: '**** 4242',
+        amount: orderTotal || 0,
+        transactionId: orderNumber || orderId || 'N/A',
+        paymentMethod: paymentMethod === 'card' ? 'Credit/Debit Card' : 'PromptPay',
         date: new Date().toLocaleDateString('th-TH', {
             year: 'numeric',
             month: 'short',

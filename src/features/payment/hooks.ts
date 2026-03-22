@@ -2,7 +2,8 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
-import { api } from '@/lib/api';
+import { paymentApi } from './services/paymentApi';
+import { voucherApi } from './services/voucherApi';
 import type {
     PaymentMethod,
     CreateOrderRequest,
@@ -25,19 +26,7 @@ export function usePayment() {
         setError(null);
 
         try {
-            // TODO: Replace with actual API call
-            // const response = await paymentService.createOrder(request);
-
-            await new Promise((resolve) => setTimeout(resolve, 1000));
-
-            // Mock response
-            const mockOrderId = `ORD-${Date.now()}`;
-
-            return {
-                success: true,
-                orderId: mockOrderId,
-                orderNumber: mockOrderId,
-            };
+            return await paymentApi.createOrder(request);
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : 'เกิดข้อผิดพลาด';
             setError(errorMessage);
@@ -56,10 +45,7 @@ export function usePayment() {
         setError(null);
 
         try {
-            // TODO: Replace with actual API call
-            await new Promise((resolve) => setTimeout(resolve, 1500));
-
-            return { success: true, orderId };
+            return await paymentApi.processPayment(orderId, paymentMethod, paymentInfo);
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : 'การชำระเงินล้มเหลว';
             setError(errorMessage);
@@ -71,9 +57,8 @@ export function usePayment() {
 
     const cancelOrder = useCallback(async (orderId: string): Promise<boolean> => {
         try {
-            // TODO: Replace with actual API call
-            await new Promise((resolve) => setTimeout(resolve, 500));
-            return true;
+            const result = await paymentApi.cancelOrder(orderId);
+            return result.success;
         } catch {
             return false;
         }
@@ -104,27 +89,8 @@ export function usePaymentHistory() {
         setError(null);
 
         try {
-            const response = await api.get<any>(`/orders/my?page=${page}&limit=${limit}`);
-            if (response.success && response.data?.orders) {
-                const mapped: Order[] = response.data.orders.map((o: any) => ({
-                    id: o.id,
-                    orderNumber: o.orderNumber,
-                    items: (o.items || []).map((i: any) => ({
-                        courseId: i.courseId,
-                        title: i.title,
-                        price: i.price,
-                    })),
-                    subtotal: o.subtotal || o.total,
-                    discount: o.discount || 0,
-                    total: o.total,
-                    paymentMethod: o.paymentMethod || 'credit_card',
-                    status: o.status === 'PAID' ? 'completed' : o.status === 'CANCELLED' ? 'cancelled' : 'pending',
-                    createdAt: o.createdAt,
-                }));
-                setOrders(mapped);
-            } else {
-                setOrders([]);
-            }
+            const result = await paymentApi.getOrderHistory(page, limit);
+            setOrders(result.orders);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'เกิดข้อผิดพลาด');
         } finally {
@@ -155,12 +121,9 @@ export function usePromptPay() {
 
     const generateQR = useCallback(async (orderId: string, amount: number) => {
         try {
-            // TODO: Replace with actual API call
-            await new Promise((resolve) => setTimeout(resolve, 500));
-
-            // Mock QR code
-            setQrCode('mock-qr-code-data');
-            setExpiresAt(new Date(Date.now() + 15 * 60 * 1000).toISOString()); // 15 minutes
+            const result = await paymentApi.generatePromptPayQR(orderId, amount);
+            setQrCode(result.qrCode);
+            setExpiresAt(result.expiresAt);
         } catch (err) {
             console.error('Failed to generate QR:', err);
         }
@@ -169,9 +132,8 @@ export function usePromptPay() {
     const checkPaymentStatus = useCallback(async (orderId: string): Promise<boolean> => {
         setIsChecking(true);
         try {
-            // TODO: Replace with actual API call
-            await new Promise((resolve) => setTimeout(resolve, 1000));
-            return false; // Not paid yet
+            const result = await paymentApi.checkPaymentStatus(orderId);
+            return result.status === 'completed';
         } finally {
             setIsChecking(false);
         }
@@ -203,19 +165,17 @@ export function useCoupon() {
         setError(null);
 
         try {
-            // TODO: Replace with actual API call
-            await new Promise((resolve) => setTimeout(resolve, 500));
+            const result = await voucherApi.validateVoucher(code, cartTotal);
 
-            // Mock validation
-            if (code.toUpperCase() === 'DISCOUNT10') {
+            if (result.isValid) {
                 setAppliedCoupon({
-                    code: code.toUpperCase(),
-                    discount: cartTotal * 0.1,
+                    code: result.appliedCode || code.toUpperCase(),
+                    discount: result.discount,
                 });
                 return true;
             }
 
-            setError('รหัสส่วนลดไม่ถูกต้อง');
+            setError(result.errorMessage || 'รหัสส่วนลดไม่ถูกต้อง');
             return false;
         } catch {
             setError('ไม่สามารถตรวจสอบรหัสส่วนลดได้');

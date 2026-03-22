@@ -30,7 +30,6 @@ interface VimeoLessonPlayerProps {
     playbackUrl: string;
     title: string;
     resumeAt?: number;
-    disableForwardSeekUi?: boolean;
     interactionDisabled?: boolean;
     onReadyChange?: (ready: boolean) => void;
     onInitialTimeResolved?: (seconds: number) => void;
@@ -38,7 +37,6 @@ interface VimeoLessonPlayerProps {
     onSeeked: (seconds: number) => void;
     onPause: (seconds: number) => void;
     onEnded: () => void;
-    onBlockedSeekControlInteraction?: () => void;
     playerRef?: MutableRefObject<VimeoLessonPlayerInstance | null>;
 }
 
@@ -54,7 +52,6 @@ export function VimeoLessonPlayer({
     playbackUrl,
     title,
     resumeAt = 0,
-    disableForwardSeekUi = false,
     interactionDisabled = false,
     onReadyChange,
     onInitialTimeResolved,
@@ -62,7 +59,6 @@ export function VimeoLessonPlayer({
     onSeeked,
     onPause,
     onEnded,
-    onBlockedSeekControlInteraction,
     playerRef,
 }: VimeoLessonPlayerProps) {
     const containerRef = useRef<HTMLDivElement | null>(null);
@@ -74,7 +70,6 @@ export function VimeoLessonPlayer({
     const onSeekedRef = useRef(onSeeked);
     const onPauseRef = useRef(onPause);
     const onEndedRef = useRef(onEnded);
-    const onBlockedSeekControlInteractionRef = useRef(onBlockedSeekControlInteraction);
     const playerRefProp = useRef(playerRef);
 
     const [isLoading, setIsLoading] = useState(true);
@@ -87,7 +82,6 @@ export function VimeoLessonPlayer({
     useEffect(() => { onSeekedRef.current = onSeeked; }, [onSeeked]);
     useEffect(() => { onPauseRef.current = onPause; }, [onPause]);
     useEffect(() => { onEndedRef.current = onEnded; }, [onEnded]);
-    useEffect(() => { onBlockedSeekControlInteractionRef.current = onBlockedSeekControlInteraction; }, [onBlockedSeekControlInteraction]);
     useEffect(() => { playerRefProp.current = playerRef; }, [playerRef]);
 
     useEffect(() => {
@@ -303,29 +297,6 @@ export function VimeoLessonPlayer({
     return (
         <div className="relative h-full w-full">
             <div ref={containerRef} className="h-full w-full" aria-label={title} />
-            {disableForwardSeekUi && !interactionDisabled && (
-                <div
-                    className="absolute bottom-0 left-16 right-16 z-10 h-14 cursor-not-allowed bg-transparent sm:left-20 sm:right-20 sm:h-16"
-                    aria-hidden="true"
-                    data-testid="vimeo-player-seek-guard"
-                    onClick={() => onBlockedSeekControlInteractionRef.current?.()}
-                    onMouseDown={(event) => {
-                        event.preventDefault();
-                        event.stopPropagation();
-                        onBlockedSeekControlInteractionRef.current?.();
-                    }}
-                    onPointerDown={(event) => {
-                        event.preventDefault();
-                        event.stopPropagation();
-                        onBlockedSeekControlInteractionRef.current?.();
-                    }}
-                    onTouchStart={(event) => {
-                        event.preventDefault();
-                        event.stopPropagation();
-                        onBlockedSeekControlInteractionRef.current?.();
-                    }}
-                />
-            )}
             {interactionDisabled && (
                 <div className="absolute inset-0 z-10" aria-hidden="true" data-testid="vimeo-player-interaction-blocker" />
             )}

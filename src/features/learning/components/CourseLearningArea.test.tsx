@@ -37,6 +37,16 @@ const testState = vi.hoisted(() => ({
     },
 }));
 
+let mockedNow = 0;
+let dateNowSpy: ReturnType<typeof vi.spyOn> | null = null;
+let mockedDocumentHidden = false;
+let mockedVisibilityState: DocumentVisibilityState = 'visible';
+let fetchMock: ReturnType<typeof vi.fn>;
+let windowOpenSpy: ReturnType<typeof vi.spyOn> | null = null;
+let createObjectUrlSpy: ReturnType<typeof vi.spyOn> | null = null;
+let revokeObjectUrlSpy: ReturnType<typeof vi.spyOn> | null = null;
+let openedPreviewWindow: { close: ReturnType<typeof vi.fn>; location: { href: string } } | null = null;
+
 testState.router = {
     push: (...args: any[]) => testState.routerPush(...args),
 };
@@ -63,6 +73,25 @@ function emitTimeUpdate(seconds: number) {
 function emitSeeked(seconds: number) {
     testState.player.props?.onSeeked?.(seconds);
 }
+
+function advancePlaybackClock(seconds: number) {
+    mockedNow += seconds * 1000;
+}
+
+function setDocumentVisibility(hidden: boolean) {
+    mockedDocumentHidden = hidden;
+    mockedVisibilityState = hidden ? 'hidden' : 'visible';
+}
+
+Object.defineProperty(document, 'hidden', {
+    configurable: true,
+    get: () => mockedDocumentHidden,
+});
+
+Object.defineProperty(document, 'visibilityState', {
+    configurable: true,
+    get: () => mockedVisibilityState,
+});
 
 vi.mock('next/navigation', () => ({
     useRouter: () => testState.router,
@@ -132,6 +161,24 @@ async function expectInteractiveModal(questionText: string) {
 
 describe('CourseLearningArea interactive harness', () => {
     beforeEach(() => {
+        mockedNow = 0;
+        setDocumentVisibility(false);
+        dateNowSpy?.mockRestore();
+        dateNowSpy = vi.spyOn(Date, 'now').mockImplementation(() => mockedNow);
+        fetchMock = vi.fn().mockResolvedValue({
+            blob: vi.fn().mockResolvedValue(new Blob(['pdf'], { type: 'application/pdf' })),
+        });
+        vi.stubGlobal('fetch', fetchMock as typeof fetch);
+        openedPreviewWindow = {
+            close: vi.fn(),
+            location: { href: '' },
+        };
+        windowOpenSpy?.mockRestore();
+        windowOpenSpy = vi.spyOn(window, 'open').mockImplementation(() => openedPreviewWindow as unknown as Window);
+        createObjectUrlSpy?.mockRestore();
+        createObjectUrlSpy = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:lesson-document');
+        revokeObjectUrlSpy?.mockRestore();
+        revokeObjectUrlSpy = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => undefined);
         testState.auth.isAuthenticated = true;
         testState.auth.isLoading = false;
         testState.searchParams.courseId = '12';
@@ -159,6 +206,19 @@ describe('CourseLearningArea interactive harness', () => {
         resetPlayerHarness();
     });
 
+    afterEach(() => {
+        dateNowSpy?.mockRestore();
+        dateNowSpy = null;
+        windowOpenSpy?.mockRestore();
+        windowOpenSpy = null;
+        createObjectUrlSpy?.mockRestore();
+        createObjectUrlSpy = null;
+        revokeObjectUrlSpy?.mockRestore();
+        revokeObjectUrlSpy = null;
+        openedPreviewWindow = null;
+        vi.unstubAllGlobals();
+    });
+
     it('shows loading state while auth is still loading', () => {
         testState.auth.isLoading = true;
 
@@ -166,6 +226,69 @@ describe('CourseLearningArea interactive harness', () => {
 
         expect(screen.getByText('กำลังโหลดเนื้อหาการเรียน')).toBeInTheDocument();
         expect(testState.api.getCourseLearning).not.toHaveBeenCalled();
+    });
+
+    it('opens PDF lesson documents stored as data URLs via a blob URL', async () => {
+        testState.api.getCourseLearning.mockResolvedValue(
+            createLearningCourseFixture({
+                lessons: [
+                    createLessonFixture({
+                        documents: [{
+                            id: 99,
+                            fileName: 'Sponsorship01.pdf',
+                            mimeType: 'application/pdf',
+                            sizeBytes: 2_000_000,
+                            fileUrl: 'data:application/pdf;base64,JVBERi0xLjQK',
+                        }],
+                    }),
+                ],
+            })
+        );
+
+        render(<CourseLearningArea />);
+
+        const previewButton = await screen.findByRole('button', { name: 'เปิดเอกสาร Sponsorship01.pdf' });
+
+        await userEvent.click(previewButton);
+
+        await waitFor(() => {
+            expect(fetchMock).toHaveBeenCalledWith('data:application/pdf;base64,JVBERi0xLjQK');
+            expect(window.open).toHaveBeenCalledWith('', '_blank', 'noopener,noreferrer');
+            expect(URL.createObjectURL).toHaveBeenCalled();
+            expect(openedPreviewWindow?.location.href).toBe('blob:lesson-document');
+        });
+    });
+
+    it('downloads PDF lesson documents stored as data URLs via a blob URL', async () => {
+        const anchorClickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => undefined);
+
+        testState.api.getCourseLearning.mockResolvedValue(
+            createLearningCourseFixture({
+                lessons: [
+                    createLessonFixture({
+                        documents: [{
+                            id: 100,
+                            fileName: '1.pdf',
+                            mimeType: 'application/pdf',
+                            sizeBytes: 1_900_000,
+                            fileUrl: 'data:application/pdf;base64,JVBERi0xLjQK',
+                        }],
+                    }),
+                ],
+            })
+        );
+
+        render(<CourseLearningArea />);
+
+        const downloadButton = await screen.findByRole('button', { name: 'ดาวน์โหลดเอกสาร 1.pdf' });
+        await userEvent.click(downloadButton);
+
+        await waitFor(() => {
+            expect(fetchMock).not.toHaveBeenCalled();
+            expect(anchorClickSpy).toHaveBeenCalled();
+        });
+
+        anchorClickSpy.mockRestore();
     });
 
     it('redirects unauthenticated users to sign-in', async () => {
@@ -261,6 +384,7 @@ describe('CourseLearningArea interactive harness', () => {
             emitInitialPosition(0);
         });
         act(() => {
+            advancePlaybackClock(120);
             emitTimeUpdate(120);
         });
 
@@ -345,6 +469,10 @@ describe('CourseLearningArea interactive harness', () => {
             emitInitialPosition(60);
         });
         act(() => {
+            advancePlaybackClock(1);
+            emitTimeUpdate(200);
+        });
+        act(() => {
             emitSeeked(200);
         });
 
@@ -353,6 +481,37 @@ describe('CourseLearningArea interactive harness', () => {
         });
         expect(await screen.findByText('ไม่สามารถกรอข้ามวิดีโอได้ กรุณาเรียนตามลำดับเวลา')).toBeInTheDocument();
         expect(screen.queryByRole('button', { name: 'ส่งคำตอบเพื่อเรียนต่อ' })).not.toBeInTheDocument();
+    });
+
+    it('pauses the lesson and persists progress when the page becomes hidden', async () => {
+        const course = createLearningCourseFixture({
+            lessons: [
+                createLessonFixture({
+                    progress: { lastWatchedSeconds: 125, isCompleted: false },
+                    interactiveQuestions: [],
+                }),
+            ],
+        });
+        testState.api.getCourseLearning.mockResolvedValue(course);
+
+        render(<CourseLearningArea />);
+
+        expect(await screen.findByTestId('mock-vimeo-player')).toBeInTheDocument();
+        act(() => {
+            emitInitialPosition(125);
+        });
+
+        setDocumentVisibility(true);
+        act(() => {
+            document.dispatchEvent(new Event('visibilitychange'));
+        });
+
+        await waitFor(() => {
+            expect(testState.player.pause).toHaveBeenCalled();
+        });
+        await waitFor(() => {
+            expect(testState.api.updateLessonProgress).toHaveBeenCalledWith(1, 125);
+        });
     });
 
     it('shows a specific lesson notice when completion is blocked by interactive progress', async () => {
@@ -443,11 +602,11 @@ describe('CourseLearningArea interactive harness', () => {
         render(<CourseLearningArea />);
 
         expect(await screen.findByRole('heading', { name: 'บทเรียนที่พร้อมเรียน' })).toBeInTheDocument();
-        const lockedLessonButton = screen.getByRole('button', { name: /2\.\s*บทเรียนที่ยังล็อก/ });
+        const lockedLessonButton = screen.getByRole('button', { name: /2\s+บทเรียนที่ยังล็อก\s+ล็อก/ });
         expect(lockedLessonButton).toBeDisabled();
+        expect(lockedLessonButton).toHaveTextContent('ล็อก');
         expect(screen.queryByText('บทเรียนที่ยังล็อก video')).not.toBeInTheDocument();
         expect(screen.queryByText('คำถาม interactive ตัวอย่าง')).not.toBeInTheDocument();
-        expect(screen.getAllByText(/ไม่มีวิดีโอ/).length).toBeGreaterThan(0);
     });
 
     it('keeps the modal open and shows an error when answer submission fails', async () => {
@@ -587,6 +746,7 @@ describe('CourseLearningArea interactive harness', () => {
         expect(answerOption).toHaveAttribute('aria-pressed', 'true');
 
         act(() => {
+            advancePlaybackClock(5);
             emitTimeUpdate(130);
         });
 
@@ -622,9 +782,11 @@ describe('CourseLearningArea interactive harness', () => {
             emitInitialPosition(0);
         });
         act(() => {
+            advancePlaybackClock(130);
             emitTimeUpdate(130);
         });
         act(() => {
+            advancePlaybackClock(5);
             emitTimeUpdate(135);
         });
 
@@ -722,11 +884,11 @@ describe('CourseLearningArea interactive harness', () => {
         render(<CourseLearningArea />);
 
         expect(await screen.findByRole('heading', { name: 'บทเรียนแรก' })).toBeInTheDocument();
-        expect(screen.getByText('ความคืบหน้าการรับชม')).toBeInTheDocument();
+        expect(screen.getByText('ความคืบหน้า')).toBeInTheDocument();
         expect(screen.getByText('25%')).toBeInTheDocument();
-        expect(screen.getByText('จบบทเรียนแล้ว 0% • 0/2 บท')).toBeInTheDocument();
+        expect(screen.getByText('จบแล้ว 0/2 บท (0%)')).toBeInTheDocument();
         expect(screen.getByText('ดูไปแล้ว 5:00 (50%)')).toBeInTheDocument();
-        expect(screen.getByText('Lesson Watch Progress')).toBeInTheDocument();
+        expect(screen.getByText('ความคืบหน้าบทเรียน')).toBeInTheDocument();
     });
 
     it('keeps the completion button disabled until the lesson is watched to the end', async () => {

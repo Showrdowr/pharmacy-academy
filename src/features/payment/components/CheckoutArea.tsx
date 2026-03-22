@@ -5,12 +5,12 @@ import React, { useState } from 'react';
 import { useCart } from '@/features/cart/hooks';
 import { useLanguage } from '@/features/i18n';
 import {
-    VOUCHER_CODES,
     createInitialAddressInfo,
     createInitialCompanyInfo,
-    type PaymentMethod,
+    type CheckoutPaymentMethod as PaymentMethod,
     type ReceiptType,
-} from '../data/mockData';
+} from '../types';
+import { voucherApi } from '../services/voucherApi';
 
 const CheckoutArea = () => {
     const { t } = useLanguage();
@@ -27,10 +27,11 @@ const CheckoutArea = () => {
     const [discountError, setDiscountError] = useState('');
     const [appliedCode, setAppliedCode] = useState('');
 
+    const subtotal = payableItems.reduce((sum, item) => sum + item.price, 0);
+    const tax = Math.round(subtotal * 0.07);
+    const total = subtotal - discount;
 
-
-
-    const applyVoucher = () => {
+    const applyVoucher = async () => {
         const code = voucherCode.toUpperCase().trim();
 
         if (!code) {
@@ -38,33 +39,31 @@ const CheckoutArea = () => {
             return;
         }
 
-        const voucher = VOUCHER_CODES[code];
+        try {
+            const result = await voucherApi.validateVoucher(code, subtotal);
 
-        if (!voucher) {
-            setDiscountError(t('โค้ดส่วนลดไม่ถูกต้อง', 'Invalid voucher code'));
+            if (!result.isValid) {
+                const errorMsg = result.errorMessage?.startsWith('MIN_ORDER_')
+                    ? t(
+                          `ยอดขั้นต่ำ ${result.errorMessage.replace('MIN_ORDER_', '')} บาท`,
+                          `Minimum order ${result.errorMessage.replace('MIN_ORDER_', '')} THB`,
+                      )
+                    : t('โค้ดส่วนลดไม่ถูกต้อง', 'Invalid voucher code');
+                setDiscountError(errorMsg);
+                setDiscount(0);
+                setDiscountApplied(false);
+                return;
+            }
+
+            setDiscount(result.discount);
+            setDiscountApplied(true);
+            setDiscountError('');
+            setAppliedCode(result.appliedCode || code);
+        } catch {
+            setDiscountError(t('ไม่สามารถตรวจสอบโค้ดส่วนลดได้', 'Failed to validate voucher code'));
             setDiscount(0);
             setDiscountApplied(false);
-            return;
         }
-
-        if (voucher.minOrder && subtotal < voucher.minOrder) {
-            setDiscountError(t(`ยอดขั้นต่ำ ${voucher.minOrder.toLocaleString()} บาท`, `Minimum order ${voucher.minOrder.toLocaleString()} THB`));
-            setDiscount(0);
-            setDiscountApplied(false);
-            return;
-        }
-
-        let discountAmount = 0;
-        if (voucher.type === 'percent') {
-            discountAmount = Math.round(subtotal * (voucher.value / 100));
-        } else {
-            discountAmount = voucher.value;
-        }
-
-        setDiscount(discountAmount);
-        setDiscountApplied(true);
-        setDiscountError('');
-        setAppliedCode(code);
     };
 
     const removeVoucher = () => {
@@ -74,10 +73,6 @@ const CheckoutArea = () => {
         setAppliedCode('');
         setDiscountError('');
     };
-
-    const subtotal = payableItems.reduce((sum, item) => sum + item.price, 0);
-    const tax = Math.round(subtotal * 0.07);
-    const total = subtotal - discount;
 
     return (
         <>

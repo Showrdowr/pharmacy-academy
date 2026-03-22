@@ -2,6 +2,7 @@ import { defineConfig, devices } from '@playwright/test';
 
 const playwrightPort = process.env.PLAYWRIGHT_PORT || '3000';
 const baseURL = `http://localhost:${playwrightPort}`;
+const mockedApiBaseUrl = `${baseURL}/api/v1`;
 
 export default defineConfig({
     testDir: './e2e',
@@ -18,7 +19,7 @@ export default defineConfig({
         headless: true,
     },
     webServer: {
-        command: `powershell -Command "npx.cmd next dev -p ${playwrightPort}"`,
+        command: `powershell -Command "$env:NEXT_PUBLIC_API_URL='${mockedApiBaseUrl}'; npx.cmd next dev -p ${playwrightPort}"`,
         url: baseURL,
         reuseExistingServer: !process.env.CI,
         timeout: 120_000,

@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { VimeoLessonPlayer } from './VimeoLessonPlayer';
 
 const playerHarness = vi.hoisted(() => ({
@@ -71,15 +71,11 @@ describe('VimeoLessonPlayer', () => {
         delete window.__PHARMACY_TEST_VIMEO_PLAYER__;
     });
 
-    it('keeps the native Vimeo player UI but renders a seek guard in learner mode', async () => {
-        const onBlockedSeekControlInteraction = vi.fn();
-
+    it('keeps the native Vimeo player UI interactive when seek validation is handled by runtime logic', async () => {
         render(
             <VimeoLessonPlayer
                 playbackUrl="https://player.vimeo.com/video/1175386748?h=testhash"
                 title="บทเรียนทดสอบ"
-                disableForwardSeekUi
-                onBlockedSeekControlInteraction={onBlockedSeekControlInteraction}
                 onTimeUpdate={() => undefined}
                 onSeeked={() => undefined}
                 onPause={() => undefined}
@@ -97,12 +93,7 @@ describe('VimeoLessonPlayer', () => {
             expect((iframe as HTMLIFrameElement).style.pointerEvents).toBe('');
             expect(iframe).not.toHaveAttribute('tabindex');
         });
-
-        const seekGuard = screen.getByTestId('vimeo-player-seek-guard');
-        expect(seekGuard).toBeInTheDocument();
-
-        fireEvent.pointerDown(seekGuard);
-        expect(onBlockedSeekControlInteraction).toHaveBeenCalledTimes(1);
+        expect(screen.queryByTestId('vimeo-player-seek-guard')).not.toBeInTheDocument();
     });
 
     it('isolates iframe interaction only while the lesson modal is blocking the player', async () => {

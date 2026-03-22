@@ -1,5 +1,11 @@
 import { expect, test } from '@playwright/test';
 
+const CORS_HEADERS = {
+    'access-control-allow-origin': '*',
+    'access-control-allow-methods': 'GET,POST,PATCH,OPTIONS',
+    'access-control-allow-headers': 'Authorization,Content-Type',
+};
+
 function createLearningLessonData(overrides: {
     id: number;
     title: string;
@@ -73,6 +79,8 @@ function createLearningCourseData(questionOverrides: {
         cpeCredits: 0,
         enrolledAt: '2026-03-01T00:00:00.000Z',
         lastAccessedAt: '2026-03-01T00:00:00.000Z',
+        watchPercent: 0,
+        completionPercent: 0,
         progressPercent: 0,
         completedLessons: [],
         lastAccessedLessonId: 1,
@@ -172,9 +180,20 @@ async function mockLearningApis(
     }
 ) {
     await page.route('**/api/auth/me', async (route) => {
+        if (route.request().method() === 'OPTIONS') {
+            await route.fulfill({
+                status: 204,
+                headers: CORS_HEADERS,
+            });
+            return;
+        }
+
         await route.fulfill({
             status: 200,
-            contentType: 'application/json',
+            headers: {
+                ...CORS_HEADERS,
+                'content-type': 'application/json',
+            },
             body: JSON.stringify({
                 success: true,
                 user: {
@@ -188,9 +207,20 @@ async function mockLearningApis(
     });
 
     await page.route('**/api/v1/courses/12/learning', async (route) => {
+        if (route.request().method() === 'OPTIONS') {
+            await route.fulfill({
+                status: 204,
+                headers: CORS_HEADERS,
+            });
+            return;
+        }
+
         await route.fulfill({
             status: 200,
-            contentType: 'application/json',
+            headers: {
+                ...CORS_HEADERS,
+                'content-type': 'application/json',
+            },
             body: JSON.stringify({
                 data: courseData,
             }),
@@ -198,6 +228,14 @@ async function mockLearningApis(
     });
 
     await page.route('**/api/v1/video-questions/*/answer', async (route) => {
+        if (route.request().method() === 'OPTIONS') {
+            await route.fulfill({
+                status: 204,
+                headers: CORS_HEADERS,
+            });
+            return;
+        }
+
         const payload = route.request().postDataJSON() as { answerGiven?: string };
         const match = new URL(route.request().url()).pathname.match(/video-questions\/(\d+)\/answer/);
         const questionId = Number(match?.[1] ?? 0);
@@ -205,7 +243,10 @@ async function mockLearningApis(
 
         await route.fulfill({
             status: 201,
-            contentType: 'application/json',
+            headers: {
+                ...CORS_HEADERS,
+                'content-type': 'application/json',
+            },
             body: JSON.stringify({
                 data: {
                     id: 1,
@@ -219,12 +260,23 @@ async function mockLearningApis(
     });
 
     await page.route('**/api/v1/lessons/*/progress', async (route) => {
+        if (route.request().method() === 'OPTIONS') {
+            await route.fulfill({
+                status: 204,
+                headers: CORS_HEADERS,
+            });
+            return;
+        }
+
         const payload = route.request().postDataJSON?.() as { lastWatchedSeconds?: number } | undefined;
         trackers.progressUpdates.push(payload?.lastWatchedSeconds ?? -1);
 
         await route.fulfill({
             status: 200,
-            contentType: 'application/json',
+            headers: {
+                ...CORS_HEADERS,
+                'content-type': 'application/json',
+            },
             body: JSON.stringify({
                 data: {
                     lastWatchedSeconds: payload?.lastWatchedSeconds ?? 0,
@@ -235,12 +287,23 @@ async function mockLearningApis(
     });
 
     await page.route('**/api/v1/courses/12/lessons/*/complete', async (route) => {
+        if (route.request().method() === 'OPTIONS') {
+            await route.fulfill({
+                status: 204,
+                headers: CORS_HEADERS,
+            });
+            return;
+        }
+
         const match = new URL(route.request().url()).pathname.match(/lessons\/(\d+)\/complete/);
         const lessonId = Number(match?.[1] ?? 1);
         trackers.completions += 1;
         await route.fulfill({
             status: 200,
-            contentType: 'application/json',
+            headers: {
+                ...CORS_HEADERS,
+                'content-type': 'application/json',
+            },
             body: JSON.stringify({
                 data: {
                     lessonId,
@@ -317,7 +380,6 @@ test.describe('interactive modal browser regression', () => {
         expect(trackers.submittedAnswers).toEqual(['option-a']);
         await expect(page.getByTestId('vimeo-player-interaction-blocker')).toHaveCount(0);
         await expect(playerSurface).not.toHaveAttribute('aria-hidden', 'true');
-        await expect(page.getByTestId('vimeo-player-seek-guard')).toBeVisible();
     });
 
     test('allows typing and submitting a short-answer interactive prompt', async ({ page }) => {
@@ -364,6 +426,8 @@ test.describe('interactive modal browser regression', () => {
             cpeCredits: 0,
             enrolledAt: '2026-03-01T00:00:00.000Z',
             lastAccessedAt: '2026-03-01T00:00:00.000Z',
+            watchPercent: 0,
+            completionPercent: 0,
             progressPercent: 0,
             completedLessons: [],
             lastAccessedLessonId: 1,
@@ -431,6 +495,8 @@ test.describe('interactive modal browser regression', () => {
             cpeCredits: 0,
             enrolledAt: '2026-03-01T00:00:00.000Z',
             lastAccessedAt: '2026-03-01T00:00:00.000Z',
+            watchPercent: 0,
+            completionPercent: 0,
             progressPercent: 0,
             completedLessons: [],
             lastAccessedLessonId: 1,

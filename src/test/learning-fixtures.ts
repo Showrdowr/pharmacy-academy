@@ -125,6 +125,8 @@ export function createLearningCourseFixture(
         cpeCredits: 0,
         enrolledAt: '2026-03-01T00:00:00.000Z',
         lastAccessedAt: '2026-03-01T00:00:00.000Z',
+        watchPercent: 0,
+        completionPercent: 0,
         progressPercent: 0,
         completedLessons,
         lastAccessedLessonId,
