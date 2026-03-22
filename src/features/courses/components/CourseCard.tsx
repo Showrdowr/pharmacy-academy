@@ -66,24 +66,8 @@ const CourseCard: React.FC<CourseCardProps> = ({ course }) => {
                             onError={() => setImageSrc(FALLBACK_IMAGE)}
                         />
                     )}
-                    <h3 className="courses-title" style={{ fontSize: '30px' }}>{course.categoryEn}</h3>
-                    <h4 className="topic-title">{course.cpe} CPE</h4>
-                    <div className="arrow-items">
-                        {[1, 2, 3, 4, 5, 6].map((num) => (
-                            <div
-                                key={num}
-                                className={`GlidingArrow${num > 1 ? ` delay${num - 1}` : ''}`}
-                            >
-                                <Image
-                                    src={`/assets/img/courses/a${num}.png`}
-                                    alt="img"
-                                    width={40}
-                                    height={40}
-                                    style={{ width: 'auto', height: 'auto' }}
-                                />
-                            </div>
-                        ))}
-                    </div>
+                    
+                    
                 </div>
                 <div className="courses-content">
                     <ul className="post-cat">
@@ -124,17 +108,26 @@ const CourseCard: React.FC<CourseCardProps> = ({ course }) => {
                 className="courses-card-items-hover"
                 style={{
                     marginTop: 20,
-                    padding: '18px 20px',
+                    padding: '16px 18px',
                     display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    height: '450px'
+                    flexDirection: 'column',
+                    justifyContent: 'flex-start',
+                    overflow: 'hidden',
+                    boxSizing: 'border-box',
                 }}
             >
-                <div className="courses-content" style={{ width: '100%' }}>
-                    <ul className="post-cat" style={{ marginBottom: '5px' }}>
+                <div className="courses-content" style={{
+                    width: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    flex: 1,
+                    minHeight: 0,
+                    overflow: 'hidden',
+                    gap: '6px',
+                }}>
+                    <ul className="post-cat" style={{ marginBottom: 0, flexShrink: 0 }}>
                         <li>
-                            <Link href="/courses-grid" style={{ fontSize: '18px' }}>{course.category}</Link>
+                            <Link href="/courses-grid" style={{ fontSize: '16px' }}>{course.category}</Link>
                         </li>
                         <li>
                             {[1, 2, 3, 4, 5].map((star) => (
@@ -142,21 +135,21 @@ const CourseCard: React.FC<CourseCardProps> = ({ course }) => {
                             ))}
                         </li>
                     </ul>
-                    <h5 style={{ marginBottom: '-12px' }}>
-                        <span style={{ fontSize: '20px', fontWeight: 700 }}>
+                    <h5 style={{ margin: 0, flexShrink: 0 }}>
+                        <span style={{ fontSize: '18px', fontWeight: 700, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                             {course.title}
                         </span>
                     </h5>
-                    <h4 className="text-force-20 text-force-bold" style={{ marginBottom: '-4px' }}>{formatCoursePrice(course.price)}</h4>
-                    <span className="text-force-16" style={{ display: 'block', marginBottom: '2px', lineHeight: '1.4' }}>{course.description}</span>
-                    <div className="client-items" style={{ marginTop: '0' }}>
+                    <h4 className="text-force-20 text-force-bold" style={{ margin: 0, flexShrink: 0 }}>{formatCoursePrice(course.price)}</h4>
+                    <span className="text-force-16" style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', lineHeight: '1.5', flexShrink: 1, minHeight: 0 }}>{course.description}</span>
+                    <div className="client-items" style={{ marginTop: 0, flexShrink: 0 }}>
                         <div
                             className="client-img bg-cover"
                             style={{ background: `url(/assets/img/courses/client-1.png)` }}
                         />
-                        <p>{course.instructor}</p>
+                        <p style={{ margin: 0 }}>{course.instructor}</p>
                     </div>
-                    <ul className="post-class">
+                    <ul className="post-class" style={{ marginBottom: 0, flexShrink: 0 }}>
                         <li>
                             <i className="far fa-clock" />
                             {course.duration}
@@ -166,11 +159,13 @@ const CourseCard: React.FC<CourseCardProps> = ({ course }) => {
                             {course.students} {t('คน', 'students')}
                         </li>
                     </ul>
-                    <EnrollButton courseId={course.id} className="theme-btn yellow-btn">
-                        <span className="text-force-20 text-force-bold" style={{ lineHeight: '1' }}>
-                            {t('สมัครเรียน', 'Enroll Now')}
-                        </span>
-                    </EnrollButton>
+                    <div style={{ marginTop: 20, flexShrink: 0, width: '100%' }}>
+                        <EnrollButton courseId={course.id} className="theme-btn yellow-btn">
+                            <span className="text-force-20 text-force-bold" style={{ lineHeight: '1' }}>
+                                {t('สมัครเรียน', 'Enroll Now')}
+                            </span>
+                        </EnrollButton>
+                    </div>
                 </div>
             </div>
         </div>

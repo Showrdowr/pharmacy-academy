@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useMemo, useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/features/auth';
 import { useLanguage } from '@/features/i18n';
+import { api } from '@/lib/api';
 import { useEnrolledCourses } from '@/features/courses/hooks';
 
 const UserProfileArea = () => {
@@ -244,16 +245,22 @@ const UserProfileArea = () => {
 
                             <div className="course-cards-list" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                                 {isEnrolledCoursesLoading ? (
-                                    <div style={{ padding: '30px 0', textAlign: 'center', color: '#666' }}>
-                                        {t('กำลังโหลดคอร์สของฉัน...', 'Loading my courses...')}
+                                    <div className="text-center py-5">
+                                        <i className="fas fa-spinner fa-spin" style={{ fontSize: '32px', color: '#004736' }}></i>
+                                        <p className="mt-3" style={{ color: '#666' }}>{t('กำลังโหลดข้อมูลคอร์ส...', 'Loading courses...')}</p>
                                     </div>
                                 ) : enrolledCoursesError ? (
                                     <div style={{ padding: '18px 20px', borderRadius: '12px', background: '#fef2f2', color: '#b91c1c', border: '1px solid #fecaca' }}>
                                         {enrolledCoursesError}
                                     </div>
                                 ) : enrolledCourses.length === 0 ? (
-                                    <div style={{ padding: '30px 0', textAlign: 'center', color: '#666' }}>
-                                        {t('ยังไม่มีคอร์สในรายการของฉัน', 'No courses in my list yet')}
+                                    <div className="text-center py-5">
+                                        <i className="fas fa-book-open" style={{ fontSize: '48px', color: '#ddd', marginBottom: '16px' }}></i>
+                                        <h5 style={{ color: '#666' }}>{t('ยังไม่มีคอร์สเรียน', 'No courses yet')}</h5>
+                                        <p style={{ color: '#999' }}>{t('เริ่มต้นเรียนรู้กับคอร์สดีๆ ได้เลย', 'Start learning with great courses')}</p>
+                                        <Link href="/courses-grid" className="theme-btn mt-2">
+                                            {t('ค้นหาคอร์ส', 'Browse Courses')}
+                                        </Link>
                                     </div>
                                 ) : (
                                     enrolledCourses.map((course) => {
@@ -272,6 +279,7 @@ const UserProfileArea = () => {
                                                 transition: 'box-shadow 0.3s ease',
                                                 position: 'relative',
                                             }}>
+                                                {/* Course Icon */}
                                                 <div className="course-card-icon" style={{
                                                     width: '80px',
                                                     height: '80px',
@@ -285,10 +293,11 @@ const UserProfileArea = () => {
                                                     <i className="fas fa-book-open" style={{ fontSize: '28px', color: '#fff' }}></i>
                                                 </div>
 
+                                                {/* Course Info */}
                                                 <div className="course-card-info" style={{ flex: 1, minWidth: 0 }}>
                                                     <div className="course-card-header" style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
                                                         <h5 className="course-card-title text-resp-body-lg" style={{ margin: 0, color: '#333', fontWeight: '600' }}>
-                                                            {course.title}
+                                                            {course.title || 'คอร์สเรียน'}
                                                         </h5>
                                                         {isCompleted ? (
                                                             <span className="course-card-badge completed" style={{
@@ -321,6 +330,7 @@ const UserProfileArea = () => {
                                                         <span style={{ margin: '0 10px', color: '#ddd' }}>|</span>
                                                         <i className="fas fa-certificate me-1"></i>{Number(course.cpeCredits || course.cpe || 0)} {t('หน่วยกิต', 'Credits')}
                                                     </p>
+                                                    {/* Progress Bar */}
                                                     <div className="course-card-progress" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                                                         <div style={{
                                                             flex: 1,
@@ -332,7 +342,7 @@ const UserProfileArea = () => {
                                                             <div style={{
                                                                 width: `${progressPercent}%`,
                                                                 height: '100%',
-                                                                background: progressPercent === 100 ? '#22c55e' : '#004736',
+                                                                background: progressPercent >= 100 ? '#22c55e' : '#004736',
                                                                 borderRadius: '4px'
                                                             }}></div>
                                                         </div>
@@ -342,6 +352,7 @@ const UserProfileArea = () => {
                                                     </div>
                                                 </div>
 
+                                                {/* Action Buttons */}
                                                 <div className="course-card-actions" style={{ display: 'flex', gap: '10px', flexShrink: 0 }}>
                                                     {isCompleted ? (
                                                         <DownloadButton t={t} />

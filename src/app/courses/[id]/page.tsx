@@ -195,7 +195,7 @@ export default async function CourseDetailsPage({
         <Wrapper>
             <MarqueeOne />
             <HeaderTwo />
-            <BreadcrumbCoursesDetails />
+            <BreadcrumbCoursesDetails courseTitle={initialCourseData.title} />
             <CoursesDetailsArea initialData={initialCourseData} />
             <RelatedCourses />
             <MarqueeOne style_2={true} />
