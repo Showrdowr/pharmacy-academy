@@ -150,12 +150,19 @@ interface UseEnrolledCoursesReturn {
     refresh: () => void;
 }
 
-export function useEnrolledCourses(): UseEnrolledCoursesReturn {
+export function useEnrolledCourses(enabled = true): UseEnrolledCoursesReturn {
     const [enrolledCourses, setEnrolledCourses] = useState<EnrolledCourse[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     const fetchEnrolledCourses = useCallback(async () => {
+        if (!enabled) {
+            setEnrolledCourses([]);
+            setError(null);
+            setIsLoading(false);
+            return;
+        }
+
         try {
             setIsLoading(true);
             setError(null);
@@ -167,7 +174,7 @@ export function useEnrolledCourses(): UseEnrolledCoursesReturn {
         } finally {
             setIsLoading(false);
         }
-    }, []);
+    }, [enabled]);
 
     useEffect(() => {
         fetchEnrolledCourses();

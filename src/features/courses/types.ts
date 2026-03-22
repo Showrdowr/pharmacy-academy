@@ -20,6 +20,7 @@ export type DifficultyLevel = 'beginner' | 'intermediate' | 'advanced';
  * สถานะของคอร์ส
  */
 export type CourseStatus = 'draft' | 'published' | 'archived';
+export type CourseVideoStatus = 'PROCESSING' | 'READY' | 'FAILED';
 
 /**
  * ข้อมูลผู้สอน
@@ -30,6 +31,16 @@ export interface Instructor {
     title: string;
     avatar?: string;
     bio?: string;
+}
+
+export interface CoursePreviewVideo {
+    id: number;
+    provider: string;
+    resourceId: string;
+    duration: number;
+    name?: string | null;
+    status: CourseVideoStatus;
+    playbackUrl: string | null;
 }
 
 /**
@@ -75,6 +86,7 @@ export interface Course {
     rating: number;
     reviewsCount: number;
     cpeCredits?: number; // หน่วยกิต CPE สำหรับเภสัชกร
+    previewVideo?: CoursePreviewVideo | null;
     sections?: CourseSection[];
     requirements?: string[];
     whatYouWillLearn?: string[];
@@ -120,9 +132,24 @@ export interface CourseProgress {
 /**
  * คอร์สที่กำลังเรียน (My Courses)
  */
-export interface EnrolledCourse extends CourseCard {
-    progress: CourseProgress;
+export interface EnrolledCourse {
+    id: number;
+    courseId: number;
+    title: string;
+    thumbnail?: string | null;
+    authorName?: string | null;
+    instructor?: string | null;
+    cpeCredits?: number;
+    cpe?: number;
+    progressPercent: number;
+    progress?: number;
+    status: 'in_progress' | 'completed';
     enrolledAt: string;
+    lastAccessedAt?: string | null;
+    completedAt?: string | null;
+    certificateUrl?: string | null;
+    courseTitle?: string;
+    hasCertificate?: boolean;
 }
 
 /**

@@ -4,6 +4,24 @@ import type { CartItem, CartContextType } from '@/features/cart/types';
 
 interface CartStore extends CartContextType {
     setHasHydrated: (state: boolean) => void;
+    sanitizeCart: () => void;
+}
+
+function sanitizeCartItems(items: CartItem[]): CartItem[] {
+    return items.filter((item) => Number(item.price) > 0);
+}
+
+function buildCartTotals(items: CartItem[]) {
+    return {
+        items,
+        cartItems: items,
+        cartCount: items.length,
+        cartTotal: items.reduce((sum, i) => sum + i.price, 0),
+        totalOriginalPrice: items.reduce((sum, i) => sum + (i.originalPrice || i.price), 0),
+        totalDiscount:
+            items.reduce((sum, i) => sum + (i.originalPrice || i.price), 0)
+            - items.reduce((sum, i) => sum + i.price, 0),
+    };
 }
 
 export const useCartStore = create<CartStore>()(
@@ -15,42 +33,27 @@ export const useCartStore = create<CartStore>()(
 
             setHasHydrated: (state) => set({ isHydrated: state }),
 
+            sanitizeCart: () => {
+                const sanitizedItems = sanitizeCartItems(get().items);
+                set(buildCartTotals(sanitizedItems));
+            },
+
             addToCart: (item: CartItem) => {
+                if (Number(item.price) <= 0) return;
                 const { items } = get();
                 if (items.some((i) => i.id === item.id)) return;
-                const newItems = [...items, item];
-                set({
-                    items: newItems,
-                    cartItems: newItems,
-                    cartCount: newItems.length,
-                    cartTotal: newItems.reduce((sum, i) => sum + i.price, 0),
-                    totalOriginalPrice: newItems.reduce((sum, i) => sum + (i.originalPrice || i.price), 0),
-                    totalDiscount: newItems.reduce((sum, i) => sum + (i.originalPrice || i.price), 0) - newItems.reduce((sum, i) => sum + i.price, 0)
-                });
+                const newItems = sanitizeCartItems([...items, item]);
+                set(buildCartTotals(newItems));
             },
 
             removeFromCart: (id: number) => {
                 const { items } = get();
-                const newItems = items.filter((item) => item.id !== id);
-                set({
-                    items: newItems,
-                    cartItems: newItems,
-                    cartCount: newItems.length,
-                    cartTotal: newItems.reduce((sum, i) => sum + i.price, 0),
-                    totalOriginalPrice: newItems.reduce((sum, i) => sum + (i.originalPrice || i.price), 0),
-                    totalDiscount: newItems.reduce((sum, i) => sum + (i.originalPrice || i.price), 0) - newItems.reduce((sum, i) => sum + i.price, 0)
-                });
+                const newItems = sanitizeCartItems(items.filter((item) => item.id !== id));
+                set(buildCartTotals(newItems));
             },
 
             clearCart: () => {
-                set({
-                    items: [],
-                    cartItems: [],
-                    cartCount: 0,
-                    cartTotal: 0,
-                    totalOriginalPrice: 0,
-                    totalDiscount: 0
-                });
+                set(buildCartTotals([]));
             },
 
             isInCart: (id: number) => {
@@ -65,7 +68,10 @@ export const useCartStore = create<CartStore>()(
         {
             name: 'pharmacyCart',
             onRehydrateStorage: () => (state) => {
-                if (state) state.setHasHydrated(true);
+                if (state) {
+                    state.sanitizeCart();
+                    state.setHasHydrated(true);
+                }
             }
         }
     )

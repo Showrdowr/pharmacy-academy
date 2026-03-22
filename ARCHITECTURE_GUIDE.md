@@ -41,7 +41,9 @@ src/
 │   │   ├── hooks.ts         # usePayment, usePromptPay
 │   │   └── types.ts
 │   ├── learning/            # Course learning
-│   │   ├── hooks.ts         # useLearning, useVideoPlayer, useQuiz
+│   │   ├── components/      # CourseLearningArea, VimeoLessonPlayer, InteractivePromptModal
+│   │   ├── services/        # learningApi.ts
+│   │   ├── interactive-runtime.ts
 │   │   └── types.ts
 │   └── profile/             # User profile
 │       ├── hooks.ts         # useProfile, useCPESummary
@@ -98,9 +100,10 @@ features/courses/
 ```
 
 **หลักการสำคัญ:**
-- ใช้ hooks เป็น interface หลัก
+- ใช้ feature entrypoint ที่เป็น source of truth ของ runtime นั้นจริง
 - แยก API calls ไว้ใน services
-- UI components ต้อง stateless
+- UI components ต้อง stateless หรือถือ state เฉพาะที่จำเป็นต่อ runtime นั้น
+- อย่าเดาว่า feature ไหนใช้ `hooks.ts` เป็นแกนหลักเสมอไป
 
 ```tsx
 // ✅ Good - ใช้ hook จาก feature
@@ -191,14 +194,25 @@ const { addToCart, isInCart } = useAddToCart();
 
 ### Learning
 ```tsx
-import { useLearning, useVideoPlayer, useQuiz } from '@/features/learning';
+import { CourseLearningArea } from '@/features/learning';
 
-// หน้าเรียน
-const { sections, currentLesson, progress } = useLearning(courseId);
-
-// Video player
-const { videoRef, state, togglePlay, seek } = useVideoPlayer();
+export default function CourseLearningPage() {
+  return <CourseLearningArea />;
+}
 ```
+
+Current learning runtime source of truth:
+- `CourseLearningArea`
+- `VimeoLessonPlayer`
+- `InteractivePromptModal`
+- `learningApi`
+- `interactive-runtime`
+
+Learning contract baseline:
+- locked lesson ต้องมาแบบ sanitized payload
+- learner write actions ต้องรองรับ `LESSON_LOCKED`
+- progress ฝั่ง server ต้อง monotonic
+- interactive questions แบบ import ใช้ bulk route เดียวที่ atomic
 
 ---
 
@@ -236,3 +250,4 @@ import { useCart } from '@/features/cart';
 5. [ ] รวม `common/`, `ui/` เข้า `components/`
 6. [ ] ลบ `context/` folder หลังจาก migrate เสร็จ
 7. [ ] จัดกลุ่ม routes ด้วย (public), (auth), (user)
+8. [x] ลบ legacy `features/learning/hooks.ts` ออกจาก repo และคง source of truth ไว้ที่ learning runtime ปัจจุบัน

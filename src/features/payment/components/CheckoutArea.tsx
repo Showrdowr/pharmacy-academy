@@ -15,6 +15,7 @@ import {
 const CheckoutArea = () => {
     const { t } = useLanguage();
     const { cartItems, removeFromCart, clearCart } = useCart();
+    const payableItems = cartItems.filter((item) => Number(item.price) > 0);
     const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('promptpay');
     const [receiptType, setReceiptType] = useState<ReceiptType>('personal');
     const [companyInfo, setCompanyInfo] = useState(createInitialCompanyInfo());
@@ -74,7 +75,7 @@ const CheckoutArea = () => {
         setDiscountError('');
     };
 
-    const subtotal = cartItems.reduce((sum, item) => sum + item.price, 0);
+    const subtotal = payableItems.reduce((sum, item) => sum + item.price, 0);
     const tax = Math.round(subtotal * 0.07);
     const total = subtotal - discount;
 
@@ -599,17 +600,17 @@ const CheckoutArea = () => {
                                         }
                                         window.location.href = paymentMethod === 'promptpay' ? '/payment-qr' : '/payment-card';
                                     }}
-                                    disabled={cartItems.length === 0}
+                                    disabled={payableItems.length === 0}
                                     className="text-force-20"
                                     style={{
                                         width: '100%',
                                         padding: '16px',
-                                        background: cartItems.length === 0 ? '#ccc' : '#014D40',
+                                        background: payableItems.length === 0 ? '#ccc' : '#014D40',
                                         color: '#fff',
                                         border: 'none',
                                         borderRadius: '12px',
                                         fontWeight: '500',
-                                        cursor: cartItems.length === 0 ? 'not-allowed' : 'pointer',
+                                        cursor: payableItems.length === 0 ? 'not-allowed' : 'pointer',
                                         marginBottom: '16px'
                                     }}
                                 >
@@ -638,7 +639,7 @@ const CheckoutArea = () => {
                                 {/* Header */}
                                 <div className="d-flex justify-content-between align-items-center mb-4">
                                     <h5 className="text-force-22 text-force-bold" style={{ color: '#333', margin: 0 }}>
-                                        {t('คอร์สเรียน', 'Courses')} ({cartItems.length})
+                                        {t('คอร์สเรียน', 'Courses')} ({payableItems.length})
                                     </h5>
                                     <button
                                         onClick={clearCart}
@@ -658,7 +659,7 @@ const CheckoutArea = () => {
                                 </div>
 
                                 {/* Cart Items */}
-                                {cartItems.length === 0 ? (
+                                {payableItems.length === 0 ? (
                                     <div className="text-center py-5">
                                         <i className="fas fa-shopping-cart" style={{ fontSize: '48px', color: '#ddd', marginBottom: '16px' }}></i>
                                         <p style={{ color: '#666' }}>{t('ไม่มีคอร์สในตะกร้า', 'No courses in cart')}</p>
@@ -668,7 +669,7 @@ const CheckoutArea = () => {
                                     </div>
                                 ) : (
                                     <div className="cart-items checkout-cart-items" style={{ marginBottom: '16px' }}>
-                                        {cartItems.map((item) => (
+                                        {payableItems.map((item) => (
                                             <div key={item.id} className="cart-item d-flex gap-3 mb-3 pb-3" style={{ borderBottom: '1px solid #f0f0f0' }}>
                                                 {/* Course Image */}
                                                 <div style={{
@@ -825,7 +826,7 @@ const CheckoutArea = () => {
                                     <h6 className="text-force-20 text-force-bold" style={{ color: '#333', marginBottom: '12px' }}>{t('สรุปยอดชำระ', 'Order Summary')}</h6>
 
                                     <div className="d-flex justify-content-between mb-2">
-                                        <span className="text-force-18" style={{ color: '#666' }}>{t('ราคารวม', 'Subtotal')} ({cartItems.length} {t('รายการ', 'items')})</span>
+                                        <span className="text-force-18" style={{ color: '#666' }}>{t('ราคารวม', 'Subtotal')} ({payableItems.length} {t('รายการ', 'items')})</span>
                                         <span className="text-force-18">{subtotal.toLocaleString()} {t('บาท', 'THB')}</span>
                                     </div>
 

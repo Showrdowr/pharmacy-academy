@@ -10,6 +10,7 @@ import React, { useEffect, useState } from 'react';
 import EnrollButton from '@/components/common/EnrollButton';
 import { useLanguage } from '@/features/i18n';
 import type { Course } from '../data/mockData';
+import { formatCoursePrice } from '../utils';
 
 interface CourseCardProps {
     course: Course;
