@@ -2,16 +2,16 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { ArrowLeft, Mail, KeyRound, CheckCircle, Loader2, X } from "lucide-react";
 import AuthLayout from "./AuthLayout";
-import { useLanguage } from '@/features/i18n';
 import { authService } from '../services/authApi';
 import { TextCaptchaModal } from './TextCaptchaModal';
 
 type Step = 'email' | 'newPassword' | 'success';
 
 const ForgotPasswordArea: React.FC = () => {
-    const { t } = useLanguage();
+    const t = useTranslations('auth.forgotPassword');
     const [step, setStep] = useState<Step>('email');
     const [email, setEmail] = useState("");
     const [newPassword, setNewPassword] = useState("");
@@ -30,12 +30,12 @@ const ForgotPasswordArea: React.FC = () => {
         setError("");
 
         if (!email.trim()) {
-            setError(t('กรุณากรอกอีเมล', 'Please enter your email'));
+            setError(t('emailRequired'));
             return;
         }
 
         if (!/\S+@\S+\.\S+/.test(email)) {
-            setError(t('รูปแบบอีเมลไม่ถูกต้อง', 'Invalid email format'));
+            setError(t('invalidEmailFormat'));
             return;
         }
 
@@ -57,13 +57,13 @@ const ForgotPasswordArea: React.FC = () => {
         setIsSubmitting(true);
 
         if (newPassword.length < 8) {
-            setError(t('รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร', 'Password must be at least 8 characters'));
+            setError(t('passwordTooShort'));
             setIsSubmitting(false);
             return;
         }
 
         if (newPassword !== confirmPassword) {
-            setError(t('รหัสผ่านไม่ตรงกัน', 'Passwords do not match'));
+            setError(t('passwordsMismatch'));
             setIsSubmitting(false);
             return;
         }
@@ -72,7 +72,7 @@ const ForgotPasswordArea: React.FC = () => {
         if (result.success) {
             setStep('success');
         } else {
-            setError(result.message || t('เกิดข้อผิดพลาด', 'An error occurred'));
+            setError(result.message || t('genericError'));
         }
         setIsSubmitting(false);
     };
@@ -113,7 +113,7 @@ const ForgotPasswordArea: React.FC = () => {
                     }}
                 >
                     <ArrowLeft style={{ width: '18px', height: '18px' }} />
-                    {t('กลับไปหน้าเข้าสู่ระบบ', 'Back to Login')}
+                    {t('backToLogin')}
                 </Link>
             </div>
 
@@ -138,13 +138,10 @@ const ForgotPasswordArea: React.FC = () => {
                             color: '#111827',
                             marginBottom: '8px',
                         }}>
-                            {t('ลืมรหัสผ่าน', 'Forgot Password')}
+                            {t('title')}
                         </h1>
                         <p className="text-resp-body-lg" style={{ color: '#6B7280' }}>
-                            {t(
-                                'กรอกอีเมลของคุณ เราจะส่งรหัส OTP ไปเพื่อรีเซ็ตรหัสผ่าน',
-                                'Enter your email and we\'ll send you an OTP to reset your password'
-                            )}
+                            {t('subtitle')}
                         </p>
                     </div>
 
@@ -162,11 +159,15 @@ const ForgotPasswordArea: React.FC = () => {
                                 fontWeight: 'bold',
                                 color: '#374151',
                             }}>
-                                {t('อีเมล', 'Email')}
+                                {t('email')}
                             </label>
                             <input
-                                type="email"
-                                placeholder={t('กรอกอีเมลของคุณ', 'Enter your email')}
+                                type="text"
+                                inputMode="email"
+                                autoComplete="email"
+                                autoCapitalize="none"
+                                spellCheck={false}
+                                placeholder={t('emailPlaceholder')}
                                 value={email}
                                 onChange={(e) => { setEmail(e.target.value); setError(""); }}
                                 required
@@ -205,9 +206,9 @@ const ForgotPasswordArea: React.FC = () => {
                             className="text-resp-btn"
                         >
                             {isSubmitting ? (
-                                <><Loader2 style={{ width: '20px', height: '20px', animation: 'spin 1s linear infinite' }} /> {t('กำลังส่ง...', 'Sending...')}</>
+                                <><Loader2 style={{ width: '20px', height: '20px', animation: 'spin 1s linear infinite' }} /> {t('sending')}</>
                             ) : (
-                                t('ดำเนินการต่อ', 'Continue')
+                                t('continue')
                             )}
                         </button>
                     </form>
@@ -235,13 +236,10 @@ const ForgotPasswordArea: React.FC = () => {
                             color: '#111827',
                             marginBottom: '8px',
                         }}>
-                            {t('ตั้งรหัสผ่านใหม่', 'Set New Password')}
+                            {t('resetTitle')}
                         </h1>
                         <p className="text-resp-body-lg" style={{ color: '#6B7280' }}>
-                            {t(
-                                'ยืนยันตัวตนสำเร็จแล้ว กรุณาตั้งรหัสผ่านใหม่',
-                                'Identity verified! Please set your new password.'
-                            )}
+                            {t('verifiedDescription')}
                         </p>
                         {/* CAPTCHA Verified Badge */}
                         <div style={{
@@ -258,7 +256,7 @@ const ForgotPasswordArea: React.FC = () => {
                             fontWeight: '600',
                         }}>
                             <CheckCircle style={{ width: '14px', height: '14px' }} />
-                            {t('ยืนยัน CAPTCHA แล้ว', 'CAPTCHA Verified')}
+                            {t('captchaVerified')}
                         </div>
                     </div>
 
@@ -277,11 +275,11 @@ const ForgotPasswordArea: React.FC = () => {
                                 fontWeight: 'bold',
                                 color: '#374151',
                             }}>
-                                {t('รหัสผ่านใหม่', 'New Password')}
+                                {t('newPassword')}
                             </label>
                             <input
                                 type="password"
-                                placeholder={t('อย่างน้อย 8 ตัวอักษร', 'At least 8 characters')}
+                                placeholder={t('newPasswordPlaceholder')}
                                 value={newPassword}
                                 onChange={(e) => { setNewPassword(e.target.value); setError(""); }}
                                 required
@@ -307,11 +305,11 @@ const ForgotPasswordArea: React.FC = () => {
                                 fontWeight: 'bold',
                                 color: '#374151',
                             }}>
-                                {t('ยืนยันรหัสผ่านใหม่', 'Confirm New Password')}
+                                {t('confirmNewPassword')}
                             </label>
                             <input
                                 type="password"
-                                placeholder={t('กรอกรหัสผ่านอีกครั้ง', 'Re-enter your password')}
+                                placeholder={t('confirmNewPasswordPlaceholder')}
                                 value={confirmPassword}
                                 onChange={(e) => { setConfirmPassword(e.target.value); setError(""); }}
                                 required
@@ -351,9 +349,9 @@ const ForgotPasswordArea: React.FC = () => {
                             className="text-resp-btn"
                         >
                             {isSubmitting ? (
-                                <><Loader2 style={{ width: '20px', height: '20px', animation: 'spin 1s linear infinite' }} /> {t('กำลังเปลี่ยน...', 'Changing...')}</>
+                                <><Loader2 style={{ width: '20px', height: '20px', animation: 'spin 1s linear infinite' }} /> {t('changing')}</>
                             ) : (
-                                t('เปลี่ยนรหัสผ่าน', 'Reset Password')
+                                t('resetPassword')
                             )}
                         </button>
                     </form>
@@ -380,16 +378,13 @@ const ForgotPasswordArea: React.FC = () => {
                         color: '#111827',
                         marginBottom: '12px',
                     }}>
-                        {t('เปลี่ยนรหัสผ่านสำเร็จ!', 'Password Reset Successful!')}
+                        {t('successTitle')}
                     </h1>
                     <p className="text-resp-body-lg" style={{
                         color: '#6B7280',
                         marginBottom: '32px',
                     }}>
-                        {t(
-                            'รหัสผ่านของคุณถูกเปลี่ยนเรียบร้อยแล้ว คุณสามารถเข้าสู่ระบบด้วยรหัสผ่านใหม่ได้ทันที',
-                            'Your password has been changed. You can now log in with your new password.'
-                        )}
+                        {t('successMessage')}
                     </p>
                     <Link
                         href="/sign-in"
@@ -406,7 +401,7 @@ const ForgotPasswordArea: React.FC = () => {
                         }}
                         className="text-resp-btn"
                     >
-                        {t('เข้าสู่ระบบ', 'Login')}
+                        {t('login')}
                     </Link>
                 </div>
             )}

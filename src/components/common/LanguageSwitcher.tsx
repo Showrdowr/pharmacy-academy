@@ -1,10 +1,12 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { useLanguage } from '@/features/i18n';
+import { useTranslations } from 'next-intl';
+import { useAppLocale } from '@/features/i18n';
 
 const LanguageSwitcher = () => {
-    const { language, toggleLanguage } = useLanguage();
+    const { locale, toggleLocale } = useAppLocale();
+    const t = useTranslations('navigation.languageSwitcher');
     const [isMobile, setIsMobile] = useState(false);
 
     useEffect(() => {
@@ -16,7 +18,7 @@ const LanguageSwitcher = () => {
 
     return (
         <button
-            onClick={toggleLanguage}
+            onClick={toggleLocale}
             className="language-switcher"
             style={{
                 display: 'flex',
@@ -43,20 +45,20 @@ const LanguageSwitcher = () => {
                 e.currentTarget.style.background = 'transparent';
                 e.currentTarget.style.color = '#014D40';
             }}
-            title={language === 'th' ? 'Switch to English' : 'เปลี่ยนเป็นภาษาไทย'}
+            title={locale === 'th' ? t('switchToEnglish') : t('switchToThai')}
         >
             <span style={{
                 display: 'flex',
                 alignItems: 'center',
             }}>
                 <span style={{
-                    fontWeight: language === 'th' ? '800' : '600',
-                    opacity: language === 'th' ? 1 : 0.6
+                    fontWeight: locale === 'th' ? '800' : '600',
+                    opacity: locale === 'th' ? 1 : 0.6
                 }}>TH</span>
                 <span style={{ opacity: 0.4 }}>|</span>
                 <span style={{
-                    fontWeight: language === 'en' ? '800' : '600',
-                    opacity: language === 'en' ? 1 : 0.6
+                    fontWeight: locale === 'en' ? '800' : '600',
+                    opacity: locale === 'en' ? 1 : 0.6
                 }}>EN</span>
             </span>
         </button>

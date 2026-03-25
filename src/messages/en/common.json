@@ -1,0 +1,92 @@
+{
+  "common": {
+    "meta": {
+      "home": {
+        "title": "Pharmacy Academy - Online Learning for Pharmacists",
+        "description": "Online learning for pharmacists with quality courses and easy CPE credit accumulation.",
+        "keywords": "Pharmacy Academy, pharmacists, online courses, CPE, pharmacy education"
+      },
+      "about": {
+        "title": "About Us - Pharmacy Academy",
+        "description": "Learn more about Pharmacy Academy, an online learning hub for pharmaceutical education.",
+        "keywords": "about us, Pharmacy Academy, pharmacy education, pharmacists"
+      }
+    },
+    "aboutUs": {
+      "missionTitle": "Our Mission",
+      "missionDescription1": "Pharmacy Academy is committed to being a comprehensive learning center for pharmaceutical sciences. We believe that continuing education is essential for every pharmacist to provide quality healthcare services to the public.",
+      "missionDescription2": "Our courses are designed by experts in each field to provide up-to-date knowledge that can be applied in real-world practice.",
+      "missionImageAlt": "About Pharmacy Academy",
+      "visionTitle": "Our Vision",
+      "visionDescription": "We aim to be the number one online learning platform for pharmaceutical sciences in Thailand, focusing on developing the potential of pharmacists in all fields.",
+      "visionPoint1": "High-quality courses from experts",
+      "visionPoint2": "Content updated with latest academic standards",
+      "visionPoint3": "CPE support for pharmacists",
+      "visionPoint4": "Learn anytime, anywhere",
+      "visionImageAlt": "Our Vision",
+      "ctaTitle": "Ready to start learning?",
+      "ctaDescription": "Join over 1,000 pharmacists who choose to learn with us",
+      "ctaButton": "View All Courses"
+    },
+    "home": {
+      "hero": {
+        "titlePrefix": "Online Learning Center for",
+        "titleHighlight": "Pharmacists",
+        "description": "Easily accumulate Continuing Pharmacy Education (CPE) credits through certified quality online courses",
+        "ctaPrimary": "Find Courses",
+        "ctaVideo": "Watch Introduction",
+        "imageAlt": "Pharmacist learning online",
+        "counterPrefix": "More than",
+        "counterLabel": "Quality Courses"
+      },
+      "certificate": {
+        "title": "Get Your Quality Skills Certificate Through Eduspace",
+        "cta": "Get Started Now"
+      },
+      "topCategories": {
+        "eyebrow": "Top Categories",
+        "title": "Explore Courses by Category",
+        "courses": "Courses",
+        "findCourseTitle": "Find the Right Course for You",
+        "findCourseCta": "Start Learning",
+        "marqueeCourses": "Courses",
+        "marqueeCategories": "Categories",
+        "category1": "The College of Pharmcotherapy of Thailand",
+        "category2": "The College of Pharmaceutical and Health Consumer Protection of Thailand",
+        "category3": "The College of Herbal Pharmacy of Thailand",
+        "category4": "The College of Industrial Pharmacy of Thailand",
+        "category5": "The College of Community Pharmacy of Thailand",
+        "category6": "The College of Pharmacy Adimnistration of Thailand",
+        "category7": "The College of Pharmacogenomics and Precision Medicine of Thailand",
+        "category8": "Other"
+      }
+    },
+    "footer": {
+      "registerTitle": "Register",
+      "registerDescription": "Register with us to enhance your pharmacy knowledge and experience",
+      "registerCta": "Register",
+      "startLearningTitle": "Start Learning",
+      "startLearningDescription": "Easily accumulate CPE credits with quality online courses",
+      "startLearningCta": "View All Courses",
+      "siteDescription": "Online learning center for pharmacists. Easily accumulate Continuing Education (CPE) credits",
+      "courseCategoriesTitle": "Course Categories",
+      "category1": "The College of Pharmcotherapy",
+      "category2": "The College of Pharmaceutical and Health Consumer Protection",
+      "category3": "The College of Herbal Pharmacy",
+      "category4": "The College of Industrial Pharmacy",
+      "category5": "The College of Community Pharmacy",
+      "category6": "The College of Pharmacy Adimnistration",
+      "category7": "The College of Pharmacogenomics and Precision Medicine",
+      "quickLinksTitle": "Quick Links",
+      "home": "Home",
+      "allCourses": "All Courses",
+      "cart": "Cart",
+      "aboutUs": "About Us",
+      "faq": "FAQ",
+      "contactUsTitle": "Contact Us",
+      "institute": "Pharmacy Institute",
+      "location": "Bangkok, Thailand",
+      "copyright": "Copyright"
+    }
+  }
+}

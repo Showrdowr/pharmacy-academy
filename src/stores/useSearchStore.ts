@@ -22,6 +22,8 @@ export const useSearchStore = create<SearchStore>((set) => ({
             ? ALL_COURSES.filter(course =>
                 course.title.toLowerCase().includes(query.toLowerCase()) ||
                 course.titleEn.toLowerCase().includes(query.toLowerCase()) ||
+                course.category.toLowerCase().includes(query.toLowerCase()) ||
+                course.categoryEn.toLowerCase().includes(query.toLowerCase()) ||
                 course.instructor.toLowerCase().includes(query.toLowerCase())
             ).slice(0, 5)
             : [];

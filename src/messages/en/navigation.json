@@ -1,0 +1,45 @@
+{
+  "navigation": {
+    "languageSwitcher": {
+      "switchToEnglish": "Switch to English",
+      "switchToThai": "Switch to Thai"
+    },
+    "header": {
+      "searchPlaceholder": "Search courses...",
+      "noCoursesFound": "No courses found",
+      "logoAlt": "Pharmacy Council"
+    },
+    "breadcrumbs": {
+      "aboutTitle": "About Us",
+      "coursesTitle": "All Courses",
+      "coursesCurrent": "Courses",
+      "profileTitle": "My Profile",
+      "profileCurrent": "Profile"
+    },
+    "menu": {
+      "blog": "Blog",
+      "blogDetails": "Blog Details"
+    },
+    "offCanvas": {
+      "home": "Home",
+      "courses": "Courses",
+      "cart": "Cart",
+      "aboutUs": "About Us",
+      "profile": "Profile",
+      "paymentHistory": "Payment History",
+      "logout": "Logout",
+      "signIn": "Sign In",
+      "register": "Register"
+    },
+    "profile": {
+      "signIn": "Sign In",
+      "register": "Register",
+      "profile": "Profile",
+      "paymentHistory": "Payment History",
+      "signOut": "Sign Out",
+      "pharmacist": "Pharmacist",
+      "generalUser": "General User",
+      "user": "General User"
+    }
+  }
+}

@@ -1,17 +1,19 @@
 "use client"
 import Link from 'next/link';
 import React from 'react';
-import { useLanguage } from '@/features/i18n';
+import { useTranslations } from 'next-intl';
+import { formatLocaleCurrency, formatLocaleDate, useAppLocale } from '@/features/i18n';
 import { usePaymentHistory } from '../hooks';
 
 const PaymentHistoryArea = () => {
-    const { t } = useLanguage();
+    const { locale } = useAppLocale();
+    const t = useTranslations('payment.history');
     const { orders, isLoading } = usePaymentHistory();
 
     const payments = orders.map(o => ({
         id: o.orderNumber,
-        course: o.items.map(i => i.title).join(', ') || 'ไม่ระบุชื่อคอร์ส',
-        date: new Date(o.createdAt).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' }),
+        course: o.items.map(i => i.title).join(', ') || t('untitledCourse'),
+        date: formatLocaleDate(o.createdAt, locale, { day: 'numeric', month: 'short', year: 'numeric' }),
         amount: o.total,
         status: o.status,
     }));
@@ -31,19 +33,19 @@ const PaymentHistoryArea = () => {
                             boxShadow: '0 10px 40px rgba(0, 71, 54, 0.1)'
                         }}>
                             <div className="d-flex justify-content-between align-items-center mb-4">
-                                <h3 className="text-resp-h3 text-force-bold" style={{ color: '#004736', marginBottom: '0' }}>{t('ประวัติการชำระเงิน', 'Payment History')}</h3>
+                                <h3 className="text-resp-h3 text-force-bold" style={{ color: '#004736', marginBottom: '0' }}>{t('title')}</h3>
                             </div>
 
                             <div className="table-responsive">
                                 <table className="table" style={{ marginBottom: '0' }}>
                                     <thead>
                                         <tr style={{ background: '#f8f9fa' }}>
-                                            <th className="text-resp-body-lg text-force-bold" style={{ color: '#004736', padding: '15px' }}>{t('รหัสคำสั่งซื้อ', 'Order ID')}</th>
-                                            <th className="text-resp-body-lg text-force-bold" style={{ color: '#004736', padding: '15px' }}>{t('คอร์ส', 'Course')}</th>
-                                            <th className="text-resp-body-lg text-force-bold" style={{ color: '#004736', padding: '15px' }}>{t('วันที่', 'Date')}</th>
-                                            <th className="text-resp-body-lg text-force-bold" style={{ color: '#004736', padding: '15px' }}>{t('ยอดเงิน', 'Amount')}</th>
-                                            <th className="text-resp-body-lg text-force-bold" style={{ color: '#004736', padding: '15px' }}>{t('สถานะ', 'Status')}</th>
-                                            <th className="text-resp-body-lg text-force-bold" style={{ color: '#004736', padding: '15px' }}>{t('การดำเนินการ', 'Action')}</th>
+                                            <th className="text-resp-body-lg text-force-bold" style={{ color: '#004736', padding: '15px' }}>{t('orderId')}</th>
+                                            <th className="text-resp-body-lg text-force-bold" style={{ color: '#004736', padding: '15px' }}>{t('course')}</th>
+                                            <th className="text-resp-body-lg text-force-bold" style={{ color: '#004736', padding: '15px' }}>{t('date')}</th>
+                                            <th className="text-resp-body-lg text-force-bold" style={{ color: '#004736', padding: '15px' }}>{t('amount')}</th>
+                                            <th className="text-resp-body-lg text-force-bold" style={{ color: '#004736', padding: '15px' }}>{t('status')}</th>
+                                            <th className="text-resp-body-lg text-force-bold" style={{ color: '#004736', padding: '15px' }}>{t('action')}</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -52,7 +54,7 @@ const PaymentHistoryArea = () => {
                                                 <td className="text-resp-body-lg text-force-bold" style={{ padding: '15px', color: '#004736' }}>{payment.id}</td>
                                                 <td className="text-resp-body-lg" style={{ padding: '15px', color: '#333' }}>{payment.course}</td>
                                                 <td className="text-resp-body" style={{ padding: '15px', color: '#666' }}>{payment.date}</td>
-                                                <td className="text-resp-body-lg text-force-bold" style={{ padding: '15px', color: '#004736' }}>฿{payment.amount.toLocaleString()}</td>
+                                                <td className="text-resp-body-lg text-force-bold" style={{ padding: '15px', color: '#004736' }}>{formatLocaleCurrency(payment.amount, locale)}</td>
                                                 <td style={{ padding: '15px' }}>
                                                     <span style={{
                                                         background: '#E8F8F4',
@@ -62,12 +64,12 @@ const PaymentHistoryArea = () => {
                                                         fontSize: '14px',
                                                         fontWeight: 'bold'
                                                     }}>
-                                                        {t('สำเร็จ', 'Success')}
+                                                        {t('success')}
                                                     </span>
                                                 </td>
                                                 <td style={{ padding: '15px' }}>
                                                     <Link href="#" className="text-resp-body" style={{ color: '#004736', fontWeight: '500' }}>
-                                                        <i className="fas fa-download me-1"></i> {t('ใบเสร็จ', 'Receipt')}
+                                                        <i className="fas fa-download me-1"></i> {t('receipt')}
                                                     </Link>
                                                 </td>
                                             </tr>
@@ -126,7 +128,7 @@ const PaymentHistoryArea = () => {
                                                     fontSize: '20px',
                                                     fontWeight: '700'
                                                 }}>
-                                                    ฿{payment.amount.toLocaleString()}
+                                                    {formatLocaleCurrency(payment.amount, locale)}
                                                 </span>
                                                 <span style={{
                                                     background: '#E8F8F4',
@@ -136,7 +138,7 @@ const PaymentHistoryArea = () => {
                                                     fontSize: '12px',
                                                     fontWeight: '500'
                                                 }}>
-                                                    {t('สำเร็จ', 'Success')}
+                                                    {t('success')}
                                                 </span>
                                             </div>
                                             {/* Receipt Button */}
@@ -153,7 +155,7 @@ const PaymentHistoryArea = () => {
                                                 fontSize: '14px',
                                                 fontWeight: '500'
                                             }}>
-                                                <i className="fas fa-download"></i> {t('ใบเสร็จ', 'Receipt')}
+                                                <i className="fas fa-download"></i> {t('receipt')}
                                             </Link>
                                         </div>
                                     </div>
@@ -172,16 +174,16 @@ const PaymentHistoryArea = () => {
                                     gap: '0'
                                 }}>
                                     <div style={{ flex: 1, textAlign: 'center', padding: '15px', borderRight: '1px solid rgba(0, 71, 54, 0.1)' }}>
-                                        <h5 className="text-resp-h3 text-force-bold" style={{ color: '#004736', marginBottom: '4px' }}>฿{totalAmount.toLocaleString()}</h5>
-                                        <p className="text-resp-body" style={{ color: '#666', marginBottom: '0' }}>{t('ยอดรวมทั้งหมด', 'Total Amount')}</p>
+                                        <h5 className="text-resp-h3 text-force-bold" style={{ color: '#004736', marginBottom: '4px' }}>{formatLocaleCurrency(totalAmount, locale)}</h5>
+                                        <p className="text-resp-body" style={{ color: '#666', marginBottom: '0' }}>{t('totalAmount')}</p>
                                     </div>
                                     <div style={{ flex: 1, textAlign: 'center', padding: '15px', borderRight: '1px solid rgba(0, 71, 54, 0.1)' }}>
                                         <h5 className="text-resp-h3 text-force-bold" style={{ color: '#004736', marginBottom: '4px' }}>{totalCourses}</h5>
-                                        <p className="text-resp-body" style={{ color: '#666', marginBottom: '0' }}>{t('คอร์สที่ซื้อ', 'Courses Purchased')}</p>
+                                        <p className="text-resp-body" style={{ color: '#666', marginBottom: '0' }}>{t('coursesPurchased')}</p>
                                     </div>
                                     <div style={{ flex: 1, textAlign: 'center', padding: '15px' }}>
                                         <h5 className="text-resp-h3 text-force-bold" style={{ color: '#004736', marginBottom: '4px' }}>{totalCourses}</h5>
-                                        <p className="text-resp-body" style={{ color: '#666', marginBottom: '0' }}>{t('หน่วยกิต CPE', 'CPE Credits')}</p>
+                                        <p className="text-resp-body" style={{ color: '#666', marginBottom: '0' }}>{t('cpeCredits')}</p>
                                     </div>
                                 </div>
                             </div>

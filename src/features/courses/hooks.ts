@@ -8,7 +8,8 @@ import type {
     CourseCard,
     CourseFilters,
     EnrolledCourse,
-    CourseProgress
+    CourseProgress,
+    EnrolledCourseStatusFilter,
 } from './types';
 
 // ==========================================
@@ -150,7 +151,7 @@ interface UseEnrolledCoursesReturn {
     refresh: () => void;
 }
 
-export function useEnrolledCourses(enabled = true): UseEnrolledCoursesReturn {
+export function useEnrolledCourses(enabled = true, status: EnrolledCourseStatusFilter = 'active'): UseEnrolledCoursesReturn {
     const [enrolledCourses, setEnrolledCourses] = useState<EnrolledCourse[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -167,14 +168,14 @@ export function useEnrolledCourses(enabled = true): UseEnrolledCoursesReturn {
             setIsLoading(true);
             setError(null);
 
-            const courses = await coursesService.getEnrolledCourses();
+            const courses = await coursesService.getEnrolledCourses(status);
             setEnrolledCourses(courses);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'เกิดข้อผิดพลาด');
         } finally {
             setIsLoading(false);
         }
-    }, [enabled]);
+    }, [enabled, status]);
 
     useEffect(() => {
         fetchEnrolledCourses();

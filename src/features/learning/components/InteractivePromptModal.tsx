@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
+import { useTranslations } from 'next-intl';
 import type { LearningInteractiveQuestion } from '../types';
 
 interface InteractivePromptModalProps {
@@ -37,6 +38,7 @@ export function InteractivePromptModal({
     onWrittenAnswerChange,
     onSubmit,
 }: InteractivePromptModalProps) {
+    const t = useTranslations('learning.courseArea');
     const dialogRef = useRef<HTMLDivElement | null>(null);
     const previousActiveElementRef = useRef<HTMLElement | null>(null);
 
@@ -143,8 +145,8 @@ export function InteractivePromptModal({
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
                             </div>
                             <div>
-                                <p className="text-sm font-semibold text-white/80">Interactive ระหว่างเรียน</p>
-                                <p className="text-xs text-white/50">ส่งคำตอบเพื่อเรียนต่อ ระบบจะไม่คิดคะแนนและไม่แสดงถูกหรือผิด</p>
+                                <p className="text-sm font-semibold text-white/80">{t('interactiveModalEyebrow')}</p>
+                                <p className="text-xs text-white/50">{t('interactiveModalHint')}</p>
                             </div>
                         </div>
                     </div>
@@ -154,7 +156,7 @@ export function InteractivePromptModal({
                             {question.questionText}
                         </h3>
                         <p id="interactive-modal-description" className="mt-1.5 text-sm text-slate-400">
-                            เลือกคำตอบแล้วกดส่งเพื่อเรียนต่อ
+                            {t('interactiveModalDescription')}
                         </p>
 
                         <div className="mt-5">
@@ -164,7 +166,7 @@ export function InteractivePromptModal({
                                 onChange={(event) => onWrittenAnswerChange(event.target.value)}
                                 rows={4}
                                 className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-800 transition-all focus:border-[#004736] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#004736]/20"
-                                placeholder="พิมพ์คำตอบของคุณ"
+                                placeholder={t('interactiveModalPlaceholder')}
                             />
                         ) : (
                             <div className="space-y-2.5">
@@ -216,7 +218,7 @@ export function InteractivePromptModal({
                             className="w-full rounded-xl bg-gradient-to-r from-[#004736] to-[#006650] px-5 py-3 font-semibold text-white shadow-md shadow-[#004736]/20 pointer-events-auto transition-all hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
                             data-testid="interactive-submit-button"
                         >
-                            {isSubmitting ? 'กำลังส่งคำตอบ...' : 'ส่งคำตอบเพื่อเรียนต่อ'}
+                            {isSubmitting ? t('interactiveModalSubmitting') : t('interactiveModalSubmit')}
                         </button>
                         </div>
                     </div>

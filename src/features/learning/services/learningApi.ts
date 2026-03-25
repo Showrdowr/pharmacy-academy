@@ -3,6 +3,8 @@ import type {
     CourseProgressResponse,
     InteractiveAnswerResponse,
     LearningCourseData,
+    LearningLessonQuizAttemptResult,
+    LearningLessonQuizRuntime,
 } from '../types';
 
 export const learningApi = {
@@ -30,6 +32,29 @@ export const learningApi = {
         });
         if (!response.success) {
             throw toApiError(response, 'ส่งคำตอบไม่สำเร็จ');
+        }
+
+        return response.data;
+    },
+
+    async getLessonQuizRuntime(lessonId: number): Promise<LearningLessonQuizRuntime> {
+        const response = await api.get<LearningLessonQuizRuntime>(`/lessons/${lessonId}/quiz-runtime`);
+        if (!response.success) {
+            throw toApiError(response, 'โหลดแบบทดสอบท้ายบทไม่สำเร็จ');
+        }
+
+        return response.data;
+    },
+
+    async submitLessonQuizAttempt(
+        lessonId: number,
+        answers: Array<{ questionId: number; answerGiven: string }>
+    ): Promise<LearningLessonQuizAttemptResult> {
+        const response = await api.post<LearningLessonQuizAttemptResult>(`/lessons/${lessonId}/quiz-attempts`, {
+            answers,
+        });
+        if (!response.success) {
+            throw toApiError(response, 'ส่งแบบทดสอบท้ายบทไม่สำเร็จ');
         }
 
         return response.data;

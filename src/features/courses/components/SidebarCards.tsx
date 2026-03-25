@@ -1,28 +1,13 @@
 "use client"
 import React from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
+import { useTranslations } from 'next-intl';
+import {
+    formatLocaleCurrency,
+    formatLocaleDate,
+    formatLocaleNumber,
+    useAppLocale,
+} from '@/features/i18n';
 
-interface CoursesSidebarProps {
-    initialData?: any;
-    isFree: boolean;
-    price: number;
-    category: string;
-    title: string;
-    sidebarImageSrc: string;
-    sidebarDescription: string;
-    onAddToCart: (e: React.MouseEvent) => void;
-    onBuyCourse: (e: React.MouseEvent) => void;
-    onStartFreeCourse: (e: React.MouseEvent) => void;
-    enrolling: boolean;
-}
-
-const FALLBACK_IMAGE = '/assets/img/courses/01.jpg';
-
-/**
- * Price Card Component
- */
-/** Price Card Component */
 export const PriceCard: React.FC<{
     isFree: boolean;
     price: number;
@@ -31,70 +16,68 @@ export const PriceCard: React.FC<{
     onBuyCourse: (e: React.MouseEvent) => void;
     onStartFreeCourse: (e: React.MouseEvent) => void;
     enrolling: boolean;
-}> = ({ isFree, price, shortDescription, onAddToCart, onBuyCourse, onStartFreeCourse, enrolling }) => {
-    React.useEffect(() => {
-        console.log('PriceCard shortDescription:', shortDescription);
-    }, [shortDescription]);
-    
+    startFreeLabel?: string;
+}> = ({ isFree, price, shortDescription, onAddToCart, onBuyCourse, onStartFreeCourse, enrolling, startFreeLabel }) => {
+    const t = useTranslations('courses.detail');
+    const { locale } = useAppLocale();
+
     return (
-    <div className="courses-items mb-4">
-        <div className="courses-content p-4 interactive-card" style={{ border: '1px solid #e0e0e0', borderRadius: '12px', backgroundColor: '#f9f9f9' }}>
-            <div className="d-flex align-items-center gap-2 mb-3">
-                <i className="fas fa-tag" style={{ fontSize: '28px', color: '#14b8a6' }}></i>
-                <h5 style={{ margin: 0, fontSize: '28px', fontWeight: 'bold', color: '#333' }}>ราคา</h5>
-            </div>
-            <h3 className="text-force-bold mb-3" style={{ color: '#014d40', fontSize: '54px', fontWeight: '700' }}>
-                {isFree ? 'ฟรี' : `฿${price.toLocaleString()}`}
-            </h3>
-            <p style={{ fontSize: '20px', color: '#666', marginBottom: '20px', lineHeight: '1.6', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', maxHeight: '64px' }}>
-                {shortDescription || 'ไม่มีรายละเอียด'}
-            </p>
-            <div className="courses-btn d-flex gap-2 flex-column">
-                {isFree ? (
-                    <button
-                        onClick={onStartFreeCourse}
-                        disabled={enrolling}
-                        className="theme-btn"
-                        style={{
-                            fontSize: '24px',
-                            width: '100%',
-                            padding: '16px',
-                            fontWeight: 'bold',
-                            background: '#22c55e',
-                            borderColor: '#22c55e',
-                        }}
-                    >
-                        {enrolling ? 'กำลังลงทะเบียน...' : 'เริ่มเรียนฟรี'}
-                    </button>
-                ) : (
-                    <>
+        <div className="courses-items mb-4">
+            <div className="courses-content p-4 interactive-card" style={{ border: '1px solid #e0e0e0', borderRadius: '12px', backgroundColor: '#f9f9f9' }}>
+                <div className="d-flex align-items-center gap-2 mb-3">
+                    <i className="fas fa-tag" style={{ fontSize: '28px', color: '#14b8a6' }}></i>
+                    <h5 style={{ margin: 0, fontSize: '28px', fontWeight: 'bold', color: '#333' }}>{t('priceTitle')}</h5>
+                </div>
+                <h3 className="text-force-bold mb-3" style={{ color: '#014d40', fontSize: '54px', fontWeight: '700' }}>
+                    {isFree ? t('freeLabel') : formatLocaleCurrency(price, locale)}
+                </h3>
+                <p style={{ fontSize: '20px', color: '#666', marginBottom: '20px', lineHeight: '1.6', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', maxHeight: '64px' }}>
+                    {shortDescription || t('noDescription')}
+                </p>
+                <div className="courses-btn d-flex gap-2 flex-column">
+                    {isFree ? (
                         <button
-                            onClick={onAddToCart}
+                            onClick={onStartFreeCourse}
+                            disabled={enrolling}
                             className="theme-btn"
-                            style={{ fontSize: '24px', width: '100%', padding: '16px', fontWeight: 'bold' }}
+                            style={{
+                                fontSize: '24px',
+                                width: '100%',
+                                padding: '16px',
+                                fontWeight: 'bold',
+                                background: '#22c55e',
+                                borderColor: '#22c55e',
+                            }}
                         >
-                            เพิ่มในตะกร้า
+                            {enrolling ? t('enrolling') : (startFreeLabel || t('startFree'))}
                         </button>
-                        <button
-                            onClick={onBuyCourse}
-                            className="theme-btn style-2"
-                            style={{ fontSize: '24px', width: '100%', padding: '16px', fontWeight: 'bold' }}
-                        >
-                            ซื้อคอร์สเลย
-                        </button>
-                    </>
-                )}
+                    ) : (
+                        <>
+                            <button
+                                onClick={onAddToCart}
+                                className="theme-btn"
+                                style={{ fontSize: '24px', width: '100%', padding: '16px', fontWeight: 'bold' }}
+                            >
+                                {t('addToCart')}
+                            </button>
+                            <button
+                                onClick={onBuyCourse}
+                                className="theme-btn style-2"
+                                style={{ fontSize: '24px', width: '100%', padding: '16px', fontWeight: 'bold' }}
+                            >
+                                {t('buyNow')}
+                            </button>
+                        </>
+                    )}
+                </div>
             </div>
         </div>
-    </div>
     );
 };
 
-/**
- * CPE Credits Card (Conditional)
- */
 export const CPECard: React.FC<{ cpe: number }> = ({ cpe }) => {
-    // Only show if CPE > 0
+    const t = useTranslations('courses.detail');
+
     if (cpe <= 0) return null;
 
     return (
@@ -102,46 +85,44 @@ export const CPECard: React.FC<{ cpe: number }> = ({ cpe }) => {
             <div className="courses-content p-4" style={{ border: '1px solid #e0e0e0', borderRadius: '12px', backgroundColor: '#f9f9f9' }}>
                 <div className="d-flex align-items-center gap-2 mb-3">
                     <i className="fas fa-certificate" style={{ fontSize: '20px', color: '#f59e0b' }}></i>
-                    <h5 style={{ margin: 0, fontSize: '16px', fontWeight: 'bold', color: '#333' }}>CPE Credits</h5>
+                    <h5 style={{ margin: 0, fontSize: '16px', fontWeight: 'bold', color: '#333' }}>{t('cpeCredits')}</h5>
                 </div>
                 <h3 className="text-force-bold" style={{ color: '#f59e0b', fontSize: '32px', fontWeight: '700', margin: 0 }}>
-                    {cpe} หน่วย
+                    {cpe} {t('cpeUnits')}
                 </h3>
             </div>
         </div>
     );
 };
 
-/**
- * Category Card Component
- */
 export const CategoryCard: React.FC<{
     category: string;
     subcategory?: string;
-}> = ({ category, subcategory }) => (
-    <div className="courses-items mb-4">
-        <div className="courses-content p-4" style={{ border: '1px solid #e0e0e0', borderRadius: '12px', backgroundColor: '#f9f9f9' }}>
-            <div className="d-flex align-items-center gap-2 mb-3">
-                <i className="fas fa-folder-open" style={{ fontSize: '28px', color: '#06b6d4' }}></i>
-                <h5 style={{ margin: 0, fontSize: '28px', fontWeight: 'bold', color: '#333' }}>หมวดหมู่</h5>
-            </div>
-            <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                <li style={{ marginBottom: '16px', fontSize: '20px' }}>
-                    <span style={{ color: '#666', fontWeight: '500' }}>หมวดหมู่หลัก</span>
-                    <span style={{ fontSize: '24px', fontWeight: 'bold', color: '#014d40', marginLeft: '8px' }}>{category}</span>
-                </li>
-                <li style={{ fontSize: '20px' }}>
-                    <span style={{ color: '#666', fontWeight: '500' }}>หมวดหมู่ย่อย</span>
-                    <span style={{ fontSize: '24px', fontWeight: 'bold', color: '#014d40', marginLeft: '8px' }}>{subcategory || '-'}</span>
-                </li>
-            </ul>
-        </div>
-    </div>
-);
+}> = ({ category, subcategory }) => {
+    const t = useTranslations('courses.detail');
 
-/**
- * Course Info Card Component
- */
+    return (
+        <div className="courses-items mb-4">
+            <div className="courses-content p-4" style={{ border: '1px solid #e0e0e0', borderRadius: '12px', backgroundColor: '#f9f9f9' }}>
+                <div className="d-flex align-items-center gap-2 mb-3">
+                    <i className="fas fa-folder-open" style={{ fontSize: '28px', color: '#06b6d4' }}></i>
+                    <h5 style={{ margin: 0, fontSize: '28px', fontWeight: 'bold', color: '#333' }}>{t('categoryTitle')}</h5>
+                </div>
+                <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                    <li style={{ marginBottom: '16px', fontSize: '20px' }}>
+                        <span style={{ color: '#666', fontWeight: '500' }}>{t('mainCategory')}</span>
+                        <span style={{ fontSize: '24px', fontWeight: 'bold', color: '#014d40', marginLeft: '8px' }}>{category}</span>
+                    </li>
+                    <li style={{ fontSize: '20px' }}>
+                        <span style={{ color: '#666', fontWeight: '500' }}>{t('subcategory')}</span>
+                        <span style={{ fontSize: '24px', fontWeight: 'bold', color: '#014d40', marginLeft: '8px' }}>{subcategory || '-'}</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    );
+};
+
 export const CourseInfoCard: React.FC<{
     instructor: string;
     lessonsCount: number;
@@ -149,6 +130,7 @@ export const CourseInfoCard: React.FC<{
     conferenceCode: string;
     skillLevel: string;
     language: string;
+<<<<<<< HEAD
 }> = ({ instructor, lessonsCount, rating = 0, conferenceCode, skillLevel, language }) => (
     <div className="courses-items mb-4">
         <div className="courses-content p-4" style={{ border: '1px solid #e0e0e0', borderRadius: '12px', backgroundColor: '#f9f9f9' }}>
@@ -188,28 +170,67 @@ export const CourseInfoCard: React.FC<{
         </div>
     </div>
 );
+=======
+}> = ({ instructor, lessonsCount, rating = 4.5, conferenceCode, skillLevel, language }) => {
+    const t = useTranslations('courses.detail');
+    const { locale } = useAppLocale();
 
-/**
- * Timeline Card Component
- */
+    return (
+        <div className="courses-items mb-4">
+            <div className="courses-content p-4" style={{ border: '1px solid #e0e0e0', borderRadius: '12px', backgroundColor: '#f9f9f9' }}>
+                <div className="d-flex align-items-center gap-2 mb-3">
+                    <i className="fas fa-chalkboard-user" style={{ fontSize: '28px', color: '#8b5cf6' }}></i>
+                    <h5 style={{ margin: 0, fontSize: '28px', fontWeight: 'bold', color: '#333' }}>{t('courseInfoTitle')}</h5>
+                </div>
+                <ul style={{ listStyle: 'none', padding: 0, margin: 0, fontSize: '20px' }}>
+                    <li style={{ marginBottom: '16px', display: 'flex', justifyContent: 'space-between' }}>
+                        <span style={{ color: '#666', fontWeight: '500' }}>{t('instructor')}</span>
+                        <span style={{ fontWeight: '600', color: '#333', textAlign: 'right' }}>{instructor}</span>
+                    </li>
+                    <li style={{ marginBottom: '16px', display: 'flex', justifyContent: 'space-between' }}>
+                        <span style={{ color: '#666', fontWeight: '500' }}>{t('lessons')}</span>
+                        <span style={{ fontWeight: '600', color: '#333' }}>{t('lessonsCount', { count: formatLocaleNumber(lessonsCount, locale) })}</span>
+                    </li>
+                    <li style={{ marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ color: '#666', fontWeight: '500' }}>{t('rating')}</span>
+                        <span style={{ fontWeight: '600', color: '#f59e0b', fontSize: '22px' }}>
+                            {rating.toFixed(1)}
+                            <i className="fas fa-star" style={{ marginLeft: '4px', fontSize: '18px' }}></i>
+                        </span>
+                    </li>
+                    <li style={{ marginBottom: '16px', display: 'flex', justifyContent: 'space-between' }}>
+                        <span style={{ color: '#666', fontWeight: '500' }}>{t('level')}</span>
+                        <span style={{ fontWeight: '600', color: '#333' }}>{skillLevel}</span>
+                    </li>
+                    <li style={{ marginBottom: '16px', display: 'flex', justifyContent: 'space-between' }}>
+                        <span style={{ color: '#666', fontWeight: '500' }}>{t('language')}</span>
+                        <span style={{ fontWeight: '600', color: '#333' }}>{language}</span>
+                    </li>
+                    <li style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span style={{ color: '#666', fontWeight: '500' }}>{t('conferenceCode')}</span>
+                        <span style={{ fontWeight: '600', color: '#333' }}>{conferenceCode}</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    );
+};
+>>>>>>> 8afa68e (feat: add Thai localization across core application sections)
+
 export const TimelineCard: React.FC<{
     publishedAt: string | null;
     createdAt: string;
     updatedAt: string;
 }> = ({ publishedAt, createdAt, updatedAt }) => {
+    const t = useTranslations('courses.detail');
+    const { locale } = useAppLocale();
+
     const formatDate = (date: string | null): string => {
-        if (!date) return '-';
-        try {
-            const dateObj = new Date(date);
-            if (isNaN(dateObj.getTime())) return '-';
-            return dateObj.toLocaleDateString('th-TH', {
-                day: '2-digit',
-                month: 'short',
-                year: 'numeric',
-            });
-        } catch {
-            return '-';
-        }
+        return formatLocaleDate(date, locale, {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric',
+        });
     };
 
     return (
@@ -217,14 +238,14 @@ export const TimelineCard: React.FC<{
             <div className="courses-content p-4" style={{ border: '1px solid #e0e0e0', borderRadius: '12px', backgroundColor: '#f9f9f9' }}>
                 <div className="d-flex align-items-center gap-2 mb-3">
                     <i className="fas fa-calendar-alt" style={{ fontSize: '28px', color: '#ec4899' }}></i>
-                    <h5 style={{ margin: 0, fontSize: '28px', fontWeight: 'bold', color: '#333' }}>ไทม์ไลน์</h5>
+                    <h5 style={{ margin: 0, fontSize: '28px', fontWeight: 'bold', color: '#333' }}>{t('timelineTitle')}</h5>
                 </div>
                 <ul style={{ listStyle: 'none', padding: 0, margin: 0, fontSize: '20px' }}>
                     {publishedAt && (
                         <li style={{ marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <i className="fas fa-check-circle" style={{ fontSize: '24px', color: '#22c55e' }}></i>
                             <div>
-                                <span style={{ color: '#666', fontWeight: '500' }}>เผยแพร่ : </span>
+                                <span style={{ color: '#666', fontWeight: '500' }}>{t('publishedAt')} : </span>
                                 <span style={{ fontWeight: '600', color: '#333' }}>{formatDate(publishedAt)}</span>
                             </div>
                         </li>
@@ -232,14 +253,14 @@ export const TimelineCard: React.FC<{
                     <li style={{ marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <i className="fas fa-pencil-alt" style={{ fontSize: '24px', color: '#3b82f6' }}></i>
                         <div>
-                            <span style={{ color: '#666', fontWeight: '500' }}>อัปเดต : </span>
+                            <span style={{ color: '#666', fontWeight: '500' }}>{t('updatedAt')} : </span>
                             <span style={{ fontWeight: '600', color: '#333' }}>{formatDate(updatedAt)}</span>
                         </div>
                     </li>
                     <li style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <i className="fas fa-plus-circle" style={{ fontSize: '24px', color: '#a855f7' }}></i>
                         <div>
-                            <span style={{ color: '#666', fontWeight: '500' }}>สร้างเมื่อ : </span>
+                            <span style={{ color: '#666', fontWeight: '500' }}>{t('createdAt')} : </span>
                             <span style={{ fontWeight: '600', color: '#333' }}>{formatDate(createdAt)}</span>
                         </div>
                     </li>

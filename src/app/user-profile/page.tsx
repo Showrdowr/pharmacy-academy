@@ -5,12 +5,17 @@ import MarqueeOne from '@/components/common/MarqueeOne';
 import FooterTwo from '@/components/layout/footers/FooterTwo';
 import HeaderTwo from '@/components/layout/headers/HeaderTwo';
 import { UserProfileArea } from '@/features/profile';
+import { getTranslations } from 'next-intl/server';
 
-export const metadata: Metadata = {
-    title: "โปรไฟล์ของฉัน - Pharmacy Academy",
-    description: "ดูข้อมูลโปรไฟล์ คอร์สเรียน และใบ Certificate ของคุณ",
-    keywords: "โปรไฟล์, ผู้ใช้, Pharmacy Academy, เภสัชกร, คอร์สเรียน",
-};
+export async function generateMetadata(): Promise<Metadata> {
+    const t = await getTranslations('profile.meta.userProfile');
+
+    return {
+        title: t('title'),
+        description: t('description'),
+        keywords: t('keywords').split(',').map((keyword) => keyword.trim()),
+    };
+}
 
 const UserProfilePage = () => {
     return (

@@ -3,16 +3,16 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Eye, EyeOff, KeyRound, Loader2, X, CheckCircle } from "lucide-react";
 import { useAuth } from "@/features/auth";
 import { authService } from '../services/authApi';
 
 import AuthLayout from "./AuthLayout";
-import { useLanguage } from '@/features/i18n';
 import { TextCaptchaModal } from './TextCaptchaModal';
 
 const SignInArea: React.FC = () => {
-    const { t } = useLanguage();
+    const t = useTranslations('auth.signIn');
     const router = useRouter();
     const { login } = useAuth();
     const [email, setEmail] = useState("");
@@ -36,6 +36,7 @@ const SignInArea: React.FC = () => {
     const [forgotError, setForgotError] = useState("");
     const [forgotSubmitting, setForgotSubmitting] = useState(false);
     const [resetSuccess, setResetSuccess] = useState(false);
+    const includesAny = (source: string, patterns: string[]) => patterns.some((pattern) => source.includes(pattern));
 
     // No longer fetching CAPTCHA on mount
     useEffect(() => {
@@ -46,11 +47,11 @@ const SignInArea: React.FC = () => {
         setLoginFailed(false);
 
         if (!email.trim()) {
-            setFieldErrors({ email: t('กรุณากรอกอีเมลก่อนกด ลืมรหัสผ่าน', 'Please enter your email first') });
+            setFieldErrors({ email: t('forgotPasswordEmailRequired') });
             return;
         }
         if (!/\S+@\S+\.\S+/.test(email)) {
-            setFieldErrors({ email: t('รูปแบบอีเมลไม่ถูกต้อง', 'Invalid email format') });
+            setFieldErrors({ email: t('invalidEmailFormat') });
             return;
         }
 
@@ -71,11 +72,11 @@ const SignInArea: React.FC = () => {
     const handleResetPassword = async () => {
         setForgotError("");
         if (newPassword.length < 8) {
-            setForgotError(t('รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร', 'Password must be at least 8 characters'));
+            setForgotError(t('passwordTooShort'));
             return;
         }
         if (newPassword !== confirmPassword) {
-            setForgotError(t('รหัสผ่านไม่ตรงกัน', 'Passwords do not match'));
+            setForgotError(t('passwordsMismatch'));
             return;
         }
         setForgotSubmitting(true);
@@ -85,7 +86,7 @@ const SignInArea: React.FC = () => {
             setResetSuccess(true);
             setTimeout(() => setResetSuccess(false), 5000);
         } else {
-            setForgotError(result.message || t('เกิดข้อผิดพลาด', 'An error occurred'));
+            setForgotError(result.message || t('genericError'));
         }
         setForgotSubmitting(false);
     };
@@ -127,23 +128,23 @@ const SignInArea: React.FC = () => {
                 const errorMsg = (result.error || '').toLowerCase();
                 
                 // Handle User Not Found specifically
-                if (errorMsg.includes('not found') || errorMsg.includes('user not found')) {
+                if (includesAny(errorMsg, ['not found', 'user not found', 'ไม่พบบัญชี', 'ไม่พบผู้ใช้'])) {
                     setFieldErrors({
-                        email: t('ไม่พบบัญชีนี้อยู่ในระบบ', 'Account not found in system')
-                    });
-                } else if (errorMsg.includes('email') || errorMsg.includes('user') || errorMsg.includes('อีเมล')) {
-                    setFieldErrors({
-                        email: t('อีเมลไม่ถูกต้อง', 'Invalid email')
+                        email: t('accountNotFound')
                     });
                 } else if (errorMsg.includes('captcha')) {
                     setFieldErrors({
-                        captcha: t('รหัส CAPTCHA ไม่ถูกต้อง', 'Invalid CAPTCHA code')
+                        captcha: t('invalidCaptcha')
                     });
                     // Re-open modal on CAPTCHA error
                     setShowCaptchaModal(true);
+                } else if (includesAny(errorMsg, ['email', 'user', 'อีเมล'])) {
+                    setFieldErrors({
+                        email: t('invalidEmail')
+                    });
                 } else {
                     setFieldErrors({
-                        password: t('รหัสผ่านไม่ถูกต้อง', 'Incorrect password')
+                        password: t('incorrectPassword')
                     });
                 }
                 setIsSubmitting(false);
@@ -201,7 +202,7 @@ const SignInArea: React.FC = () => {
                                 <KeyRound style={{ width: '32px', height: '32px', color: '#ffffff' }} />
                             </div>
                             <h2 style={{ fontSize: '22px', fontWeight: 'bold', color: '#111827', marginBottom: '8px' }}>
-                                {t('ตั้งรหัสผ่านใหม่', 'Set New Password')}
+                                {t('resetModalTitle')}
                             </h2>
                             <div style={{
                                 display: 'inline-flex', alignItems: 'center', gap: '6px',
@@ -210,7 +211,7 @@ const SignInArea: React.FC = () => {
                                 color: '#059669', fontSize: '13px', fontWeight: '600',
                             }}>
                                 <CheckCircle style={{ width: '14px', height: '14px' }} />
-                                {t('OTP ยืนยันแล้ว', 'OTP Verified')}
+                                {t('otpVerified')}
                             </div>
                         </div>
 
@@ -224,9 +225,9 @@ const SignInArea: React.FC = () => {
 
                         <div style={{ marginBottom: '18px' }}>
                             <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: '#374151', fontSize: '14px' }}>
-                                {t('รหัสผ่านใหม่', 'New Password')}
+                                {t('newPassword')}
                             </label>
-                            <input type="password" placeholder={t('อย่างน้อย 8 ตัวอักษร', 'At least 8 characters')}
+                            <input type="password" placeholder={t('newPasswordPlaceholder')}
                                 value={newPassword} onChange={(e) => { setNewPassword(e.target.value); setForgotError(""); }}
                                 style={{
                                     width: '100%', padding: '14px 20px', borderRadius: '12px',
@@ -240,9 +241,9 @@ const SignInArea: React.FC = () => {
 
                         <div style={{ marginBottom: '24px' }}>
                             <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: '#374151', fontSize: '14px' }}>
-                                {t('ยืนยันรหัสผ่านใหม่', 'Confirm New Password')}
+                                {t('confirmNewPassword')}
                             </label>
-                            <input type="password" placeholder={t('กรอกรหัสผ่านอีกครั้ง', 'Re-enter your password')}
+                            <input type="password" placeholder={t('confirmNewPasswordPlaceholder')}
                                 value={confirmPassword} onChange={(e) => { setConfirmPassword(e.target.value); setForgotError(""); }}
                                 style={{
                                     width: '100%', padding: '14px 20px', borderRadius: '12px',
@@ -263,8 +264,8 @@ const SignInArea: React.FC = () => {
                             transition: 'all 0.2s ease',
                         }}>
                             {forgotSubmitting
-                                ? <><Loader2 style={{ width: '20px', height: '20px', animation: 'spin 1s linear infinite' }} /> {t('กำลังเปลี่ยน...', 'Changing...')}</>
-                                : t('เปลี่ยนรหัสผ่าน', 'Reset Password')
+                                ? <><Loader2 style={{ width: '20px', height: '20px', animation: 'spin 1s linear infinite' }} /> {t('changing')}</>
+                                : t('resetPassword')
                             }
                         </button>
                     </div>
@@ -278,12 +279,12 @@ const SignInArea: React.FC = () => {
                     color: '#111827',
                     marginBottom: '8px',
                 }}>
-                    {t('เข้าสู่ระบบ', 'Login')}
+                    {t('title')}
                 </h1>
                 <p className="text-resp-body-lg" style={{
                     color: '#6B7280',
                 }}>
-                    {t('กรุณาเข้าสู่ระบบเพื่อดำเนินการต่อ', 'Please login to your account first')}
+                    {t('subtitle')}
                 </p>
             </div>
 
@@ -298,7 +299,7 @@ const SignInArea: React.FC = () => {
                     fontSize: '14px', fontWeight: '600',
                 }}>
                     <CheckCircle style={{ width: '20px', height: '20px' }} />
-                    {t('เปลี่ยนรหัสผ่านสำเร็จ! กรุณาเข้าสู่ระบบด้วยรหัสผ่านใหม่', 'Password changed! Please login with your new password')}
+                    {t('resetSuccessBanner')}
                 </div>
             )}
 
@@ -315,7 +316,7 @@ const SignInArea: React.FC = () => {
                 <div style={{ marginBottom: '18px' }}>
                     {loginFailed && (
                         <div style={{ color: '#DC2626', fontSize: '22px', marginBottom: '12px', fontWeight: '500' }}>
-                            {t('เข้าสู่ระบบล้มเหลว', 'Login Failed')}
+                            {t('loginFailed')}
                         </div>
                     )}
                     <label className="text-resp-body-lg" style={{
@@ -324,11 +325,15 @@ const SignInArea: React.FC = () => {
                         fontWeight: 'bold',
                         color: '#374151',
                     }}>
-                        {t('อีเมล', 'Email')}
+                        {t('email')}
                     </label>
                     <input
-                        type="email"
-                        placeholder={t('กรอกอีเมลของคุณ', 'Enter your email')}
+                        type="text"
+                        inputMode="email"
+                        autoComplete="email"
+                        autoCapitalize="none"
+                        spellCheck={false}
+                        placeholder={t('emailPlaceholder')}
                         value={email}
                         onChange={(e) => {
                             setEmail(e.target.value);
@@ -379,12 +384,12 @@ const SignInArea: React.FC = () => {
                         fontWeight: 'bold',
                         color: '#374151',
                     }}>
-                        {t('รหัสผ่าน', 'Password')}
+                        {t('password')}
                     </label>
                     <div style={{ position: 'relative' }}>
                         <input
                             type={showPassword ? "text" : "password"}
-                            placeholder={t('กรอกรหัสผ่านของคุณ', 'Enter your password')}
+                            placeholder={t('passwordPlaceholder')}
                             value={password}
                             onChange={(e) => {
                                 setPassword(e.target.value);
@@ -484,7 +489,7 @@ const SignInArea: React.FC = () => {
                             )}
                         </div>
                         <span className="text-resp-link" style={{ color: '#374151', fontWeight: '500' }}>
-                            {t('จดจำฉัน', 'Remember me')}
+                            {t('rememberMe')}
                         </span>
                     </label>
 
@@ -504,7 +509,7 @@ const SignInArea: React.FC = () => {
                             textDecoration: 'none',
                         }}
                     >
-                        {forgotSubmitting ? t('กำลังส่ง OTP...', 'Sending OTP...') : t('ลืมรหัสผ่าน?', 'Forgot Password?')}
+                        {forgotSubmitting ? t('forgotPasswordSending') : t('forgotPassword')}
                     </button>
                 </div>
 
@@ -528,7 +533,7 @@ const SignInArea: React.FC = () => {
                     }}
                     className="text-resp-btn"
                 >
-                    {isSubmitting ? t('กำลังเข้าสู่ระบบ...', 'Logging in...') : t('เข้าสู่ระบบ', 'Login')}
+                    {isSubmitting ? t('submitting') : t('submit')}
                 </button>
 
                 {/* Divider */}
@@ -539,7 +544,7 @@ const SignInArea: React.FC = () => {
                     marginBottom: '20px',
                 }}>
                     <div style={{ flex: 1, height: '1px', backgroundColor: '#E5E7EB' }} />
-                    <span className="text-resp-info" style={{ color: '#9CA3AF' }}>{t('หรือเข้าสู่ระบบด้วย Google', 'Or login with Google')}</span>
+                    <span className="text-resp-info" style={{ color: '#9CA3AF' }}>{t('orLoginWithGoogle')}</span>
                     <div style={{ flex: 1, height: '1px', backgroundColor: '#E5E7EB' }} />
                 </div>
 
@@ -570,14 +575,14 @@ const SignInArea: React.FC = () => {
                         <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
                         <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
                     </svg>
-                    Google
+                    {t('googleButton')}
                 </button>
             </form>
 
             {/* Sign Up Link */}
             <div style={{ textAlign: 'center', marginTop: '24px' }}>
                 <p className="text-resp-body" style={{ color: '#6B7280' }}>
-                    {t('ยังไม่มีบัญชี?', "Don't have an account?")}{" "}
+                    {t('noAccount')}{" "}
                     <Link
                         href="/register"
                         className="text-resp-link"
@@ -587,7 +592,7 @@ const SignInArea: React.FC = () => {
                             textDecoration: 'none',
                         }}
                     >
-                        {t('สมัครสมาชิก', 'Sign Up here')}
+                        {t('signUpHere')}
                     </Link>
                 </p>
             </div>

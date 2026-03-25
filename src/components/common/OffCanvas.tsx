@@ -2,8 +2,9 @@
 
 import Link from 'next/link';
 import React, { useState } from 'react';
-import { useLanguage } from '@/features/i18n';
+import { useTranslations } from 'next-intl';
 import { useAuth } from '@/features/auth';
+import { isPharmacistUser } from '@/features/auth/role';
 import { useCart } from '@/features/cart';
 
 interface MenuItem {
@@ -13,7 +14,8 @@ interface MenuItem {
 }
 
 const OffCanvas = ({ setOpenCanvas, openCanvas }: any) => {
-    const { t } = useLanguage();
+    const t = useTranslations('navigation.offCanvas');
+    const profileT = useTranslations('navigation.profile');
     const { user, isAuthenticated, logout } = useAuth();
     const { cartItems } = useCart();
     const [openSubmenu, setOpenSubmenu] = useState<string | null>(null);
@@ -31,16 +33,17 @@ const OffCanvas = ({ setOpenCanvas, openCanvas }: any) => {
     }, [openCanvas]);
 
     const menuItems: MenuItem[] = [
-        { label: t('หน้าแรก', 'Home'), href: '/' },
-        { label: t('คอร์สเรียน', 'Courses'), href: '/courses-grid' },
-        { label: t('ตะกร้าสินค้า', 'Cart'), href: '/shop-cart' },
-        { label: t('เกี่ยวกับเรา', 'About Us'), href: '/about_us' },
+        { label: t('home'), href: '/' },
+        { label: t('courses'), href: '/courses-grid' },
+        { label: t('cart'), href: '/shop-cart' },
+        { label: t('aboutUs'), href: '/about_us' },
     ];
 
     const handleLogout = () => {
         setOpenCanvas(false);
         logout();
     };
+    const roleLabel = user && isPharmacistUser(user) ? profileT('pharmacist') : profileT('generalUser');
 
     // Close dropdown when clicking outside
     const handleContainerClick = (e: React.MouseEvent) => {
@@ -136,6 +139,14 @@ const OffCanvas = ({ setOpenCanvas, openCanvas }: any) => {
                                         zIndex: 100,
                                         overflow: 'hidden',
                                     }}>
+                                        <div style={{
+                                            padding: '14px 16px',
+                                            borderBottom: '1px solid #f0f0f0',
+                                            background: '#f8fafc',
+                                        }}>
+                                            <p style={{ margin: 0, color: '#0f172a', fontSize: '14px', fontWeight: '700' }}>{user.fullName}</p>
+                                            <p style={{ margin: '4px 0 0', color: '#475569', fontSize: '12px', fontWeight: '600' }}>{roleLabel}</p>
+                                        </div>
                                         <Link
                                             href="/profile"
                                             onClick={() => setOpenCanvas(false)}
@@ -151,7 +162,7 @@ const OffCanvas = ({ setOpenCanvas, openCanvas }: any) => {
                                             }}
                                         >
                                             <i className="fas fa-user-circle" style={{ color: '#014D40' }}></i>
-                                            {t('โปรไฟล์', 'Profile')}
+                                            {t('profile')}
                                         </Link>
                                         <Link
                                             href="/payment-history"
@@ -168,7 +179,7 @@ const OffCanvas = ({ setOpenCanvas, openCanvas }: any) => {
                                             }}
                                         >
                                             <i className="fas fa-receipt" style={{ color: '#d97706' }}></i>
-                                            {t('ประวัติชำระเงิน', 'Payment History')}
+                                            {t('paymentHistory')}
                                         </Link>
                                         <button
                                             onClick={handleLogout}
@@ -187,7 +198,7 @@ const OffCanvas = ({ setOpenCanvas, openCanvas }: any) => {
                                             }}
                                         >
                                             <i className="fas fa-sign-out-alt"></i>
-                                            {t('ออกจากระบบ', 'Logout')}
+                                            {t('logout')}
                                         </button>
                                     </div>
                                 )}
@@ -337,7 +348,7 @@ const OffCanvas = ({ setOpenCanvas, openCanvas }: any) => {
                                 borderBottom: '1px solid #f5f5f5',
                             }}
                         >
-                            {t('เข้าสู่ระบบ', 'Sign In')}
+                            {t('signIn')}
                         </Link>
 
                         {/* Register */}
@@ -353,7 +364,7 @@ const OffCanvas = ({ setOpenCanvas, openCanvas }: any) => {
                                 textDecoration: 'none',
                             }}
                         >
-                            {t('ลงทะเบียน', 'Register')}
+                            {t('register')}
                         </Link>
                     </div>
                 )}

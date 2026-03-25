@@ -11,6 +11,7 @@ import type {
     AuthResponse
 } from './types';
 import { authService } from './services';
+import { getClientMessage } from '@/features/i18n/runtime';
 
 // Create context with undefined default
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -68,13 +69,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 setUser(response.user);
                 authService.persistUser(response.user);
             } else {
-                setError(response.error || 'เกิดข้อผิดพลาด');
+                setError(response.error || getClientMessage('auth.fallbacks.genericError'));
             }
 
             return response;
         } catch (err) {
             console.error('DEBUG: AuthProvider.login error:', err);
-            const errorMessage = err instanceof Error ? err.message : 'เกิดข้อผิดพลาด';
+            const errorMessage = err instanceof Error ? err.message : getClientMessage('auth.fallbacks.genericError');
             setError(errorMessage);
             return { success: false, error: errorMessage };
         } finally {
@@ -94,12 +95,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 setUser(response.user);
                 authService.persistUser(response.user);
             } else {
-                setError(response.error || 'เกิดข้อผิดพลาด');
+                setError(response.error || getClientMessage('auth.fallbacks.genericError'));
             }
 
             return response;
         } catch (err) {
-            const errorMessage = err instanceof Error ? err.message : 'เกิดข้อผิดพลาด';
+            const errorMessage = err instanceof Error ? err.message : getClientMessage('auth.fallbacks.genericError');
             setError(errorMessage);
             return { success: false, error: errorMessage };
         } finally {
@@ -119,12 +120,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 setUser(response.user);
                 authService.persistUser(response.user);
             } else {
-                setError(response.error || 'เกิดข้อผิดพลาด');
+                setError(response.error || getClientMessage('auth.fallbacks.genericError'));
             }
 
             return response;
         } catch (err) {
-            const errorMessage = err instanceof Error ? err.message : 'เกิดข้อผิดพลาด';
+            const errorMessage = err instanceof Error ? err.message : getClientMessage('auth.fallbacks.genericError');
             setError(errorMessage);
             return { success: false, error: errorMessage };
         } finally {
@@ -153,7 +154,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
             return response;
         } catch (err) {
-            const errorMessage = err instanceof Error ? err.message : 'เกิดข้อผิดพลาด';
+            const errorMessage = err instanceof Error ? err.message : getClientMessage('auth.fallbacks.genericError');
             return { success: false, error: errorMessage };
         } finally {
             setIsLoading(false);
@@ -165,7 +166,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         try {
             return await authService.changePassword(oldPassword, newPassword);
         } catch (err) {
-            const errorMessage = err instanceof Error ? err.message : 'เกิดข้อผิดพลาด';
+            const errorMessage = err instanceof Error ? err.message : getClientMessage('auth.fallbacks.genericError');
             return { success: false, error: errorMessage };
         }
     }, []);

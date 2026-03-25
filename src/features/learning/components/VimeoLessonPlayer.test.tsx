@@ -1,6 +1,44 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import { VimeoLessonPlayer } from './VimeoLessonPlayer';
 
+vi.mock('next-intl', () => {
+    const messages = require('../../../messages/th/learning.json') as {
+        learning: {
+            courseArea: Record<string, string>;
+        };
+    };
+
+    return {
+        useTranslations: (namespace?: string) => {
+            const scopedMessages = namespace
+                ? namespace.split('.').reduce<unknown>((acc, part) => {
+                    if (!acc || typeof acc !== 'object') {
+                        return undefined;
+                    }
+
+                    return (acc as Record<string, unknown>)[part];
+                }, messages)
+                : messages;
+
+            return (key: string, values?: Record<string, unknown>) => {
+                const template = typeof scopedMessages === 'object' && scopedMessages
+                    ? (scopedMessages as Record<string, unknown>)[key]
+                    : undefined;
+
+                if (typeof template !== 'string') {
+                    return key;
+                }
+
+                if (!values) {
+                    return template;
+                }
+
+                return template.replace(/\{(\w+)\}/g, (_, token: string) => String(values[token] ?? `{${token}}`));
+            };
+        },
+    };
+});
+
 const playerHarness = vi.hoisted(() => ({
     options: null as Record<string, unknown> | null,
     destroy: vi.fn().mockResolvedValue(undefined),
@@ -84,7 +122,12 @@ describe('VimeoLessonPlayer', () => {
         );
 
         await waitFor(() => {
-            expect(playerHarness.options?.url).toBe('https://player.vimeo.com/video/1175386748?h=testhash');
+            const configuredUrl = new URL(String(playerHarness.options?.url));
+            expect(configuredUrl.origin + configuredUrl.pathname).toBe('https://player.vimeo.com/video/1175386748');
+            expect(configuredUrl.searchParams.get('h')).toBe('testhash');
+            expect(configuredUrl.searchParams.get('speed')).toBe('0');
+            expect(configuredUrl.searchParams.get('cc')).toBe('0');
+            expect(configuredUrl.searchParams.get('quality_selector')).toBe('1');
         });
 
         const iframe = document.querySelector('iframe');
@@ -131,9 +174,11 @@ describe('VimeoLessonPlayer', () => {
         );
 
         await waitFor(() => {
-            expect(iframe.style.pointerEvents).toBe('none');
-            expect(iframe).toHaveAttribute('tabindex', '-1');
-            expect(iframe).toHaveAttribute('aria-hidden', 'true');
+            const updatedIframe = document.querySelector('iframe') as HTMLIFrameElement | null;
+            expect(updatedIframe).not.toBeNull();
+            expect(updatedIframe?.style.pointerEvents).toBe('none');
+            expect(updatedIframe).toHaveAttribute('tabindex', '-1');
+            expect(updatedIframe).toHaveAttribute('aria-hidden', 'true');
         });
     });
 });

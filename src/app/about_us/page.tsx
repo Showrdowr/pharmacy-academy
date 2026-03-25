@@ -4,11 +4,17 @@ import Wrapper from '@/components/layout/Wrapper';
 import { AboutUs } from '@/features/about';
 
 import { Metadata } from 'next';
-export const metadata: Metadata = {
-    title: "เกี่ยวกับเรา - Pharmacy Academy",
-    description: "รู้จัก Pharmacy Academy ศูนย์กลางการเรียนรู้ด้านเภสัชศาสตร์ออนไลน์",
-    keywords: "เกี่ยวกับเรา, Pharmacy Academy, เภสัชศาสตร์, เภสัชกร",
-};
+import { getTranslations } from 'next-intl/server';
+
+export async function generateMetadata(): Promise<Metadata> {
+    const t = await getTranslations('common.meta.about');
+
+    return {
+        title: t('title'),
+        description: t('description'),
+        keywords: t('keywords').split(',').map((keyword) => keyword.trim()),
+    };
+}
 
 const AboutUsPage = () => {
     return (

@@ -1,7 +1,9 @@
 // Cart Hooks - Business logic for shopping cart
 'use client';
 
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useAuth } from '@/features/auth';
+import { filterVisibleCoursesForViewer, getCourseViewerRole } from '@/features/courses/audience';
 import { useCartStore } from '@/stores/useCartStore';
 import type { CartContextType, CartItem } from './types';
 
@@ -11,6 +13,51 @@ import type { CartContextType, CartItem } from './types';
  */
 export function useCart(): CartContextType {
     return useCartStore();
+}
+
+export function useAudienceFilteredCart() {
+    const cart = useCart();
+    const { user, isAuthenticated } = useAuth();
+    const viewerRole = getCourseViewerRole(user, isAuthenticated);
+    const [recentlyRemovedCount, setRecentlyRemovedCount] = useState(0);
+
+    const visibleItems = useMemo(
+        () => filterVisibleCoursesForViewer(cart.items, viewerRole),
+        [cart.items, viewerRole]
+    );
+    const hiddenItems = useMemo(
+        () => cart.items.filter((item) => !visibleItems.includes(item)),
+        [cart.items, visibleItems]
+    );
+
+    useEffect(() => {
+        if (viewerRole !== 'general' || hiddenItems.length === 0) {
+            return;
+        }
+
+        setRecentlyRemovedCount(hiddenItems.length);
+        hiddenItems.forEach((item) => cart.removeFromCart(item.id));
+    }, [cart, hiddenItems, viewerRole]);
+
+    useEffect(() => {
+        if (viewerRole !== 'general' && recentlyRemovedCount !== 0) {
+            setRecentlyRemovedCount(0);
+        }
+    }, [recentlyRemovedCount, viewerRole]);
+
+    return {
+        ...cart,
+        items: visibleItems,
+        cartItems: visibleItems,
+        cartCount: visibleItems.length,
+        cartTotal: visibleItems.reduce((sum, item) => sum + item.price, 0),
+        totalOriginalPrice: visibleItems.reduce((sum, item) => sum + (item.originalPrice || item.price), 0),
+        totalDiscount:
+            visibleItems.reduce((sum, item) => sum + (item.originalPrice || item.price), 0)
+            - visibleItems.reduce((sum, item) => sum + item.price, 0),
+        recentlyRemovedCount,
+        viewerRole,
+    };
 }
 
 /**

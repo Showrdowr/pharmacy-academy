@@ -1,10 +1,10 @@
 "use client";
 
 import React from 'react';
-import { useLanguage } from '@/features/i18n';
+import { useTranslations } from 'next-intl';
 
 const AboutUsArea = () => {
-  const { t } = useLanguage();
+  const t = useTranslations('common.aboutUs');
 
   return (
     <section className="about-section py-5">
@@ -15,19 +15,13 @@ const AboutUsArea = () => {
             <div className="about-content">
               <h2 style={{ color: '#004736', marginBottom: '20px' }}>
                 <i className="fas fa-graduation-cap me-2"></i>
-                {t('พันธกิจของเรา', 'Our Mission')}
+                {t('missionTitle')}
               </h2>
               <p style={{ fontSize: '16px', lineHeight: '1.8', color: '#555' }}>
-                {t(
-                  'Pharmacy Academy มุ่งมั่นที่จะเป็นศูนย์กลางการเรียนรู้ด้านเภสัชศาสตร์ที่ครบวงจร เราเชื่อว่าการศึกษาต่อเนื่องเป็นสิ่งสำคัญสำหรับเภสัชกรทุกคน เพื่อให้สามารถให้บริการด้านสุขภาพที่มีคุณภาพแก่ประชาชน',
-                  'Pharmacy Academy is committed to being a comprehensive learning center for pharmaceutical sciences. We believe that continuing education is essential for every pharmacist to provide quality healthcare services to the public.'
-                )}
+                {t('missionDescription1')}
               </p>
               <p style={{ fontSize: '16px', lineHeight: '1.8', color: '#555' }}>
-                {t(
-                  'คอร์สเรียนของเราถูกออกแบบโดยผู้เชี่ยวชาญในแต่ละสาขา เพื่อให้ความรู้ที่ทันสมัยและสามารถนำไปประยุกต์ใช้ในการทำงานจริงได้',
-                  'Our courses are designed by experts in each field to provide up-to-date knowledge that can be applied in real-world practice.'
-                )}
+                {t('missionDescription2')}
               </p>
             </div>
           </div>
@@ -35,7 +29,7 @@ const AboutUsArea = () => {
             <div className="about-image text-center">
               <img
                 src="/assets/img/about/about-1.png"
-                alt={t('เกี่ยวกับ Pharmacy Academy', 'About Pharmacy Academy')}
+                alt={t('missionImageAlt')}
                 style={{ maxWidth: '100%', borderRadius: '15px' }}
               />
             </div>
@@ -48,30 +42,27 @@ const AboutUsArea = () => {
             <div className="about-content">
               <h2 style={{ color: '#004736', marginBottom: '20px' }}>
                 <i className="fas fa-eye me-2"></i>
-                {t('วิสัยทัศน์', 'Our Vision')}
+                {t('visionTitle')}
               </h2>
               <p style={{ fontSize: '16px', lineHeight: '1.8', color: '#555' }}>
-                {t(
-                  'เราตั้งเป้าหมายที่จะเป็นแพลตฟอร์มการเรียนรู้ออนไลน์ด้านเภสัชศาสตร์อันดับหนึ่งของประเทศไทย โดยมุ่งเน้นการพัฒนาศักยภาพของเภสัชกรในทุกสาขา',
-                  'We aim to be the number one online learning platform for pharmaceutical sciences in Thailand, focusing on developing the potential of pharmacists in all fields.'
-                )}
+                {t('visionDescription')}
               </p>
               <ul style={{ listStyle: 'none', padding: 0 }}>
                 <li style={{ padding: '10px 0', fontSize: '16px', color: '#555' }}>
                   <i className="fas fa-check-circle me-2" style={{ color: '#004736' }}></i>
-                  {t('คอร์สเรียนคุณภาพสูงจากผู้เชี่ยวชาญ', 'High-quality courses from experts')}
+                  {t('visionPoint1')}
                 </li>
                 <li style={{ padding: '10px 0', fontSize: '16px', color: '#555' }}>
                   <i className="fas fa-check-circle me-2" style={{ color: '#004736' }}></i>
-                  {t('เนื้อหาอัพเดทตามหลักวิชาการล่าสุด', 'Content updated with latest academic standards')}
+                  {t('visionPoint2')}
                 </li>
                 <li style={{ padding: '10px 0', fontSize: '16px', color: '#555' }}>
                   <i className="fas fa-check-circle me-2" style={{ color: '#004736' }}></i>
-                  {t('รองรับ CPE สำหรับเภสัชกร', 'CPE support for pharmacists')}
+                  {t('visionPoint3')}
                 </li>
                 <li style={{ padding: '10px 0', fontSize: '16px', color: '#555' }}>
                   <i className="fas fa-check-circle me-2" style={{ color: '#004736' }}></i>
-                  {t('เรียนได้ทุกที่ ทุกเวลา', 'Learn anytime, anywhere')}
+                  {t('visionPoint4')}
                 </li>
               </ul>
             </div>
@@ -80,7 +71,7 @@ const AboutUsArea = () => {
             <div className="about-image text-center">
               <img
                 src="/assets/img/about/about-2.png"
-                alt={t('วิสัยทัศน์ของเรา', 'Our Vision')}
+                alt={t('visionImageAlt')}
                 style={{ maxWidth: '100%', borderRadius: '15px' }}
               />
             </div>
@@ -98,13 +89,10 @@ const AboutUsArea = () => {
               color: 'white'
             }}>
               <h2 style={{ marginBottom: '20px' }}>
-                {t('พร้อมที่จะเริ่มต้นเรียนรู้หรือยัง?', 'Ready to start learning?')}
+                {t('ctaTitle')}
               </h2>
               <p style={{ marginBottom: '30px', fontSize: '18px' }}>
-                {t(
-                  'เข้าร่วมกับเภสัชกรกว่า 1,000 คนที่เลือกเรียนกับเรา',
-                  'Join over 1,000 pharmacists who choose to learn with us'
-                )}
+                {t('ctaDescription')}
               </p>
               <a
                 href="/courses-grid"
@@ -120,7 +108,7 @@ const AboutUsArea = () => {
                 }}
               >
                 <i className="fas fa-book-open me-2"></i>
-                {t('ดูคอร์สเรียนทั้งหมด', 'View All Courses')}
+                {t('ctaButton')}
               </a>
             </div>
           </div>

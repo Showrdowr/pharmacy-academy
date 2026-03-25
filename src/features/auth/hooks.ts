@@ -3,6 +3,7 @@
 
 import { useContext, useCallback } from 'react';
 import { AuthContext } from './AuthProvider';
+import { isPharmacistUser } from './role';
 import type {
     AuthContextType,
     LoginCredentials,
@@ -47,7 +48,7 @@ export function useIsAuthenticated(): boolean {
  */
 export function useIsPharmacist(): boolean {
     const { user } = useAuth();
-    return user?.role === 'pharmacist';
+    return isPharmacistUser(user);
 }
 
 /**

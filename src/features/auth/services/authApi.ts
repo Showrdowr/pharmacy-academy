@@ -7,6 +7,8 @@ import type {
     User,
 } from '../types';
 import { API_BASE_URL } from '@/config';
+import { getClientMessage } from '@/features/i18n/runtime';
+import { normalizeAuthUser } from '../role';
 
 // Helper: get the correct storage based on rememberMe preference
 function getStorage(): Storage {
@@ -41,7 +43,7 @@ export const authService = {
             if (!response.ok) {
                 return {
                     success: false,
-                    error: data.error || data.message || 'เข้าสู่ระบบล้มเหลว',
+                    error: data.error || data.message || getClientMessage('auth.fallbacks.loginFailed'),
                     requiresCaptcha: data.requiresCaptcha || false
                 };
             }
@@ -49,15 +51,16 @@ export const authService = {
             // Save rememberMe preference
             localStorage.setItem('rememberMe', String(rememberMe));
             const storage = rememberMe ? localStorage : sessionStorage;
+            const normalizedUser = normalizeAuthUser(data.user);
 
-            if (data.token) {
+            if (data.token && normalizedUser) {
                 storage.setItem('token', data.token);
-                storage.setItem('ontrack_user', JSON.stringify(data.user));
+                storage.setItem('ontrack_user', JSON.stringify(normalizedUser));
             }
 
-            return { success: true, user: data.user, token: data.token };
+            return { success: true, user: normalizedUser || undefined, token: data.token };
         } catch (error) {
-            return { success: false, error: 'เกิดข้อผิดพลาดในการเชื่อมต่อ' };
+            return { success: false, error: getClientMessage('auth.fallbacks.connectionError') };
         }
     },
 
@@ -80,9 +83,9 @@ export const authService = {
                     token: data.token
                 };
             }
-            return { success: false, error: 'ไม่สามารถดึง CAPTCHA ได้' };
+            return { success: false, error: getClientMessage('auth.fallbacks.captchaFetchFailed') };
         } catch (error) {
-            return { success: false, error: 'เกิดข้อผิดพลาดในการเชื่อมต่อ' };
+            return { success: false, error: getClientMessage('auth.fallbacks.connectionError') };
         }
     },
 
@@ -105,18 +108,19 @@ export const authService = {
             const result = await response.json();
 
             if (!response.ok) {
-                return { success: false, error: result.message || 'สมัครสมาชิกล้มเหลว' };
+                return { success: false, error: result.message || getClientMessage('auth.fallbacks.registrationFailed') };
             }
+            const normalizedUser = normalizeAuthUser(result.user);
 
-            if (result.token) {
+            if (result.token && normalizedUser) {
                 const storage = getStorage();
                 storage.setItem('token', result.token);
-                storage.setItem('ontrack_user', JSON.stringify(result.user));
+                storage.setItem('ontrack_user', JSON.stringify(normalizedUser));
             }
 
-            return { success: true, user: result.user, token: result.token };
+            return { success: true, user: normalizedUser || undefined, token: result.token };
         } catch (error) {
-            return { success: false, error: 'เกิดข้อผิดพลาดในการเชื่อมต่อ' };
+            return { success: false, error: getClientMessage('auth.fallbacks.connectionError') };
         }
     },
 
@@ -140,18 +144,19 @@ export const authService = {
             const result = await response.json();
 
             if (!response.ok) {
-                return { success: false, error: result.message || 'สมัครสมาชิกล้มเหลว' };
+                return { success: false, error: result.message || getClientMessage('auth.fallbacks.registrationFailed') };
             }
+            const normalizedUser = normalizeAuthUser(result.user);
 
-            if (result.token) {
+            if (result.token && normalizedUser) {
                 const storage = getStorage();
                 storage.setItem('token', result.token);
-                storage.setItem('ontrack_user', JSON.stringify(result.user));
+                storage.setItem('ontrack_user', JSON.stringify(normalizedUser));
             }
 
-            return { success: true, user: result.user, token: result.token };
+            return { success: true, user: normalizedUser || undefined, token: result.token };
         } catch (error) {
-            return { success: false, error: 'เกิดข้อผิดพลาดในการเชื่อมต่อ' };
+            return { success: false, error: getClientMessage('auth.fallbacks.connectionError') };
         }
     },
 
@@ -188,8 +193,11 @@ export const authService = {
             if (response.ok) {
                 const data = await response.json();
                 if (data.success && data.user) {
-                    getStorage().setItem('ontrack_user', JSON.stringify(data.user));
-                    return data.user;
+                    const normalizedUser = normalizeAuthUser(data.user);
+                    if (normalizedUser) {
+                        getStorage().setItem('ontrack_user', JSON.stringify(normalizedUser));
+                    }
+                    return normalizedUser;
                 }
             } else {
                 // Token invalid or expired
@@ -210,7 +218,7 @@ export const authService = {
      */
     async updateProfile(data: Partial<User>): Promise<AuthResponse> {
         const token = getToken();
-        if (!token) return { success: false, error: 'กรุณาเข้าสู่ระบบก่อน' };
+        if (!token) return { success: false, error: getClientMessage('auth.fallbacks.signInRequired') };
 
         try {
             const response = await fetch(`/api/auth/profile`, {
@@ -225,16 +233,18 @@ export const authService = {
             const result = await response.json();
 
             if (!response.ok) {
-                return { success: false, error: result.error || 'อัปเดตโปรไฟล์ล้มเหลว' };
+                return { success: false, error: result.error || getClientMessage('auth.fallbacks.updateProfileFailed') };
             }
 
-            if (result.user) {
-                getStorage().setItem('ontrack_user', JSON.stringify(result.user));
+            const normalizedUser = normalizeAuthUser(result.user);
+
+            if (normalizedUser) {
+                getStorage().setItem('ontrack_user', JSON.stringify(normalizedUser));
             }
 
-            return { success: true, user: result.user };
+            return { success: true, user: normalizedUser || undefined };
         } catch (error) {
-            return { success: false, error: 'เกิดข้อผิดพลาดในการเชื่อมต่อ' };
+            return { success: false, error: getClientMessage('auth.fallbacks.connectionError') };
         }
     },
 
@@ -243,7 +253,7 @@ export const authService = {
      */
     async changePassword(oldPassword: string, newPassword: string): Promise<AuthResponse> {
         const token = getToken();
-        if (!token) return { success: false, error: 'กรุณาเข้าสู่ระบบก่อน' };
+        if (!token) return { success: false, error: getClientMessage('auth.fallbacks.signInRequired') };
 
         try {
             const response = await fetch(`/api/auth/change-password`, {
@@ -258,12 +268,12 @@ export const authService = {
             const result = await response.json();
 
             if (!response.ok) {
-                return { success: false, error: result.error || 'เปลี่ยนรหัสผ่านล้มเหลว' };
+                return { success: false, error: result.error || getClientMessage('auth.fallbacks.changePasswordFailed') };
             }
 
             return { success: true };
         } catch (error) {
-            return { success: false, error: 'เกิดข้อผิดพลาดในการเชื่อมต่อ' };
+            return { success: false, error: getClientMessage('auth.fallbacks.connectionError') };
         }
     },
 
@@ -281,12 +291,12 @@ export const authService = {
             const data = await response.json();
 
             if (!response.ok) {
-                return { success: false, message: data.error || 'เกิดข้อผิดพลาด' };
+                return { success: false, message: data.error || getClientMessage('auth.fallbacks.genericError') };
             }
 
             return { success: true, message: data.message };
         } catch (error) {
-            return { success: false, message: 'เกิดข้อผิดพลาดในการเชื่อมต่อ' };
+            return { success: false, message: getClientMessage('auth.fallbacks.connectionError') };
         }
     },
 
@@ -304,12 +314,12 @@ export const authService = {
             const data = await response.json();
 
             if (!response.ok) {
-                return { success: false, message: data.error || 'เกิดข้อผิดพลาด' };
+                return { success: false, message: data.error || getClientMessage('auth.fallbacks.genericError') };
             }
 
             return { success: true, message: data.message };
         } catch (error) {
-            return { success: false, message: 'เกิดข้อผิดพลาดในการเชื่อมต่อ' };
+            return { success: false, message: getClientMessage('auth.fallbacks.connectionError') };
         }
     },
 
@@ -327,12 +337,12 @@ export const authService = {
             const data = await response.json();
 
             if (!response.ok) {
-                return { success: false, message: data.error || 'เกิดข้อผิดพลาด' };
+                return { success: false, message: data.error || getClientMessage('auth.fallbacks.genericError') };
             }
 
             return { success: true, message: data.message };
         } catch (error) {
-            return { success: false, message: 'เกิดข้อผิดพลาดในการเชื่อมต่อ' };
+            return { success: false, message: getClientMessage('auth.fallbacks.connectionError') };
         }
     },
 
@@ -340,7 +350,10 @@ export const authService = {
      * Persist user to localStorage
      */
     persistUser(user: User): void {
-        localStorage.setItem('ontrack_user', JSON.stringify(user));
+        const normalizedUser = normalizeAuthUser(user);
+        if (normalizedUser) {
+            localStorage.setItem('ontrack_user', JSON.stringify(normalizedUser));
+        }
     },
 };
 

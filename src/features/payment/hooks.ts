@@ -4,6 +4,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { paymentApi } from './services/paymentApi';
 import { voucherApi } from './services/voucherApi';
+import { getClientMessage } from '@/features/i18n/runtime';
 import type {
     PaymentMethod,
     CreateOrderRequest,
@@ -28,7 +29,7 @@ export function usePayment() {
         try {
             return await paymentApi.createOrder(request);
         } catch (err) {
-            const errorMessage = err instanceof Error ? err.message : 'เกิดข้อผิดพลาด';
+            const errorMessage = err instanceof Error ? err.message : getClientMessage('payment.fallbacks.genericError');
             setError(errorMessage);
             return { success: false, error: errorMessage };
         } finally {
@@ -47,7 +48,7 @@ export function usePayment() {
         try {
             return await paymentApi.processPayment(orderId, paymentMethod, paymentInfo);
         } catch (err) {
-            const errorMessage = err instanceof Error ? err.message : 'การชำระเงินล้มเหลว';
+            const errorMessage = err instanceof Error ? err.message : getClientMessage('payment.fallbacks.paymentFailed');
             setError(errorMessage);
             return { success: false, error: errorMessage };
         } finally {
@@ -92,7 +93,7 @@ export function usePaymentHistory() {
             const result = await paymentApi.getOrderHistory(page, limit);
             setOrders(result.orders);
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'เกิดข้อผิดพลาด');
+            setError(err instanceof Error ? err.message : getClientMessage('payment.fallbacks.loadOrderHistoryFailed'));
         } finally {
             setIsLoading(false);
         }
@@ -175,10 +176,15 @@ export function useCoupon() {
                 return true;
             }
 
-            setError(result.errorMessage || 'รหัสส่วนลดไม่ถูกต้อง');
+            const errorMessage = result.errorMessage?.startsWith('MIN_ORDER_')
+                ? getClientMessage('payment.checkout.voucherMinimumOrder', {
+                    amount: result.errorMessage.replace('MIN_ORDER_', ''),
+                })
+                : getClientMessage('payment.checkout.voucherInvalid');
+            setError(errorMessage);
             return false;
         } catch {
-            setError('ไม่สามารถตรวจสอบรหัสส่วนลดได้');
+            setError(getClientMessage('payment.checkout.voucherValidateFailed'));
             return false;
         } finally {
             setIsValidating(false);

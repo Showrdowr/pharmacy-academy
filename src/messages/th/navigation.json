@@ -1,0 +1,45 @@
+{
+  "navigation": {
+    "languageSwitcher": {
+      "switchToEnglish": "Switch to English",
+      "switchToThai": "เปลี่ยนเป็นภาษาไทย"
+    },
+    "header": {
+      "searchPlaceholder": "ค้นหาคอร์ส...",
+      "noCoursesFound": "ไม่พบคอร์ส",
+      "logoAlt": "สภาเภสัชกรรม"
+    },
+    "breadcrumbs": {
+      "aboutTitle": "เกี่ยวกับเรา",
+      "coursesTitle": "คอร์สเรียนทั้งหมด",
+      "coursesCurrent": "คอร์สเรียน",
+      "profileTitle": "โปรไฟล์ของฉัน",
+      "profileCurrent": "โปรไฟล์"
+    },
+    "menu": {
+      "blog": "บล็อก",
+      "blogDetails": "รายละเอียดบล็อก"
+    },
+    "offCanvas": {
+      "home": "หน้าแรก",
+      "courses": "คอร์สเรียน",
+      "cart": "ตะกร้าสินค้า",
+      "aboutUs": "เกี่ยวกับเรา",
+      "profile": "โปรไฟล์",
+      "paymentHistory": "ประวัติชำระเงิน",
+      "logout": "ออกจากระบบ",
+      "signIn": "เข้าสู่ระบบ",
+      "register": "ลงทะเบียน"
+    },
+    "profile": {
+      "signIn": "เข้าสู่ระบบ",
+      "register": "ลงทะเบียน",
+      "profile": "โปรไฟล์",
+      "paymentHistory": "ประวัติชำระเงิน",
+      "signOut": "ออกจากระบบ",
+      "pharmacist": "เภสัชกร",
+      "generalUser": "ผู้ใช้ทั่วไป",
+      "user": "ผู้ใช้ทั่วไป"
+    }
+  }
+}

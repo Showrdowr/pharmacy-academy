@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { X, RefreshCw, AlertCircle, Loader2 } from 'lucide-react';
-import { useLanguage } from '@/features/i18n';
+import { useTranslations } from 'next-intl';
 import { authService } from '../services/authApi';
 
 interface TextCaptchaModalProps {
@@ -11,7 +11,7 @@ interface TextCaptchaModalProps {
 }
 
 export const TextCaptchaModal: React.FC<TextCaptchaModalProps> = ({ onSuccess, onClose }) => {
-    const { t } = useLanguage();
+    const t = useTranslations('auth.captcha');
     const [captchaSvg, setCaptchaSvg] = useState('');
     const [captchaToken, setCaptchaToken] = useState('');
     const [captchaAnswer, setCaptchaAnswer] = useState('');
@@ -28,10 +28,10 @@ export const TextCaptchaModal: React.FC<TextCaptchaModalProps> = ({ onSuccess, o
                 setCaptchaToken(res.token);
                 setCaptchaAnswer('');
             } else {
-                setError(t('ไม่สามารถโหลด CAPTCHA ได้', 'Could not load CAPTCHA'));
+                setError(t('loadFailed'));
             }
         } catch (err) {
-            setError(t('เกิดข้อผิดพลาดในการโหลด', 'Error loading CAPTCHA'));
+            setError(t('loadError'));
         } finally {
             setIsLoading(false);
         }
@@ -44,7 +44,7 @@ export const TextCaptchaModal: React.FC<TextCaptchaModalProps> = ({ onSuccess, o
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (!captchaAnswer.trim()) {
-            setError(t('กรุณากรอกรหัส CAPTCHA', 'Please enter CAPTCHA code'));
+            setError(t('answerRequired'));
             return;
         }
         onSuccess(captchaAnswer, captchaToken);
@@ -86,10 +86,10 @@ export const TextCaptchaModal: React.FC<TextCaptchaModalProps> = ({ onSuccess, o
                 </button>
 
                 <h3 style={{ fontSize: '20px', fontWeight: '700', color: '#000000', marginBottom: '8px' }}>
-                    {t('ยืนยันตัวตน', 'Verification Required')}
+                    {t('title')}
                 </h3>
                 <p style={{ color: '#000000', fontSize: '14px', marginBottom: '24px' }}>
-                    {t('กรุณากรอกรหัสที่เห็นในรูปภาพ', 'Please enter the characters from the image')}
+                    {t('description')}
                 </p>
 
                 <form onSubmit={handleSubmit}>
@@ -130,7 +130,7 @@ export const TextCaptchaModal: React.FC<TextCaptchaModalProps> = ({ onSuccess, o
                                 cursor: 'pointer',
                                 transition: 'all 0.2s'
                             }}
-                            title={t('เปลี่ยนรูป', 'Change image')}
+                            title={t('refreshTitle')}
                         >
                             <RefreshCw size={20} className={isLoading ? 'animate-spin' : ''} />
                         </button>
@@ -145,7 +145,7 @@ export const TextCaptchaModal: React.FC<TextCaptchaModalProps> = ({ onSuccess, o
                                 setCaptchaAnswer(e.target.value);
                                 if (error) setError(null);
                             }}
-                            placeholder={t('รหัสที่เห็นในภาพ', 'Code from image')}
+                            placeholder={t('inputPlaceholder')}
                             style={{
                                 width: '100%',
                                 padding: '14px 16px',
@@ -179,7 +179,7 @@ export const TextCaptchaModal: React.FC<TextCaptchaModalProps> = ({ onSuccess, o
                                 cursor: 'pointer'
                             }}
                         >
-                            {t('ยกเลิก', 'Cancel')}
+                            {t('cancel')}
                         </button>
                         <button
                             type="submit"
@@ -193,7 +193,7 @@ export const TextCaptchaModal: React.FC<TextCaptchaModalProps> = ({ onSuccess, o
                                 boxShadow: '0 4px 6px -1px rgba(37, 99, 235, 0.2)'
                             }}
                         >
-                            {t('ตกลง', 'Confirm')}
+                            {t('confirm')}
                         </button>
                     </div>
                 </form>

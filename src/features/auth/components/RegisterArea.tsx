@@ -3,14 +3,14 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Eye, EyeOff } from "lucide-react";
 
 import AuthLayout from "./AuthLayout";
-import { useLanguage } from '@/features/i18n';
 import { useAuth } from "@/features/auth";
 
 const RegisterArea: React.FC = () => {
-    const { t } = useLanguage();
+    const t = useTranslations('auth.register');
     const router = useRouter();
     const { register, registerPharmacist } = useAuth();
     const [activeTab, setActiveTab] = useState<"general" | "pharmacist">("general");
@@ -18,6 +18,8 @@ const RegisterArea: React.FC = () => {
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState("");
+
+    const includesAny = (source: string, patterns: string[]) => patterns.some((pattern) => source.includes(pattern));
 
     // Form data
     const [formData, setFormData] = useState({
@@ -53,27 +55,27 @@ const RegisterArea: React.FC = () => {
         const newFieldErrors: Record<string, string> = {};
         
         if (!formData.firstName.trim()) {
-            newFieldErrors.firstName = t('กรุณากรอกชื่อ-นามสกุล', 'Please enter your name');
+            newFieldErrors.firstName = t('fullNameRequired');
         }
         
         if (!formData.email.trim()) {
-            newFieldErrors.email = t('กรุณากรอกอีเมล', 'Please enter your email');
+            newFieldErrors.email = t('emailRequired');
         } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-            newFieldErrors.email = t('รูปแบบอีเมลไม่ถูกต้อง', 'Invalid email format');
+            newFieldErrors.email = t('invalidEmailFormat');
         }
 
         if (!formData.password) {
-            newFieldErrors.password = t('กรุณากรอกรหัสผ่าน', 'Please enter your password');
+            newFieldErrors.password = t('passwordRequired');
         } else if (formData.password.length < 8) {
-            newFieldErrors.password = t('รหัสผ่านควรมีความยาวอย่างน้อย 8 ตัวอักษร', 'Password should be at least 8 characters');
+            newFieldErrors.password = t('passwordTooShort');
         }
 
         if (formData.password !== formData.confirmPassword) {
-            newFieldErrors.confirmPassword = t('รหัสผ่านไม่ตรงกัน', 'Passwords do not match');
+            newFieldErrors.confirmPassword = t('passwordsMismatch');
         }
 
         if (activeTab === "pharmacist" && !formData.licenseNumber.trim()) {
-            newFieldErrors.licenseNumber = t('กรุณากรอกเลขที่ใบอนุญาต', 'Please enter your license number');
+            newFieldErrors.licenseNumber = t('licenseRequired');
         }
 
         if (Object.keys(newFieldErrors).length > 0) {
@@ -106,19 +108,19 @@ const RegisterArea: React.FC = () => {
             if (result.success) {
                 router.push("/");
             } else {
-                const errorMsg = result.error || "";
-                if (errorMsg.includes("ชื่อซ้ำ")) {
-                    setFieldErrors({ firstName: t('ชื่อนี้ถูกใช้งานแล้ว', 'This name is already in use') });
-                } else if (errorMsg.includes("อีเมลซ้ำ")) {
-                    setFieldErrors({ email: t('อีเมลนี้ถูกใช้งานแล้ว', 'This email is already in use') });
+                const errorMsg = (result.error || "").toLowerCase();
+                if (includesAny(errorMsg, ["ชื่อซ้ำ", "name already", "full name already", "name is already", "already used"])) {
+                    setFieldErrors({ firstName: t('nameAlreadyUsed') });
+                } else if (includesAny(errorMsg, ["อีเมลซ้ำ", "email already", "email is already", "already in use"])) {
+                    setFieldErrors({ email: t('emailAlreadyUsed') });
                 } else {
-                    setError(errorMsg || t('การลงทะเบียนล้มเหลว', 'Registration failed'));
+                    setError(result.error || t('registrationFailed'));
                 }
                 setIsSubmitting(false);
             }
         } catch (err) {
             console.error("Registration error:", err);
-            setError(t('เกิดข้อผิดพลาดในการเชื่อมต่อ', 'Connection error'));
+            setError(t('connectionError'));
             setIsSubmitting(false);
         }
     };
@@ -164,12 +166,12 @@ const RegisterArea: React.FC = () => {
                     color: '#111827',
                     marginBottom: '8px',
                 }}>
-                    {t('สมัครสมาชิก', 'Sign Up')}
+                    {t('title')}
                 </h1>
                 <p className="text-resp-body-lg" style={{
                     color: '#6B7280',
                 }}>
-                    {t('กรอกข้อมูลเพื่อสร้างบัญชีใหม่', 'Fill in your details to create an account')}
+                    {t('subtitle')}
                 </p>
             </div>
 
@@ -201,7 +203,7 @@ const RegisterArea: React.FC = () => {
                     }}
                     className="text-resp-btn"
                 >
-                    {t('บุคคลทั่วไป', 'General')}
+                    {t('generalTab')}
                 </button>
                 <button
                     type="button"
@@ -221,7 +223,7 @@ const RegisterArea: React.FC = () => {
                     }}
                     className="text-resp-btn"
                 >
-                    {t('เภสัชกร', 'Pharmacist')}
+                    {t('pharmacistTab')}
                 </button>
             </div>
 
@@ -243,10 +245,10 @@ const RegisterArea: React.FC = () => {
             <form onSubmit={handleSubmit} noValidate>
                 {/* Full Name */}
                 <div style={{ marginBottom: '14px' }}>
-                    <label className="text-resp-body-lg" style={labelStyle}>{t('ชื่อ-นามสกุล', 'Name-Last Name')}</label>
+                    <label className="text-resp-body-lg" style={labelStyle}>{t('fullName')}</label>
                     <input
                         type="text"
-                        placeholder={t('ชื่อ-นามสกุล', 'Name-Last Name')}
+                        placeholder={t('fullNamePlaceholder')}
                         value={formData.firstName}
                         onChange={(e) => handleInputChange('firstName', e.target.value)}
                         required
@@ -267,10 +269,14 @@ const RegisterArea: React.FC = () => {
 
                 {/* Email */}
                 <div style={{ marginBottom: '14px' }}>
-                    <label className="text-resp-body-lg" style={labelStyle}>{t('อีเมล', 'Email')}</label>
+                    <label className="text-resp-body-lg" style={labelStyle}>{t('email')}</label>
                     <input
-                        type="email"
-                        placeholder={t('กรอกอีเมลของคุณ', 'Enter your email')}
+                        type="text"
+                        inputMode="email"
+                        autoComplete="email"
+                        autoCapitalize="none"
+                        spellCheck={false}
+                        placeholder={t('emailPlaceholder')}
                         value={formData.email}
                         onChange={(e) => handleInputChange('email', e.target.value)}
                         required
@@ -291,11 +297,11 @@ const RegisterArea: React.FC = () => {
 
                 {/* Password */}
                 <div style={{ marginBottom: '14px' }}>
-                    <label className="text-resp-body-lg" style={labelStyle}>{t('รหัสผ่าน', 'Password')}</label>
+                    <label className="text-resp-body-lg" style={labelStyle}>{t('password')}</label>
                     <div style={{ position: 'relative' }}>
                         <input
                             type={showPassword ? "text" : "password"}
-                            placeholder={t('รหัสผ่าน', 'Password')}
+                            placeholder={t('passwordPlaceholder')}
                             value={formData.password}
                             onChange={(e) => handleInputChange('password', e.target.value)}
                             required
@@ -337,11 +343,11 @@ const RegisterArea: React.FC = () => {
 
                 {/* Confirm Password */}
                 <div style={{ marginBottom: '14px' }}>
-                    <label className="text-resp-body-lg" style={labelStyle}>{t('ยืนยันรหัสผ่าน', 'Confirm Password')}</label>
+                    <label className="text-resp-body-lg" style={labelStyle}>{t('confirmPassword')}</label>
                     <div style={{ position: 'relative' }}>
                         <input
                             type={showConfirmPassword ? "text" : "password"}
-                            placeholder={t('ยืนยันรหัสผ่าน', 'Confirm password')}
+                            placeholder={t('confirmPasswordPlaceholder')}
                             value={formData.confirmPassword}
                             onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
                             required
@@ -385,10 +391,10 @@ const RegisterArea: React.FC = () => {
                 {activeTab === "pharmacist" && (
                     <>
                         <div style={{ marginBottom: '14px' }}>
-                            <label className="text-resp-body-lg" style={labelStyle}>{t('เลขที่ใบอนุญาตประกอบวิชาชีพ', 'Professional License Number')}</label>
+                            <label className="text-resp-body-lg" style={labelStyle}>{t('licenseNumber')}</label>
                             <input
                                 type="text"
-                                placeholder={t('เลขที่ใบอนุญาตประกอบวิชาชีพ (ภ.)', 'Professional license number')}
+                                placeholder={t('licensePlaceholder')}
                                 value={formData.licenseNumber}
                                 onChange={(e) => handleInputChange('licenseNumber', e.target.value)}
                                 required
@@ -428,14 +434,14 @@ const RegisterArea: React.FC = () => {
                     }}
                     className="text-resp-btn"
                 >
-                    {isSubmitting ? t('กำลังสมัครสมาชิก...', 'Signing up...') : t('สมัครสมาชิก', 'Sign Up')}
+                    {isSubmitting ? t('submitting') : t('submit')}
                 </button>
             </form>
 
             {/* Login Link */}
             <div style={{ textAlign: 'center', marginTop: '22px' }}>
                 <p className="text-resp-body" style={{ color: '#6B7280' }}>
-                    {t('มีบัญชีอยู่แล้ว?', 'Already have an account?')}{" "}
+                    {t('alreadyHaveAccount')}{" "}
                     <Link
                         href="/sign-in"
                         style={{
@@ -445,7 +451,7 @@ const RegisterArea: React.FC = () => {
                         }}
                         className="text-resp-link"
                     >
-                        {t('เข้าสู่ระบบ', 'Login')}
+                        {t('login')}
                     </Link>
                 </p>
             </div>

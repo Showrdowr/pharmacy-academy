@@ -5,6 +5,8 @@
  */
 
 import { useState, useMemo, useEffect } from 'react';
+import { useAuth } from '@/features/auth';
+import { filterVisibleCoursesForViewer, getCourseViewerRole } from '../audience';
 import { COURSES_DATA, CATEGORIES, PRICE_RANGES, type Course } from '../data/mockData';
 
 interface UseCourseFilterReturn {
@@ -31,10 +33,16 @@ interface UseCourseFilterProps {
 }
 
 export const useCourseFilter = ({ initialCourses = COURSES_DATA }: UseCourseFilterProps = {}): UseCourseFilterReturn => {
+    const { user, isAuthenticated } = useAuth();
+    const viewerRole = getCourseViewerRole(user, isAuthenticated);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('all');
     const [selectedPriceRange, setSelectedPriceRange] = useState(0);
     const [isFilterOpen, setIsFilterOpen] = useState(true);
+    const visibleCourses = useMemo(
+        () => filterVisibleCoursesForViewer(initialCourses, viewerRole),
+        [initialCourses, viewerRole]
+    );
 
     // Set filter closed by default on mobile
     useEffect(() => {
@@ -53,7 +61,7 @@ export const useCourseFilter = ({ initialCourses = COURSES_DATA }: UseCourseFilt
     // Filter courses based on search, category, and price range
     const filteredCourses = useMemo(() => {
         const priceRange = PRICE_RANGES[selectedPriceRange];
-        return initialCourses.filter((course) => {
+        return visibleCourses.filter((course) => {
             const matchesSearch = searchQuery === '' ||
                 course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 course.titleEn.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -66,7 +74,7 @@ export const useCourseFilter = ({ initialCourses = COURSES_DATA }: UseCourseFilt
 
             return matchesSearch && matchesCategory && matchesPrice;
         });
-    }, [searchQuery, selectedCategory, selectedPriceRange, initialCourses]);
+    }, [searchQuery, selectedCategory, selectedPriceRange, visibleCourses]);
 
     const clearFilters = () => {
         setSearchQuery('');
@@ -90,7 +98,7 @@ export const useCourseFilter = ({ initialCourses = COURSES_DATA }: UseCourseFilt
         clearFilters,
 
         // Data
-        totalCourses: initialCourses.length,
+        totalCourses: visibleCourses.length,
     };
 };
 

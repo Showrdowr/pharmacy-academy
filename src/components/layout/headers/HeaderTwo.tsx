@@ -8,32 +8,40 @@ import OffCanvas from '@/components/common/OffCanvas';
 import HeaderUserProfile from '@/components/common/HeaderUserProfile';
 import LanguageSwitcher from '@/components/common/LanguageSwitcher';
 import { useSearch } from '@/features/search';
+import { ALL_COURSES } from '@/features/search/SearchProvider';
 import { useCart } from '@/features/cart';
-import { useLanguage } from '@/features/i18n';
-
-// Mock courses for search suggestions
-const COURSES_DATA = [
-    { id: 1, title: 'เภสัชวิทยาคลินิกเบื้องต้น', instructor: 'ภญ.สมใจ รักเรียน', price: 1500, image: '/assets/img/courses/01.jpg' },
-    { id: 2, title: 'การบริบาลเภสัชกรรมผู้ป่วยเบาหวาน', instructor: 'ภก.วิชัย ใจดี', price: 2000, image: '/assets/img/courses/02.jpg' },
-    { id: 3, title: 'กฎหมายเภสัชกรรมเบื้องต้น', instructor: 'ภก.ธนา มั่นคง', price: 1200, image: '/assets/img/courses/03.jpg' },
-    { id: 4, title: 'การใช้ยาในผู้สูงอายุ', instructor: 'ภญ.พิมพ์ใจ สว่าง', price: 1800, image: '/assets/img/courses/04.jpg' },
-];
+import { useAuth } from '@/features/auth';
+import { filterVisibleCoursesForViewer, getCourseViewerRole } from '@/features/courses/audience';
+import { useTranslations } from 'next-intl';
+import { formatLocaleCurrency, getLocalizedContent, useAppLocale } from '@/features/i18n';
 
 const HeaderTwo = () => {
     const { sticky } = useSticky();
     const [openCanvas, setOpenCanvas] = useState(false);
     const { setSearchQuery } = useSearch();
     const { cartItems } = useCart();
-    const { t } = useLanguage();
+    const { user, isAuthenticated } = useAuth();
+    const { locale } = useAppLocale();
+    const t = useTranslations('navigation.header');
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [localSearch, setLocalSearch] = useState('');
     const searchRef = useRef<HTMLDivElement>(null);
+    const viewerRole = getCourseViewerRole(user, isAuthenticated);
+    const visibleCourses = filterVisibleCoursesForViewer(ALL_COURSES, viewerRole);
 
     // Filter courses based on search
-    const filteredCourses = COURSES_DATA.filter(course =>
-        course.title.toLowerCase().includes(localSearch.toLowerCase()) ||
-        course.instructor.toLowerCase().includes(localSearch.toLowerCase())
-    ).slice(0, 4);
+    const normalizedQuery = localSearch.trim().toLowerCase();
+    const filteredCourses = visibleCourses.filter((course) => {
+        const searchableText = [
+            course.title,
+            course.titleEn,
+            course.category,
+            course.categoryEn,
+            course.instructor,
+        ].join(' ').toLowerCase();
+
+        return searchableText.includes(normalizedQuery);
+    }).slice(0, 4);
 
     // Close suggestions when clicking outside
     useEffect(() => {
@@ -78,7 +86,7 @@ const HeaderTwo = () => {
                                 >
                                     <img
                                         src="/images/Logo.jpg"
-                                        alt="สภาเภสัชกรรม"
+                                        alt={t('logoAlt')}
                                         className="header-logo-img"
                                         style={{
                                             height: sticky ? '45px' : '65px',
@@ -141,7 +149,7 @@ const HeaderTwo = () => {
                                                 <i className="fas fa-search" style={{ color: '#999', marginRight: '8px', fontSize: '18px' }}></i>
                                                 <input
                                                     type="text"
-                                                    placeholder={t('ค้นหาคอร์ส...', 'Search...')}
+                                                    placeholder={t('searchPlaceholder')}
                                                     value={localSearch}
                                                     onChange={(e) => {
                                                         setLocalSearch(e.target.value);
@@ -175,11 +183,14 @@ const HeaderTwo = () => {
                                             }}>
                                                 {filteredCourses.length === 0 ? (
                                                     <div style={{ padding: '16px', textAlign: 'center', color: '#666', fontSize: '14px' }}>
-                                                        {t('ไม่พบคอร์ส', 'No courses found')}
+                                                        {t('noCoursesFound')}
                                                     </div>
                                                 ) : (
-                                                    filteredCourses.map((course) => (
-                                                        <Link
+                                                    filteredCourses.map((course) => {
+                                                        const courseTitle = getLocalizedContent(locale, course.title, course.titleEn);
+
+                                                        return (
+                                                            <Link
                                                             key={course.id}
                                                             href={`/courses/${course.id}`}
                                                             onClick={() => setShowSuggestions(false)}
@@ -197,14 +208,15 @@ const HeaderTwo = () => {
                                                         >
                                                             <div style={{ flex: 1, minWidth: 0 }}>
                                                                 <div style={{ fontSize: '18px', fontWeight: '500', color: '#333' }}>
-                                                                    {course.title}
+                                                                    {courseTitle}
                                                                 </div>
                                                                 <div style={{ fontSize: '16px', color: '#666' }}>
-                                                                    ฿{course.price.toLocaleString()}
+                                                                    {formatLocaleCurrency(course.price, locale)}
                                                                 </div>
                                                             </div>
                                                         </Link>
-                                                    ))
+                                                        );
+                                                    })
                                                 )}
                                             </div>
                                         )}

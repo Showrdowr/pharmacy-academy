@@ -12,6 +12,8 @@ export interface InteractiveRuntimeStatus {
     message: string;
 }
 
+type LearningCourseAreaTranslator = (key: string, values?: Record<string, string | number | Date>) => string;
+
 interface InteractiveRuntimeStatusInput {
     lesson: LearningLessonData | null | undefined;
     activeQuestion: LearningInteractiveQuestion | null;
@@ -104,18 +106,22 @@ export function canRenderLessonVideo(video?: LearningLessonVideo | null) {
         && Boolean(video.playbackUrl);
 }
 
-export function getVideoAvailabilityMessage(status?: 'PROCESSING' | 'READY' | 'FAILED', duration?: number) {
+export function getVideoAvailabilityMessage(
+    status: 'PROCESSING' | 'READY' | 'FAILED' | undefined,
+    duration: number | undefined,
+    t: LearningCourseAreaTranslator,
+) {
     if (status === 'READY' && Number(duration ?? 0) <= 0) {
-        return 'วิดีโอบทเรียนนี้ยังอยู่ระหว่างประมวลผลจาก Vimeo จึงยังไม่สามารถรับชมได้ในขณะนี้';
+        return t('runtimeVideoProcessing');
     }
 
     switch (status) {
         case 'FAILED':
-            return 'วิดีโอบทเรียนนี้มีปัญหาและยังไม่พร้อมใช้งาน กรุณาลองใหม่ภายหลังหรือติดต่อผู้ดูแลระบบ';
+            return t('runtimeVideoFailed');
         case 'PROCESSING':
-            return 'วิดีโอบทเรียนนี้ยังอยู่ระหว่างประมวลผลจาก Vimeo จึงยังไม่สามารถรับชมได้ในขณะนี้';
+            return t('runtimeVideoProcessing');
         default:
-            return 'บทเรียนนี้ยังไม่มีวิดีโอ Vimeo สำหรับการเรียนจริง';
+            return t('runtimeVideoMissing');
     }
 }
 
@@ -126,7 +132,7 @@ export function getInteractiveRuntimeStatus({
     currentTime,
     lessonNotice,
     nextPendingInteractive,
-}: InteractiveRuntimeStatusInput): InteractiveRuntimeStatus | null {
+}: InteractiveRuntimeStatusInput, t: LearningCourseAreaTranslator): InteractiveRuntimeStatus | null {
     if (!lesson) {
         return null;
     }
@@ -138,40 +144,40 @@ export function getInteractiveRuntimeStatus({
     }
 
     if (totalQuestions === 0) {
-        return { tone: 'slate', message: 'บทเรียนนี้ยังไม่มีคำถาม interactive' };
+        return { tone: 'slate', message: t('runtimeNoInteractive') };
     }
 
     if (!canRenderLessonVideo(lesson.video)) {
         return {
             tone: 'amber',
-            message: 'วิดีโอยังไม่พร้อมใช้งานจริง จึงยังไม่สามารถ trigger คำถาม interactive ตามเวลาได้',
+            message: t('runtimeVideoNotReady'),
         };
     }
 
     if (activeQuestion) {
         return {
             tone: 'amber',
-            message: `กำลังรอคำตอบสำหรับคำถามที่เวลา ${formatDuration(activeQuestion.displayAtSeconds)}`,
+            message: t('runtimeWaitingForAnswer', { time: formatDuration(activeQuestion.displayAtSeconds) }),
         };
     }
 
     if (answeredCount >= totalQuestions) {
-        return { tone: 'emerald', message: 'ตอบคำถาม interactive ครบแล้ว' };
+        return { tone: 'emerald', message: t('runtimeAllAnswered') };
     }
 
     if (nextPendingInteractive && currentTime >= nextPendingInteractive.displayAtSeconds) {
         return {
             tone: 'amber',
-            message: `มีคำถาม interactive ค้างอยู่ที่เวลา ${formatDuration(nextPendingInteractive.displayAtSeconds)} ระบบจะถามก่อนเรียนต่อ`,
+            message: t('runtimePendingTriggered', { time: formatDuration(nextPendingInteractive.displayAtSeconds) }),
         };
     }
 
     if (nextPendingInteractive) {
         return {
             tone: 'sky',
-            message: `คำถามถัดไปจะแสดงที่ ${formatDuration(nextPendingInteractive.displayAtSeconds)}`,
+            message: t('runtimeNextQuestionAt', { time: formatDuration(nextPendingInteractive.displayAtSeconds) }),
         };
     }
 
-    return { tone: 'slate', message: 'กำลังเตรียมสถานะ interactive ของบทเรียนนี้' };
+    return { tone: 'slate', message: t('runtimePreparing') };
 }

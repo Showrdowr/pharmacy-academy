@@ -1,8 +1,11 @@
 
 import Link from 'next/link';
 import React from 'react';
+import { useTranslations } from 'next-intl';
 
 const BreadcrumbCourses = ({ title, subtitle }: any) => {
+    const navT = useTranslations('navigation.offCanvas');
+
     return (
         <>
             <section className="breadcrumb-wrapper courses-page-banner">
@@ -26,7 +29,7 @@ const BreadcrumbCourses = ({ title, subtitle }: any) => {
                         <div className="page-heading">
                             <h1>{title}</h1>
                             <ul className="breadcrumb-items">
-                                <li><Link href="/">Home</Link></li>
+                                <li><Link href="/">{navT('home')}</Link></li>
                                 <li className="style-2">{subtitle}</li>
                             </ul>
                         </div>

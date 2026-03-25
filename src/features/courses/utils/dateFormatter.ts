@@ -1,39 +1,24 @@
-/**
- * Thai Date Formatting Utility
- */
+import { defaultLocale, type AppLocale } from '@/i18n/config';
+import { formatLocaleDate } from '@/features/i18n';
 
-export const formatThaiDate = (date: string | Date | null | undefined): string => {
-    if (!date) return '-';
-
-    try {
-        const dateObj = typeof date === 'string' ? new Date(date) : date;
-
-        if (isNaN(dateObj.getTime())) return '-';
-
-        return dateObj.toLocaleDateString('th-TH', {
-            day: '2-digit',
-            month: 'long',
-            year: 'numeric',
-        });
-    } catch {
-        return '-';
-    }
+export const formatThaiDate = (
+    date: string | Date | null | undefined,
+    locale: AppLocale = defaultLocale,
+): string => {
+    return formatLocaleDate(date, locale, {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
+    });
 };
 
-export const formatThaiDateShort = (date: string | Date | null | undefined): string => {
-    if (!date) return '-';
-
-    try {
-        const dateObj = typeof date === 'string' ? new Date(date) : date;
-
-        if (isNaN(dateObj.getTime())) return '-';
-
-        return dateObj.toLocaleDateString('th-TH', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-        });
-    } catch {
-        return '-';
-    }
+export const formatThaiDateShort = (
+    date: string | Date | null | undefined,
+    locale: AppLocale = defaultLocale,
+): string => {
+    return formatLocaleDate(date, locale, {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+    });
 };

@@ -2,15 +2,17 @@
 
 import React from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { useAuth } from "@/features/auth";
 
 const HeaderAuthButtons: React.FC = () => {
+    const t = useTranslations("auth.headerButtons");
     const { user, isAuthenticated, isLoading, logout } = useAuth();
 
     if (isLoading) {
         return (
             <div className="header-button">
-                <span style={{ color: "#666", fontSize: "14px" }}>Loading...</span>
+                <span style={{ color: "#666", fontSize: "14px" }}>{t("loading")}</span>
             </div>
         );
     }
@@ -26,7 +28,7 @@ const HeaderAuthButtons: React.FC = () => {
                         whiteSpace: "nowrap",
                     }}
                 >
-                    สวัสดี, {user.fullName}
+                    {t("greeting", { name: user.fullName })}
                 </span>
                 <button
                     onClick={logout}
@@ -48,7 +50,7 @@ const HeaderAuthButtons: React.FC = () => {
                         e.currentTarget.style.color = "#dc2626";
                     }}
                 >
-                    ออกจากระบบ
+                    {t("logout")}
                 </button>
             </div>
         );
@@ -58,10 +60,10 @@ const HeaderAuthButtons: React.FC = () => {
     return (
         <div className="header-button">
             <Link href="/sign-in" className="theme-btn style-2">
-                <i className="far fa-user"></i> เข้าสู่ระบบ
+                <i className="far fa-user"></i> {t("signIn")}
             </Link>
             <Link href="/register" className="theme-btn yellow-btn">
-                สมัครสมาชิก
+                {t("signUp")}
             </Link>
         </div>
     );

@@ -2,8 +2,9 @@
 import "./globals.css";
 import "../styles/index.scss";
 import { AuthProvider } from "@/features/auth";
-import { LanguageProvider } from "@/features/i18n";
 import type { Metadata } from "next";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale } from "next-intl/server";
 
 const siteUrl =
     process.env.NEXT_PUBLIC_SITE_URL ||
@@ -15,13 +16,15 @@ export const metadata: Metadata = {
 };
 
 
-export default function RootLayout({
+export default async function RootLayout({
     children,
 }: Readonly<{
     children: React.ReactNode;
 }>) {
+    const locale = await getLocale();
+
     return (
-        <html lang="th">
+        <html lang={locale} className={`lang-${locale}`}>
             <head>
                 <link rel="icon" href="/favicon.svg" />
                 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -31,11 +34,11 @@ export default function RootLayout({
                 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossOrigin="anonymous" referrerPolicy="no-referrer" />
             </head>
             <body>
-                <LanguageProvider>
+                <NextIntlClientProvider>
                     <AuthProvider>
                         {children}
                     </AuthProvider>
-                </LanguageProvider>
+                </NextIntlClientProvider>
             </body>
         </html>
     );

@@ -3,10 +3,12 @@ import menu_data from '@/data/menu_data';
 import Image from 'next/image';
 import Link from 'next/link';
 import React from 'react';
-import { useLanguage } from '@/features/i18n';
+import { useTranslations } from 'next-intl';
+import { getLocalizedContent, useAppLocale } from '@/features/i18n';
 
 const NavMenu = () => {
-  const { language } = useLanguage();
+  const { locale } = useAppLocale();
+  const t = useTranslations('navigation.menu');
 
   return (
     <>
@@ -15,7 +17,7 @@ const NavMenu = () => {
           <li className="has-dropdown menu-thumb" key={i}>
             <Link href={item.link} style={{ fontSize: '18px', fontWeight: '500' }}>
               <span className="head-icon"><i className={item.icon}></i></span>
-              {language === 'th' ? item.title_th : item.title_en}
+              {getLocalizedContent(locale, item.title_th, item.title_en)}
               {item.img_dropdown || item.has_dropdown ? <i className="fas fa-chevron-down"></i> : null}
 
             </Link>
@@ -52,7 +54,7 @@ const NavMenu = () => {
                     {sub_item?.link && (
                       <li>
                         <Link href={sub_item.link} style={{ fontSize: '16px' }}>
-                          {language === 'th' ? sub_item.title_th : sub_item.title_en}
+                          {getLocalizedContent(locale, sub_item.title_th, sub_item.title_en)}
                         </Link>
                       </li>
                     )}
@@ -60,12 +62,12 @@ const NavMenu = () => {
 
                       <li className="has-dropdown">
                         <Link href="/news">
-                          Blog
+                          {t('blog')}
                           <i className="fas fa-angle-right"></i>
                         </Link>
                         <ul className="submenu">
-                          <li><Link href="/news">Blog</Link></li>
-                          <li><Link href="/news-details">Blog Details</Link></li>
+                          <li><Link href="/news">{t('blog')}</Link></li>
+                          <li><Link href="/news-details">{t('blogDetails')}</Link></li>
                         </ul>
                       </li>
 

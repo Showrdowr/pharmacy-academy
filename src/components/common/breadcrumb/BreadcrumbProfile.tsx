@@ -1,8 +1,12 @@
 
 import Link from 'next/link';
 import React from 'react';
+import { useTranslations } from 'next-intl';
 
 const BreadcrumbProfile = () => {
+  const breadcrumbT = useTranslations('navigation.breadcrumbs');
+  const navT = useTranslations('navigation.offCanvas');
+
   return (
     <>
         <section className="breadcrumb-wrapper courses-page-banner">
@@ -24,10 +28,10 @@ const BreadcrumbProfile = () => {
             <div className="container">
                 <div className="row">
                     <div className="page-heading">
-                        <h1>โปรไฟล์ของฉัน</h1>
+                        <h1>{breadcrumbT('profileTitle')}</h1>
                         <ul className="breadcrumb-items">
-                            <li><Link href="/">หน้าแรก</Link></li>
-                            <li className="style-2">โปรไฟล์</li>
+                            <li><Link href="/">{navT('home')}</Link></li>
+                            <li className="style-2">{breadcrumbT('profileCurrent')}</li>
                         </ul>
                     </div>
                 </div>

@@ -15,6 +15,7 @@ export interface CartItem {
     rating?: number;
     credits?: number;
     cpe?: number;
+    audience?: 'all' | 'general' | 'pharmacist';
 }
 
 /**

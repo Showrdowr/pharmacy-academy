@@ -1,7 +1,7 @@
 "use client"
 import Link from 'next/link';
 import React from 'react';
-import { useLanguage } from '@/features/i18n';
+import { useTranslations } from 'next-intl';
 
 // SVG Icons for each pharmacology category
 const CategoryIcons = {
@@ -69,17 +69,17 @@ const CategoryIcons = {
 };
 
 const TopCategoryHomeTwo = () => {
-    const { t } = useLanguage();
+    const t = useTranslations('common.home.topCategories');
 
     const categories = [
-        { icon: <img src="/images/01.png" alt="วิทยาลัยเภสัชบำบัด" width="70" height="70" style={{ objectFit: 'contain' }} />, name: t('วิทยาลัยเภสัชบำบัด', 'The College of Pharmcotherapy of Thailand'), courses: 12, delay: '.2s' },
-        { icon: <img src="/images/02.png" alt="วิทยาลัยการคุ้มครองผู้บริโภคด้านยาฯ" width="70" height="70" style={{ objectFit: 'contain' }} />, name: t('วิทยาลัยการคุ้มครองผู้บริโภคด้านยาฯ', 'The College of Pharmaceutical and Health Consumer Protection of Thailand'), courses: 8, delay: '.4s' },
-        { icon: <img src="/images/03.png" alt="วิทยาลัยเภสัชกรรมสมุนไพร" width="70" height="70" style={{ objectFit: 'contain' }} />, name: t('วิทยาลัยเภสัชกรรมสมุนไพร', 'The College of Herbal Pharmacy of Thailand'), courses: 10, delay: '.6s' },
-        { icon: <img src="/images/04.png" alt="วิทยาลัยเภสัชกรรมอุตสาหการ" width="70" height="70" style={{ objectFit: 'contain' }} />, name: t('วิทยาลัยเภสัชกรรมอุตสาหการ', 'The College of Industrial Pharmacy of Thailand'), courses: 6, delay: '.8s' },
-        { icon: <img src="/images/05.png" alt="วิทยาลัยเภสัชกรรมชุมชน" width="70" height="70" style={{ objectFit: 'contain' }} />, name: t('วิทยาลัยเภสัชกรรมชุมชน', 'The College of Community Pharmacy of Thailand'), courses: 5, delay: '.2s' },
-        { icon: <img src="/images/06.png" alt="วิทยาลัยการบริหารเภสัชกิจ" width="70" height="70" style={{ objectFit: 'contain' }} />, name: t('วิทยาลัยการบริหารเภสัชกิจ', 'The College of Pharmacy Adimnistration of Thailand'), courses: 7, delay: '.4s' },
-        { icon: CategoryIcons.industry, name: t('วิทยาลัยเภสัชพันธุศาสตร์และเภสัชกรรมแม่นยำ', 'The College of Pharmacogenomics and Precision Medicine of Thailand'), courses: 4, delay: '.6s' },
-        { icon: CategoryIcons.law, name: t('อื่นๆ', 'Other'), courses: 3, delay: '.8s' }
+        { icon: <img src="/images/01.png" alt={t('category1')} width="70" height="70" style={{ objectFit: 'contain' }} />, name: t('category1'), courses: 12, delay: '.2s' },
+        { icon: <img src="/images/02.png" alt={t('category2')} width="70" height="70" style={{ objectFit: 'contain' }} />, name: t('category2'), courses: 8, delay: '.4s' },
+        { icon: <img src="/images/03.png" alt={t('category3')} width="70" height="70" style={{ objectFit: 'contain' }} />, name: t('category3'), courses: 10, delay: '.6s' },
+        { icon: <img src="/images/04.png" alt={t('category4')} width="70" height="70" style={{ objectFit: 'contain' }} />, name: t('category4'), courses: 6, delay: '.8s' },
+        { icon: <img src="/images/05.png" alt={t('category5')} width="70" height="70" style={{ objectFit: 'contain' }} />, name: t('category5'), courses: 5, delay: '.2s' },
+        { icon: <img src="/images/06.png" alt={t('category6')} width="70" height="70" style={{ objectFit: 'contain' }} />, name: t('category6'), courses: 7, delay: '.4s' },
+        { icon: CategoryIcons.industry, name: t('category7'), courses: 4, delay: '.6s' },
+        { icon: CategoryIcons.law, name: t('category8'), courses: 3, delay: '.8s' }
     ];
 
     return (
@@ -91,10 +91,10 @@ const TopCategoryHomeTwo = () => {
                 <div className="container">
                     <div className="section-title text-center">
                         <h6 className="text-white wow fadeInUp text-resp-body font-semibold uppercase tracking-wider">
-                            {t('หมวดหมู่ยอดนิยม', 'Top Categories')}
+                            {t('eyebrow')}
                         </h6>
                         <h2 className="text-white wow fadeInUp text-resp-h2 font-bold mt-2" data-wow-delay=".3s">
-                            {t('สำรวจคอร์สเรียนตามหมวดหมู่', 'Explore Courses by Category')}
+                            {t('title')}
                         </h2>
                     </div>
                     <div className="top-category-wrapper-2 mt-4 mt-md-0">
@@ -109,7 +109,7 @@ const TopCategoryHomeTwo = () => {
                                                 </div>
                                                 <div className="content">
                                                     <h6 className="text-resp-body-lg font-bold mb-1">{cat.name}</h6>
-                                                    <p className="text-resp-info opacity-80 mb-0">({cat.courses.toString().padStart(2, '0')}) {t('คอร์ส', 'Courses')}</p>
+                                                    <p className="text-resp-info opacity-80 mb-0">({cat.courses.toString().padStart(2, '0')}) {t('courses')}</p>
                                                 </div>
                                             </Link>
                                         </div>
@@ -119,27 +119,27 @@ const TopCategoryHomeTwo = () => {
                         </div>
                     </div>
                     <div className="category-bottom-title wow fadeInUp" data-wow-delay=".3s">
-                        <h3 className="text-resp-h3 font-bold mb-4">{t('ค้นหาคอร์สที่เหมาะกับคุณ', 'Find the Right Course for You')}</h3>
-                        <Link href="/courses-grid" className="theme-btn text-resp-btn hover-white">{t('เริ่มเรียนเลย', 'Start Learning')}</Link>
+                        <h3 className="text-resp-h3 font-bold mb-4">{t('findCourseTitle')}</h3>
+                        <Link href="/courses-grid" className="theme-btn text-resp-btn hover-white">{t('findCourseCta')}</Link>
                     </div>
                 </div>
                 <div className="mycustom-marque">
                     <div className="scrolling-wrap style-2">
                         <div className="comm">
-                            <div className="cmn-textslide stroke-text">{t('คอร์สเรียน', 'Courses')}</div>
-                            <div className="cmn-textslide stroke-text">{t('หมวดหมู่', 'Categories')}</div>
+                            <div className="cmn-textslide stroke-text">{t('marqueeCourses')}</div>
+                            <div className="cmn-textslide stroke-text">{t('marqueeCategories')}</div>
                         </div>
                         <div className="comm">
-                            <div className="cmn-textslide stroke-text">{t('คอร์สเรียน', 'Courses')}</div>
-                            <div className="cmn-textslide stroke-text">{t('หมวดหมู่', 'Categories')}</div>
+                            <div className="cmn-textslide stroke-text">{t('marqueeCourses')}</div>
+                            <div className="cmn-textslide stroke-text">{t('marqueeCategories')}</div>
                         </div>
                         <div className="comm">
-                            <div className="cmn-textslide stroke-text">{t('คอร์สเรียน', 'Courses')}</div>
-                            <div className="cmn-textslide stroke-text">{t('หมวดหมู่', 'Categories')}</div>
+                            <div className="cmn-textslide stroke-text">{t('marqueeCourses')}</div>
+                            <div className="cmn-textslide stroke-text">{t('marqueeCategories')}</div>
                         </div>
                         <div className="comm">
-                            <div className="cmn-textslide stroke-text">{t('คอร์สเรียน', 'Courses')}</div>
-                            <div className="cmn-textslide stroke-text">{t('หมวดหมู่', 'Categories')}</div>
+                            <div className="cmn-textslide stroke-text">{t('marqueeCourses')}</div>
+                            <div className="cmn-textslide stroke-text">{t('marqueeCategories')}</div>
                         </div>
                     </div>
                 </div>

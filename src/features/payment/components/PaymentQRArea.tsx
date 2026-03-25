@@ -2,16 +2,19 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useState, useEffect } from 'react';
-import { useLanguage } from '@/features/i18n';
+import { useTranslations } from 'next-intl';
+import { formatLocaleCurrency, useAppLocale } from '@/features/i18n';
 import { useOrderStore } from '@/stores/useOrderStore';
 
 const PaymentQRArea = () => {
-    const { t } = useLanguage();
+    const t = useTranslations('payment.qr');
+    const { locale } = useAppLocale();
     const router = useRouter();
     const { orderId: storeOrderId, orderTotal: storeTotal, reference } = useOrderStore();
     const [timeLeft, setTimeLeft] = useState(1 * 60); // 1 minute
     const orderTotal = storeTotal || 0;
     const orderId = reference || storeOrderId || '';
+    const zeroAmountLabel = locale === 'en' ? 'THB 0' : '฿0';
 
     useEffect(() => {
         if (!storeOrderId) {
@@ -20,7 +23,7 @@ const PaymentQRArea = () => {
     }, [storeOrderId, router]);
 
     const handleCancel = () => {
-        if (confirm(t('คุณต้องการยกเลิกคำสั่งซื้อหรือไม่?', 'Are you sure you want to cancel this order?'))) {
+        if (confirm(t('cancelOrderConfirm'))) {
             router.push('/checkout');
         }
     };
@@ -61,11 +64,10 @@ const PaymentQRArea = () => {
                         {/* Header */}
                         <div style={{ marginBottom: '20px' }}>
                             <h4 style={{ fontWeight: '600', marginBottom: '10px', color: '#014D40' }}>
-                                {t('ชำระโดย คิวอาร์โค้ด', 'Pay by QR Code')}
+                                {t('title')}
                             </h4>
                             <p style={{ color: '#666', fontSize: '14px', margin: 0 }}>
-                                {t('ข้อมูลการชำระเงินของคุณได้รับการรักษาความปลอดภัยและไม่แบ่งปันกับบุคคลที่สาม',
-                                    'Your payment information is secured and not shared with third parties.')}
+                                {t('securityNotice')}
                             </p>
                         </div>
 
@@ -90,7 +92,7 @@ const PaymentQRArea = () => {
                                     fontSize: '24px',
                                     fontWeight: 'bold'
                                 }}>
-                                    Pharmacy Academy
+                                    {t('merchantName')}
                                 </h3>
                                 <p style={{
                                     color: '#fff',
@@ -157,7 +159,7 @@ const PaymentQRArea = () => {
                                         color: '#666',
                                         fontSize: '13px'
                                     }}>
-                                        Ref Number: <strong>{orderId}</strong>
+                                        {t('refNumber')}: <strong>{orderId}</strong>
                                     </p>
                                 </div>
                                 <div style={{ textAlign: 'right' }}>
@@ -166,15 +168,8 @@ const PaymentQRArea = () => {
                                         fontWeight: 'bold',
                                         fontSize: '24px'
                                     }}>
-                                        {orderTotal.toFixed(2)}
+                                        {formatLocaleCurrency(orderTotal, locale)}
                                     </h4>
-                                    <p style={{
-                                        margin: 0,
-                                        color: '#666',
-                                        fontSize: '13px'
-                                    }}>
-                                        บาท(BATH)
-                                    </p>
                                 </div>
                             </div>
 
@@ -185,8 +180,7 @@ const PaymentQRArea = () => {
                                 color: '#666',
                                 lineHeight: '1.5',
                             }}>
-                                {t('อยู่ระหว่างการชำระเงิน กรุณาอย่าปิดหรือรีเฟรชเพจหน้าจอ',
-                                    'Payment in progress. Please do not close or refresh this page.')}
+                                {t('paymentInProgress')}
                             </p>
                         </div>
                     </div>
@@ -202,10 +196,10 @@ const PaymentQRArea = () => {
                             marginBottom: '20px',
                         }}>
                             <h5 style={{ fontWeight: '600', marginBottom: '15px' }}>
-                                {t('รายละเอียดการจอง', 'Order Details')}
+                                {t('orderDetails')}
                             </h5>
                             <p style={{ color: '#666', fontSize: '14px', marginBottom: '20px' }}>
-                                Secondland {t('แดนมือสอง', 'Secondhand market')}
+                                {t('orderSubtitle')}
                             </p>
 
                             {/* Column Headers */}
@@ -215,10 +209,10 @@ const PaymentQRArea = () => {
                                 marginBottom: '10px',
                             }}>
                                 <span style={{ color: '#999', fontSize: '13px' }}>
-                                    {t('บัตร', 'Ticket')}
+                                    {t('itemLabel')}
                                 </span>
                                 <span style={{ color: '#999', fontSize: '13px' }}>
-                                    {t('บาท', 'THB')}
+                                    {t('amountLabel')}
                                 </span>
                             </div>
 
@@ -231,12 +225,12 @@ const PaymentQRArea = () => {
                             }}>
                                 <div>
                                     <p style={{ margin: 0, fontSize: '14px' }}>
-                                        1 x EARLY BIRD : 22/02
+                                        {t('courseOrder')}
                                     </p>
                                 </div>
                                 <div style={{ textAlign: 'right' }}>
                                     <p style={{ margin: 0, fontSize: '14px', fontWeight: '500' }}>
-                                        350.00
+                                        {formatLocaleCurrency(orderTotal, locale)}
                                     </p>
                                 </div>
                             </div>
@@ -249,10 +243,10 @@ const PaymentQRArea = () => {
                                     marginBottom: '8px',
                                 }}>
                                     <span style={{ fontSize: '14px' }}>
-                                        {t('ราคารวม', 'Subtotal')}
+                                        {t('subtotal')}
                                     </span>
                                     <span style={{ fontSize: '14px', fontWeight: '500' }}>
-                                        350.00
+                                        {formatLocaleCurrency(orderTotal, locale)}
                                     </span>
                                 </div>
                                 <div style={{
@@ -261,10 +255,10 @@ const PaymentQRArea = () => {
                                     marginBottom: '8px',
                                 }}>
                                     <span style={{ fontSize: '14px' }}>
-                                        {t('ค่าบริการ', 'Service fee')}
+                                        {t('serviceFee')}
                                     </span>
                                     <span style={{ fontSize: '14px', fontWeight: '500' }}>
-                                        10.50
+                                        {zeroAmountLabel}
                                     </span>
                                 </div>
                                 <div style={{
@@ -275,10 +269,10 @@ const PaymentQRArea = () => {
                                     borderBottom: '2px solid #014D40',
                                 }}>
                                     <span style={{ fontSize: '14px' }}>
-                                        {t('ค่าธรรมเนียม', 'Transaction fee')}
+                                        {t('transactionFee')}
                                     </span>
                                     <span style={{ fontSize: '14px', fontWeight: '500' }}>
-                                        3.85
+                                        {zeroAmountLabel}
                                     </span>
                                 </div>
 
@@ -289,10 +283,10 @@ const PaymentQRArea = () => {
                                     alignItems: 'center',
                                 }}>
                                     <span style={{ fontSize: '16px', fontWeight: '600' }}>
-                                        {t('ราการวมทั้งสิ้น', 'Total')}
+                                        {t('total')}
                                     </span>
                                     <span style={{ fontSize: '20px', fontWeight: 'bold' }}>
-                                        364.35
+                                        {formatLocaleCurrency(orderTotal, locale)}
                                     </span>
                                 </div>
                             </div>
@@ -314,7 +308,7 @@ const PaymentQRArea = () => {
                                 }}>
                                     <i className="fas fa-info-circle" style={{ color: '#014D40' }}></i>
                                     <span style={{ fontWeight: '600', fontSize: '14px' }}>
-                                        {t('ข้อสำคัญ', 'Important')}
+                                        {t('important')}
                                     </span>
                                 </div>
                                 <ul style={{
@@ -324,11 +318,10 @@ const PaymentQRArea = () => {
                                     color: '#666'
                                 }}>
                                     <li style={{ marginBottom: '5px' }}>
-                                        {t('ราคาทั้งหมด รวม VAT แล้ว', 'All prices include VAT')}
+                                        {t('importantVat')}
                                     </li>
                                     <li>
-                                        {t('การทำประกันไม่สามารถยกเลิกได้ทุกกรณี',
-                                            'Insurance cannot be cancelled in any case')}
+                                        {t('importantKeepPage')}
                                     </li>
                                 </ul>
                             </div>
@@ -342,8 +335,7 @@ const PaymentQRArea = () => {
                                 }}>
                                     <i className="fas fa-info-circle" style={{ color: '#1976d2' }}></i>
                                     <span style={{ fontWeight: '600', fontSize: '14px' }}>
-                                        {t('หมายเหตุ: เงื่อนไขการคืนประกัน',
-                                            'Note: Refund Policy')}
+                                        {t('noteTitle')}
                                     </span>
                                 </div>
                                 <ul style={{
@@ -353,16 +345,13 @@ const PaymentQRArea = () => {
                                     color: '#666'
                                 }}>
                                     <li style={{ marginBottom: '5px' }}>
-                                        {t('ต้องเกิดเหตุการณ์ภายใน 30 วันก่อนการแสดง',
-                                            'Must occur within 30 days before the event')}
+                                        {t('noteLine1')}
                                     </li>
                                     <li style={{ marginBottom: '5px' }}>
-                                        {t('เหตุการณ์ที่เคลมได้: เจ็บป่วยหนัก, เสียชีวิต ครอบครัว, ก๊ษธรรมชาติ, อุบัติเหตุ, หมายศาล, ทำงานต่างจังหวัด, สอบโรงเรียน',
-                                            'Claimable events: serious illness, death in family, natural disaster, accident, court summons, work transfer, school exam')}
+                                        {t('noteLine2')}
                                     </li>
                                     <li>
-                                        {t('ต้องแจ้งภายใน 30 วัน พร้อมเอกสารประกอบ',
-                                            'Must notify within 30 days with supporting documents')}
+                                        {t('noteLine3')}
                                     </li>
                                 </ul>
                             </div>
@@ -387,7 +376,7 @@ const PaymentQRArea = () => {
                                 gap: '8px',
                             }}>
                             <i className="fas fa-trash-alt"></i>
-                            {t('ยกเลิกคำสั่งซื้อ', 'Cancel Order')}
+                            {t('cancelOrder')}
                         </button>
                     </div>
                 </div>

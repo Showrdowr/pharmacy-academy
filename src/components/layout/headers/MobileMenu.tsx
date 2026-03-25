@@ -3,10 +3,12 @@
 import menu_data from "@/data/menu_data";
 import Link from "next/link";
 import React, { useState } from "react";
-import { useLanguage } from "@/features/i18n";
+import { useTranslations } from "next-intl";
+import { getLocalizedContent, useAppLocale } from "@/features/i18n";
 
 const MobileMenu = () => {
-	const { language } = useLanguage();
+	const { locale } = useAppLocale();
+	const t = useTranslations('navigation.menu');
 	const [navTitle, setNavTitle] = useState("");
 	//openMobileMenu
 	const openMobileMenu = (menu: string) => {
@@ -29,10 +31,7 @@ const MobileMenu = () => {
 
 	// Helper to get title based on language
 	const getTitle = (item: { title_th?: string; title_en?: string; title?: string }) => {
-		if (language === 'th') {
-			return item.title_th || item.title || '';
-		}
-		return item.title_en || item.title || '';
+		return getLocalizedContent(locale, item.title_th || item.title, item.title_en);
 	};
 
 	return (
@@ -76,8 +75,8 @@ const MobileMenu = () => {
 															{index === 5 && item.has_dropdown_inner && (
 																<li>
 																	<ul className="submenu" style={{ display: navTitle2 === innerTitle ? "block" : "none" }}>
-																		<li><Link href="/news">Blog</Link></li>
-																		<li><Link href="/news-details">Blog Details</Link></li>
+																		<li><Link href="/news">{t('blog')}</Link></li>
+																		<li><Link href="/news-details">{t('blogDetails')}</Link></li>
 																	</ul>
 																</li>
 															)}

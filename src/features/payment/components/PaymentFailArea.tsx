@@ -3,11 +3,13 @@
 import Link from 'next/link';
 import React, { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { useLanguage } from '@/features/i18n';
+import { useTranslations } from 'next-intl';
+import { formatLocaleDateTime, useAppLocale } from '@/features/i18n';
 import { useOrderStore } from '@/stores/useOrderStore';
 
 const PaymentFailArea = () => {
-    const { t } = useLanguage();
+    const { locale } = useAppLocale();
+    const t = useTranslations('payment.fail');
     const searchParams = useSearchParams();
     const paymentType = searchParams.get('type') || 'card'; // card, qr, promptpay
     const [showDetails, setShowDetails] = useState(false);
@@ -21,17 +23,17 @@ const PaymentFailArea = () => {
             case 'promptpay':
                 return {
                     code: 'ERR_QR_TIMEOUT',
-                    title: t('QR Code หมดอายุ', 'QR Code Expired'),
-                    message: t('QR Code หมดเวลาชำระเงิน กรุณาสร้าง QR Code ใหม่', 'QR Code payment has expired. Please generate a new QR Code.'),
-                    time: new Date().toLocaleString('th-TH'),
+                    title: t('qrExpiredTitle'),
+                    message: t('qrExpiredMessage'),
+                    time: formatLocaleDateTime(new Date(), locale),
                     reference: ref
                 };
             default:
                 return {
                     code: 'ERR_CARD_DECLINED',
-                    title: t('บัตรถูกปฏิเสธ', 'Card Declined'),
-                    message: t('ธนาคารปฏิเสธการทำรายการ กรุณาตรวจสอบวงเงินหรือติดต่อธนาคารของท่าน', 'Your bank declined the transaction. Please check your available balance or contact your bank.'),
-                    time: new Date().toLocaleString('th-TH'),
+                    title: t('cardDeclinedTitle'),
+                    message: t('cardDeclinedMessage'),
+                    time: formatLocaleDateTime(new Date(), locale),
                     reference: ref
                 };
         }
@@ -87,10 +89,10 @@ const PaymentFailArea = () => {
                                         <i className="fas fa-times" style={{ fontSize: '40px', color: '#fff' }}></i>
                                     </div>
                                     <h2 className="payment-status-title" style={{ color: '#fff', marginBottom: '8px' }}>
-                                        {t('การชำระเงินไม่สำเร็จ', 'Payment Failed')}
+                                        {t('title')}
                                     </h2>
                                     <p className="payment-status-message" style={{ color: 'rgba(255,255,255,0.9)', margin: 0 }}>
-                                        {t('กรุณาตรวจสอบข้อมูลและลองใหม่อีกครั้ง', 'Please check your details and try again')}
+                                        {t('subtitle')}
                                     </p>
                                 </div>
                             </div>
@@ -138,21 +140,21 @@ const PaymentFailArea = () => {
                                 }}>
                                     <h5 style={{ color: '#374151', marginBottom: '16px', fontWeight: '600' }}>
                                         <i className="fas fa-info-circle me-2" style={{ color: '#6b7280' }}></i>
-                                        {t('สาเหตุที่เป็นไปได้', 'Possible Reasons')}
+                                        {t('possibleReasons')}
                                     </h5>
                                     <ul className="payment-detail-value" style={{ margin: 0, paddingLeft: '20px', color: '#6b7280', lineHeight: '2' }}>
                                         {paymentType === 'card' ? (
                                             <>
-                                                <li>{t('วงเงินในบัตรไม่เพียงพอ', 'Insufficient credit limit')}</li>
-                                                <li>{t('ข้อมูลบัตรไม่ถูกต้อง', 'Incorrect card details')}</li>
-                                                <li>{t('บัตรหมดอายุ', 'Expired card')}</li>
-                                                <li>{t('ธนาคารบล็อกธุรกรรมออนไลน์', 'Online transactions blocked by bank')}</li>
+                                                <li>{t('insufficientLimit')}</li>
+                                                <li>{t('incorrectCardDetails')}</li>
+                                                <li>{t('expiredCard')}</li>
+                                                <li>{t('bankBlocked')}</li>
                                             </>
                                         ) : (
                                             <>
-                                                <li>{t('QR Code หมดเวลา', 'QR Code has expired')}</li>
-                                                <li>{t('ไม่ได้สแกนภายในเวลาที่กำหนด', 'Did not scan within the time limit')}</li>
-                                                <li>{t('การเชื่อมต่อมีปัญหา', 'Connection issues')}</li>
+                                                <li>{t('qrTimedOut')}</li>
+                                                <li>{t('qrNotScannedInTime')}</li>
+                                                <li>{t('connectionIssue')}</li>
                                             </>
                                         )}
                                     </ul>
@@ -178,7 +180,7 @@ const PaymentFailArea = () => {
                                 >
                                     <span style={{ color: '#6b7280', fontSize: '15px', fontWeight: '500' }}>
                                         <i className="fas fa-file-alt me-2"></i>
-                                        {t('รายละเอียดข้อผิดพลาด', 'Error Details')}
+                                        {t('errorDetails')}
                                     </span>
                                     <i className={`fas fa-chevron-${showDetails ? 'up' : 'down'}`} style={{ color: '#9ca3af', fontSize: '12px' }}></i>
                                 </button>
@@ -194,17 +196,17 @@ const PaymentFailArea = () => {
                                         fontSize: '13px'
                                     }}>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                                            <span style={{ color: '#6b7280' }}>{t('รหัสข้อผิดพลาด', 'Error Code')}:</span>
+                                            <span style={{ color: '#6b7280' }}>{t('errorCode')}:</span>
                                             <code style={{ color: '#dc2626', background: '#fee2e2', padding: '2px 8px', borderRadius: '4px' }}>
                                                 {errorInfo.code}
                                             </code>
                                         </div>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                                            <span style={{ color: '#6b7280' }}>{t('เวลา', 'Time')}:</span>
+                                            <span style={{ color: '#6b7280' }}>{t('time')}:</span>
                                             <span style={{ color: '#374151' }}>{errorInfo.time}</span>
                                         </div>
                                         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                            <span style={{ color: '#6b7280' }}>{t('หมายเลขอ้างอิง', 'Reference')}:</span>
+                                            <span style={{ color: '#6b7280' }}>{t('reference')}:</span>
                                             <span style={{ color: '#374151' }}>{errorInfo.reference}</span>
                                         </div>
                                     </div>
@@ -229,7 +231,7 @@ const PaymentFailArea = () => {
                                         className="payment-btn-main"
                                     >
                                         <i className="fas fa-redo-alt"></i>
-                                        {t('ลองชำระเงินใหม่', 'Try Payment Again')}
+                                        {t('tryAgain')}
                                     </Link>
 
                                     {/* Alternative payment option based on type */}
@@ -251,7 +253,7 @@ const PaymentFailArea = () => {
                                             className="payment-btn-main"
                                         >
                                             <i className="fas fa-qrcode"></i>
-                                            {t('ชำระผ่าน QR Code แทน', 'Pay via QR Code Instead')}
+                                            {t('payByQrInstead')}
                                         </Link>
                                     ) : (
                                         <Link
@@ -271,7 +273,7 @@ const PaymentFailArea = () => {
                                             className="payment-btn-main"
                                         >
                                             <i className="fas fa-credit-card"></i>
-                                            {t('ชำระผ่านบัตรเครดิต/เดบิตแทน', 'Pay via Credit/Debit Card Instead')}
+                                            {t('payByCardInstead')}
                                         </Link>
                                     )}
                                 </div>
@@ -295,7 +297,7 @@ const PaymentFailArea = () => {
                                         }}
                                     >
                                         <i className="fas fa-arrow-left"></i>
-                                        {t('กลับไปเลือกคอร์สเรียน', 'Back to Courses')}
+                                        {t('backToCourses')}
                                     </Link>
                                 </div>
                             </div>

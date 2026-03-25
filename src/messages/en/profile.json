@@ -1,0 +1,71 @@
+{
+  "profile": {
+    "meta": {
+      "userProfile": {
+        "title": "My Profile - Pharmacy Academy",
+        "description": "View your profile, courses, and certificates.",
+        "keywords": "profile, user, Pharmacy Academy, pharmacist, courses"
+      }
+    },
+    "userProfile": {
+      "signInRequired": "Please sign in",
+      "signIn": "Sign In",
+      "accumulatedCredits": "Accumulated Credits",
+      "professionalInfo": "Professional Information",
+      "licenseNumber": "Professional License Number",
+      "licenseUnavailable": "No license number available",
+      "verificationStatusLabel": "Verification Status",
+      "pharmacist": "Pharmacist",
+      "generalUser": "General User",
+      "totalCourses": "Total Courses",
+      "inProgress": "In Progress",
+      "completed": "Completed",
+      "cpeCredits": "CPE Credits",
+      "verificationStatus": {
+        "pending": "Pending Review",
+        "verified": "Verified",
+        "rejected": "Rejected",
+        "unavailable": "No verification status available"
+      },
+      "myCourses": "My Courses",
+      "findMoreCourses": "Find More Courses",
+      "loadingCourses": "Loading courses...",
+      "noCoursesTitle": "No courses yet",
+      "noCoursesDescription": "Start learning with great courses",
+      "browseCourses": "Browse Courses",
+      "courseFallback": "Course",
+      "archived": "Archived",
+      "credits": "Credits",
+      "watch": "Watch",
+      "completedLessons": "Completed",
+      "continue": "Continue",
+      "cancelCourse": "Cancel Course",
+      "cancelCourseTitle": "Confirm Course Cancellation",
+      "cancelCourseDescriptionFree": "After cancellation, this free course will be removed from your active courses immediately, but you can enroll again later.",
+      "cancelCourseDescriptionPaid": "After cancellation, a refund request will be created for admin review and you will lose access to the course until it is resolved.",
+      "cancelReasonLabel": "Reason for cancellation",
+      "cancelReasonPlaceholder": "Add a short reason to help the team review your request",
+      "confirmCancelFree": "Confirm Cancellation",
+      "confirmCancelPaid": "Cancel and Request Refund",
+      "cancelInProgress": "Cancelling...",
+      "keepCourse": "Keep Course",
+      "cancelSuccessFree": "Course cancelled successfully. You can enroll again at any time.",
+      "cancelSuccessPaid": "Course cancelled successfully and your refund request has been submitted for review.",
+      "cancelError": "Unable to cancel this course right now",
+      "inactiveCoursesTitle": "Cancelled Courses / Refund Requests",
+      "inactiveCoursesDescription": "Courses that are no longer active in My Courses, including items waiting for a refund review.",
+      "inactiveCoursesEmpty": "No cancelled courses or refund requests yet",
+      "cancelled": "Cancelled",
+      "refundPending": "Refund Pending",
+      "refundApproved": "Refunded",
+      "refundRejected": "Refund Rejected",
+      "cancelledAt": "Cancelled on",
+      "refundRequestedAt": "Refund requested on",
+      "cancelReason": "Reason",
+      "reEnroll": "Enroll Again",
+      "openCourse": "Open Course",
+      "downloadCertificate": "Download Certificate",
+      "downloadingCertificate": "Downloading Certificate..."
+    }
+  }
+}

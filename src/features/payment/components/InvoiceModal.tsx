@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useLanguage } from "@/features/i18n";
+import { useTranslations } from "next-intl";
 
 interface InvoiceDetails {
   invoiceName: string;
@@ -32,7 +32,7 @@ const InvoiceModal: React.FC<InvoiceModalProps> = ({
   onSave,
   initialData,
 }) => {
-  const { t } = useLanguage();
+  const t = useTranslations("payment.invoice");
   const [formData, setFormData] = useState<InvoiceDetails>({
     invoiceName: "",
     invoiceType: "other",
@@ -129,7 +129,7 @@ const InvoiceModal: React.FC<InvoiceModalProps> = ({
     if (errors[field]) {
       return (
         <span style={{ color: '#dc3545', fontSize: '12px', marginTop: '4px', display: 'block' }}>
-          {t('กรุณากรอกข้อมูล', 'Please fill in this field')}
+          {t('requiredField')}
         </span>
       );
     }
@@ -169,7 +169,7 @@ const InvoiceModal: React.FC<InvoiceModalProps> = ({
         {/* Header */}
         <div className="d-flex justify-content-between align-items-center mb-4">
           <h5 style={{ color: "#014D40", margin: 0 }}>
-            {t("ชื่อ-ที่อยู่ออกใบเสร็จรับเงิน", "Invoice Details")}
+            {t("title")}
           </h5>
           <button
             onClick={onClose}
@@ -190,7 +190,7 @@ const InvoiceModal: React.FC<InvoiceModalProps> = ({
         <div className="row mb-3">
           <div className="col-md-6 mb-3 mb-md-0">
             <label style={labelStyle}>
-              {t("เลขประจำตัวผู้เสียภาษี", "Tax ID")}
+              {t("taxId")}
             </label>
             <input
               type="text"
@@ -202,17 +202,17 @@ const InvoiceModal: React.FC<InvoiceModalProps> = ({
             {renderError("taxId")}
           </div>
           <div className="col-md-6">
-            <label style={labelStyle}>{t("ที่อยู่", "Address")}</label>
+            <label style={labelStyle}>{t("address")}</label>
             <select
               value={formData.addressSelection}
               onChange={(e) => handleChange("addressSelection", e.target.value)}
               style={{ ...inputStyle, cursor: "pointer" }}
             >
               <option value="">
-                {t("เลือกที่อยู่ในการออกใบเสร็จ", "Select invoice address")}
+                {t("selectInvoiceAddress")}
               </option>
               <option value="new">
-                {t("กรอกที่อยู่ใหม่", "Enter new address")}
+                {t("enterNewAddress")}
               </option>
             </select>
           </div>
@@ -221,7 +221,7 @@ const InvoiceModal: React.FC<InvoiceModalProps> = ({
         {/* Address Row 1 */}
         <div className="row mb-3">
           <div className="col-md-4 mb-3 mb-md-0">
-            <label style={labelStyle}>{t("เลขที่", "House No.")}</label>
+            <label style={labelStyle}>{t("houseNo")}</label>
             <input
               type="text"
               value={formData.houseNo}
@@ -232,7 +232,7 @@ const InvoiceModal: React.FC<InvoiceModalProps> = ({
           </div>
           <div className="col-md-4 mb-3 mb-md-0">
             <label style={labelStyle}>
-              {t("หมู่บ้าน/อาคาร", "Village/Building")}
+              {t("villageBuilding")}
             </label>
             <input
               type="text"
@@ -243,7 +243,7 @@ const InvoiceModal: React.FC<InvoiceModalProps> = ({
             {renderError("building")}
           </div>
           <div className="col-md-4">
-            <label style={labelStyle}>{t("หมู่ที่", "Moo")}</label>
+            <label style={labelStyle}>{t("moo")}</label>
             <input
               type="text"
               value={formData.moo}
@@ -257,7 +257,7 @@ const InvoiceModal: React.FC<InvoiceModalProps> = ({
         {/* Address Row 2 */}
         <div className="row mb-3">
           <div className="col-md-4 mb-3 mb-md-0">
-            <label style={labelStyle}>{t("ตรอก/ซอย", "Soi")}</label>
+            <label style={labelStyle}>{t("soi")}</label>
             <input
               type="text"
               value={formData.soi}
@@ -267,7 +267,7 @@ const InvoiceModal: React.FC<InvoiceModalProps> = ({
             {renderError("soi")}
           </div>
           <div className="col-md-4 mb-3 mb-md-0">
-            <label style={labelStyle}>{t("ถนน", "Road")}</label>
+            <label style={labelStyle}>{t("road")}</label>
             <input
               type="text"
               value={formData.road}
@@ -277,7 +277,7 @@ const InvoiceModal: React.FC<InvoiceModalProps> = ({
             {renderError("road")}
           </div>
           <div className="col-md-4">
-            <label style={labelStyle}>{t("ตำบล/แขวง", "Subdistrict")}</label>
+            <label style={labelStyle}>{t("subdistrict")}</label>
             <input
               type="text"
               value={formData.subdistrict}
@@ -291,7 +291,7 @@ const InvoiceModal: React.FC<InvoiceModalProps> = ({
         {/* Address Row 3 */}
         <div className="row mb-3">
           <div className="col-md-4 mb-3 mb-md-0">
-            <label style={labelStyle}>{t("อำเภอ/เขต", "District")}</label>
+            <label style={labelStyle}>{t("district")}</label>
             <input
               type="text"
               value={formData.district}
@@ -301,7 +301,7 @@ const InvoiceModal: React.FC<InvoiceModalProps> = ({
             {renderError("district")}
           </div>
           <div className="col-md-4 mb-3 mb-md-0">
-            <label style={labelStyle}>{t("จังหวัด", "Province")}</label>
+            <label style={labelStyle}>{t("province")}</label>
             <input
               type="text"
               value={formData.province}
@@ -311,7 +311,7 @@ const InvoiceModal: React.FC<InvoiceModalProps> = ({
             {renderError("province")}
           </div>
           <div className="col-md-4">
-            <label style={labelStyle}>{t("รหัสไปรษณีย์", "Postal Code")}</label>
+            <label style={labelStyle}>{t("postalCode")}</label>
             <input
               type="text"
               value={formData.postalCode}
@@ -338,7 +338,7 @@ const InvoiceModal: React.FC<InvoiceModalProps> = ({
             cursor: "pointer",
           }}
         >
-          {t("บันทึกข้อมูลใบเสร็จรับเงิน", "Save Invoice Details")}
+          {t("save")}
         </button>
       </div>
     </div>

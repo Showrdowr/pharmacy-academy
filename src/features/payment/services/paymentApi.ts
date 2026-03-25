@@ -4,6 +4,7 @@
 // with real API calls — only this file needs to change.
 
 import { api, toApiError } from '@/lib/api';
+import { getClientMessage } from '@/features/i18n/runtime';
 import type {
     CreateOrderRequest,
     PaymentResponse,
@@ -125,7 +126,7 @@ export const paymentApi = {
         );
 
         if (!response.success) {
-            throw toApiError(response, 'โหลดประวัติคำสั่งซื้อไม่สำเร็จ');
+            throw toApiError(response, getClientMessage('payment.fallbacks.loadOrderHistoryFailed'));
         }
 
         const rawOrders = response.data?.orders ?? [];

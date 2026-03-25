@@ -19,7 +19,6 @@ export * as about from './about';
 // Common exports that are used frequently (no conflicts)
 export { AuthProvider } from './auth';
 export { CartProvider } from './cart';
-export { LanguageProvider } from './i18n';
 export { SearchProvider } from './search';
 
 

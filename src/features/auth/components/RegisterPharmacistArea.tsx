@@ -3,11 +3,11 @@
 import Link from 'next/link';
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useAuth } from '@/features/auth';
-import { useLanguage } from '@/features/i18n';
 
 const RegisterPharmacistArea = () => {
-    const { t } = useLanguage();
+    const t = useTranslations('auth.registerPharmacist');
     const router = useRouter();
     const { registerPharmacist } = useAuth();
     const [formData, setFormData] = useState({
@@ -20,6 +20,7 @@ const RegisterPharmacistArea = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState("");
     const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+    const includesAny = (source: string, patterns: string[]) => patterns.some((pattern) => source.includes(pattern));
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -31,27 +32,27 @@ const RegisterPharmacistArea = () => {
         const newFieldErrors: Record<string, string> = {};
         
         if (!formData.name.trim()) {
-            newFieldErrors.name = t('กรุณากรอกชื่อ-นามสกุล', 'Please enter your name');
+            newFieldErrors.name = t('nameRequired');
         }
         
         if (!formData.licenseNumber.trim()) {
-            newFieldErrors.licenseNumber = t('กรุณากรอกเลขที่ใบอนุญาต', 'Please enter your license number');
+            newFieldErrors.licenseNumber = t('licenseRequired');
         }
 
         if (!formData.email.trim()) {
-            newFieldErrors.email = t('กรุณากรอกอีเมล', 'Please enter your email');
+            newFieldErrors.email = t('emailRequired');
         } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-            newFieldErrors.email = t('รูปแบบอีเมลไม่ถูกต้อง', 'Invalid email format');
+            newFieldErrors.email = t('invalidEmailFormat');
         }
 
         if (!formData.password) {
-            newFieldErrors.password = t('กรุณากรอกรหัสผ่าน', 'Please enter your password');
+            newFieldErrors.password = t('passwordRequired');
         } else if (formData.password.length < 8) {
-            newFieldErrors.password = t('รหัสผ่านควรมีความยาวอย่างน้อย 8 ตัวอักษร', 'Password should be at least 8 characters');
+            newFieldErrors.password = t('passwordTooShort');
         }
 
         if (formData.password !== formData.confirmPassword) {
-            newFieldErrors.confirmPassword = t('รหัสผ่านไม่ตรงกัน', 'Passwords do not match');
+            newFieldErrors.confirmPassword = t('passwordsMismatch');
         }
 
         if (Object.keys(newFieldErrors).length > 0) {
@@ -73,19 +74,19 @@ const RegisterPharmacistArea = () => {
             if (result.success) {
                 router.push("/");
             } else {
-                const errorMsg = result.error || "";
-                if (errorMsg.includes("ชื่อซ้ำ")) {
-                    setFieldErrors({ name: t('ชื่อนี้ถูกใช้งานแล้ว', 'This name is already in use') });
-                } else if (errorMsg.includes("อีเมลซ้ำ")) {
-                    setFieldErrors({ email: t('อีเมลนี้ถูกใช้งานแล้ว', 'This email is already in use') });
+                const errorMsg = (result.error || "").toLowerCase();
+                if (includesAny(errorMsg, ["ชื่อซ้ำ", "name already", "full name already", "name is already", "already used"])) {
+                    setFieldErrors({ name: t('nameAlreadyUsed') });
+                } else if (includesAny(errorMsg, ["อีเมลซ้ำ", "email already", "email is already", "already in use"])) {
+                    setFieldErrors({ email: t('emailAlreadyUsed') });
                 } else {
-                    setError(errorMsg || t('การลงทะเบียนล้มเหลว', 'Registration failed'));
+                    setError(result.error || t('registrationFailed'));
                 }
                 setIsSubmitting(false);
             }
         } catch (err) {
             console.error("Pharmacist registration error:", err);
-            setError(t('เกิดข้อผิดพลาดในการเชื่อมต่อ', 'Connection error'));
+            setError(t('connectionError'));
             setIsSubmitting(false);
         }
     };
@@ -118,8 +119,8 @@ const RegisterPharmacistArea = () => {
                             boxShadow: '0 10px 40px rgba(0, 71, 54, 0.1)'
                         }}>
                             <div className="text-center mb-4">
-                                <h2 className="text-resp-h2" style={{ color: '#004736', marginBottom: '10px' }}>{t('ลงทะเบียนเภสัชกร', 'Pharmacist Registration')}</h2>
-                                <p className="text-resp-body" style={{ color: '#666' }}>{t('สำหรับเภสัชกรที่ต้องการสะสมหน่วยกิต CPE', 'For pharmacists who want to collect CPE credits')}</p>
+                                <h2 className="text-resp-h2" style={{ color: '#004736', marginBottom: '10px' }}>{t('title')}</h2>
+                                <p className="text-resp-body" style={{ color: '#666' }}>{t('subtitle')}</p>
                             </div>
 
                             {error && (
@@ -137,15 +138,15 @@ const RegisterPharmacistArea = () => {
                             )}
 
                             <form onSubmit={handleSubmit} noValidate>
-                                 <div className="mb-4">
+                                <div className="mb-4">
                                     <label className="form-label text-resp-body-lg" style={{ color: '#004736', fontWeight: '500' }}>
-                                        {t('ชื่อ-นามสกุล', 'Name-Last Name')}
+                                        {t('name')}
                                     </label>
                                     <input
                                         type="text"
                                         name="name"
                                         className="form-control text-resp-body-lg"
-                                        placeholder={t('กรอกชื่อ-นามสกุล', 'Enter your name')}
+                                        placeholder={t('namePlaceholder')}
                                         value={formData.name}
                                         onChange={handleChange}
                                         style={{
@@ -178,13 +179,13 @@ const RegisterPharmacistArea = () => {
 
                                 <div className="mb-4">
                                     <label className="form-label text-resp-body-lg" style={{ color: '#004736', fontWeight: '500' }}>
-                                        {t('เลขที่ใบอนุญาตประกอบวิชาชีพ', 'Professional License Number')}
+                                        {t('licenseNumber')}
                                     </label>
                                     <input
                                         type="text"
                                         name="licenseNumber"
                                         className="form-control text-resp-body-lg"
-                                        placeholder={t('กรอกเลขที่ใบอนุญาต ภ.', 'Enter License Number')}
+                                        placeholder={t('licensePlaceholder')}
                                         value={formData.licenseNumber}
                                         onChange={handleChange}
                                         style={{
@@ -217,13 +218,17 @@ const RegisterPharmacistArea = () => {
 
                                 <div className="mb-4">
                                     <label className="form-label text-resp-body-lg" style={{ color: '#004736', fontWeight: '500' }}>
-                                        {t('อีเมล', 'Email')}
+                                        {t('email')}
                                     </label>
                                     <input
-                                        type="email"
+                                        type="text"
+                                        inputMode="email"
+                                        autoComplete="email"
+                                        autoCapitalize="none"
+                                        spellCheck={false}
                                         name="email"
                                         className="form-control text-resp-body-lg"
-                                        placeholder={t('กรอกอีเมลของคุณ', 'Enter your email')}
+                                        placeholder={t('emailPlaceholder')}
                                         value={formData.email}
                                         onChange={handleChange}
                                         style={{
@@ -256,13 +261,13 @@ const RegisterPharmacistArea = () => {
 
                                 <div className="mb-4">
                                     <label className="form-label text-resp-body-lg" style={{ color: '#004736', fontWeight: '500' }}>
-                                        {t('รหัสผ่าน', 'Password')}
+                                        {t('password')}
                                     </label>
                                     <input
                                         type="password"
                                         name="password"
                                         className="form-control text-resp-body-lg"
-                                        placeholder={t('สร้างรหัสผ่าน', 'Create Password')}
+                                        placeholder={t('passwordPlaceholder')}
                                         value={formData.password}
                                         onChange={handleChange}
                                         style={{
@@ -295,13 +300,13 @@ const RegisterPharmacistArea = () => {
 
                                 <div className="mb-4">
                                     <label className="form-label text-resp-body-lg" style={{ color: '#004736', fontWeight: '500' }}>
-                                        {t('ยืนยันรหัสผ่าน', 'Confirm Password')}
+                                        {t('confirmPassword')}
                                     </label>
                                     <input
                                         type="password"
                                         name="confirmPassword"
                                         className="form-control text-resp-body-lg"
-                                        placeholder={t('ยืนยันรหัสผ่านอีกครั้ง', 'Confirm password again')}
+                                        placeholder={t('confirmPasswordPlaceholder')}
                                         value={formData.confirmPassword}
                                         onChange={handleChange}
                                         style={{
@@ -335,7 +340,7 @@ const RegisterPharmacistArea = () => {
                                 <div className="form-check mb-4">
                                     <input type="checkbox" className="form-check-input" id="terms" required />
                                     <label className="form-check-label text-resp-body" htmlFor="terms" style={{ color: '#666' }}>
-                                        {t('ยอมรับ', 'Accept')} <Link href="#" className="text-resp-link" style={{ color: '#004736' }}>{t('เงื่อนไขการใช้งาน', 'Terms of Use')}</Link> {t('และยินยอมให้ตรวจสอบข้อมูลใบอนุญาต', 'and consent to professional license verification')}
+                                        {t('accept')} <Link href="#" className="text-resp-link" style={{ color: '#004736' }}>{t('termsOfUse')}</Link> {t('licenseConsent')}
                                     </label>
                                 </div>
 
@@ -350,24 +355,24 @@ const RegisterPharmacistArea = () => {
                                         cursor: isSubmitting ? 'not-allowed' : 'pointer'
                                     }}
                                 >
-                                    {isSubmitting ? t('กำลังลงทะเบียน...', 'Registering...') : t('ลงทะเบียนเภสัชกร', 'Register as Pharmacist')}
+                                    {isSubmitting ? t('submitting') : t('submit')}
                                 </button>
                             </form>
 
                             <div className="text-center mt-4">
                                 <p style={{ color: '#666' }}>
-                                    {t('มีบัญชีอยู่แล้ว?', 'Already have an account?')} {' '}
+                                    {t('alreadyHaveAccount')} {' '}
                                     <Link href="/sign-in" className="text-resp-link" style={{ color: '#004736', fontWeight: '600' }}>
-                                        {t('เข้าสู่ระบบ', 'Login')}
+                                        {t('login')}
                                     </Link>
                                 </p>
                             </div>
 
                             <div className="text-center mt-3">
                                 <p style={{ color: '#666', fontSize: '14px' }}>
-                                    {t('ไม่ใช่เภสัชกร?', 'Not a pharmacist?')} {' '}
+                                    {t('notPharmacist')} {' '}
                                     <Link href="/register" className="text-resp-link" style={{ color: '#004736', fontWeight: '600' }}>
-                                        {t('สมัครสมาชิกทั่วไป', 'General Registration')}
+                                        {t('generalRegistration')}
                                     </Link>
                                 </p>
                             </div>

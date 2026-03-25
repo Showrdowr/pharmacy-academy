@@ -5,18 +5,25 @@ import HeaderTwo from '@/components/layout/headers/HeaderTwo';
 import { PaymentFailArea } from '@/features/payment';
 
 import { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
 
-export const metadata: Metadata = {
-    title: "การชำระเงินไม่สำเร็จ - Pharmacy Academy",
-    description: "เกิดข้อผิดพลาดระหว่างการชำระเงิน",
-};
+export async function generateMetadata(): Promise<Metadata> {
+    const t = await getTranslations('payment.meta.fail');
 
-const PaymentFailPage = () => {
+    return {
+        title: t('title'),
+        description: t('description'),
+    };
+}
+
+const PaymentFailPage = async () => {
+    const t = await getTranslations('payment.fail');
+
     return (
         <>
             <MarqueeOne />
             <HeaderTwo />
-            <Suspense fallback={<div className="text-center py-5">กำลังโหลด...</div>}>
+            <Suspense fallback={<div className="text-center py-5">{t('loading')}</div>}>
                 <PaymentFailArea />
             </Suspense>
             <FooterTwo />

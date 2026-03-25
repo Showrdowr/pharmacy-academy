@@ -4,12 +4,14 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Facebook, Instagram, Send, Linkedin } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 interface AuthLayoutProps {
     children: React.ReactNode;
 }
 
 const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
+    const t = useTranslations("auth.layout");
     const [isMobile, setIsMobile] = useState(false);
 
     useEffect(() => {
@@ -133,9 +135,9 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
                             lineHeight: '1.6',
                             marginBottom: '28px',
                         }}>
-                            ศูนย์การเรียนรู้ออนไลน์สำหรับเภสัชกร
+                            {t('descriptionLine1')}
                             <br />
-                            สะสมหน่วยกิต CPE ได้ง่ายๆ ผ่านคอร์สออนไลน์คุณภาพ
+                            {t('descriptionLine2')}
                         </p>
 
                         {/* Social Icons */}

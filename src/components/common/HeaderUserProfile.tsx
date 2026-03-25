@@ -2,8 +2,9 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { useAuth } from '@/features/auth';
-import { useLanguage } from '@/features/i18n';
+import { isPharmacistUser } from '@/features/auth/role';
 
 interface HeaderUserProfileProps {
     compact?: boolean;
@@ -11,7 +12,7 @@ interface HeaderUserProfileProps {
 
 const HeaderUserProfile = ({ compact = false }: HeaderUserProfileProps) => {
     const { user, isAuthenticated, logout } = useAuth();
-    const { language, t } = useLanguage();
+    const t = useTranslations('navigation.profile');
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const [isMobile, setIsMobile] = useState(false);
@@ -36,6 +37,8 @@ const HeaderUserProfile = ({ compact = false }: HeaderUserProfileProps) => {
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
+
+    const roleLabel = user && isPharmacistUser(user) ? t('pharmacist') : t('generalUser');
 
     if (!isAuthenticated || !user) {
         // Mobile: Icon-only buttons
@@ -77,7 +80,7 @@ const HeaderUserProfile = ({ compact = false }: HeaderUserProfileProps) => {
                     }}
                 >
                     <i className="fas fa-sign-in-alt"></i>
-                    <span>{t('เข้าสู่ระบบ', 'Sign In')}</span>
+                    <span>{t('signIn')}</span>
                 </Link>
 
                 {/* Register Button - Solid Style */}
@@ -111,7 +114,7 @@ const HeaderUserProfile = ({ compact = false }: HeaderUserProfileProps) => {
                     }}
                 >
                     <i className="fas fa-user-plus"></i>
-                    <span>{t('ลงทะเบียน', 'Register')}</span>
+                    <span>{t('register')}</span>
                 </Link>
             </div>
         );
@@ -164,6 +167,7 @@ const HeaderUserProfile = ({ compact = false }: HeaderUserProfileProps) => {
                     <div style={{ padding: '12px', borderBottom: '1px solid #f0f0f0', marginBottom: '8px' }}>
                         <p style={{ margin: 0, color: '#014D40', fontWeight: '600', fontSize: '16px' }}>{user.fullName}</p>
                         <p style={{ margin: '2px 0 0', color: '#666', fontSize: '13px' }}>{user.email}</p>
+                        <p style={{ margin: '6px 0 0', color: '#475569', fontSize: '12px', fontWeight: '600' }}>{roleLabel}</p>
                     </div>
 
                     <Link href="/profile" onClick={() => setDropdownOpen(false)} style={{
@@ -171,7 +175,7 @@ const HeaderUserProfile = ({ compact = false }: HeaderUserProfileProps) => {
                         color: '#333', textDecoration: 'none', borderRadius: '8px',
                     }}>
                         <i className="fas fa-user-circle" style={{ color: '#0284c7' }}></i>
-                        <span>{t('โปรไฟล์', 'Profile')}</span>
+                        <span>{t('profile')}</span>
                     </Link>
 
                     <Link href="/payment-history" onClick={() => setDropdownOpen(false)} style={{
@@ -179,7 +183,7 @@ const HeaderUserProfile = ({ compact = false }: HeaderUserProfileProps) => {
                         color: '#333', textDecoration: 'none', borderRadius: '8px',
                     }}>
                         <i className="fas fa-receipt" style={{ color: '#d97706' }}></i>
-                        <span>{t('ประวัติชำระเงิน', 'Payment History')}</span>
+                        <span>{t('paymentHistory')}</span>
                     </Link>
 
                     <div style={{ height: '1px', background: '#f0f0f0', margin: '8px 0' }}></div>
@@ -190,7 +194,7 @@ const HeaderUserProfile = ({ compact = false }: HeaderUserProfileProps) => {
                         color: '#ef4444', cursor: 'pointer', borderRadius: '8px',
                     }}>
                         <i className="fas fa-sign-out-alt"></i>
-                        <span>{t('ออกจากระบบ', 'Sign Out')}</span>
+                        <span>{t('signOut')}</span>
                     </button>
                 </div>
             </div>
@@ -326,7 +330,7 @@ const HeaderUserProfile = ({ compact = false }: HeaderUserProfileProps) => {
                         color: '#666',
                         fontSize: '12px',
                     }}>
-                        {user.role === 'pharmacist' ? t('👨‍⚕️ เภสัชกร', '👨‍⚕️ Pharmacist') : t('👤 ผู้ใช้ทั่วไป', '👤 User')}
+                        {roleLabel}
                     </p>
                 </div>
 
@@ -363,7 +367,7 @@ const HeaderUserProfile = ({ compact = false }: HeaderUserProfileProps) => {
                     }}>
                         <i className="fas fa-user-circle" style={{ color: '#0284c7', fontSize: '14px' }}></i>
                     </div>
-                    <span style={{ fontWeight: '500' }}>{t('โปรไฟล์', 'Profile')}</span>
+                    <span style={{ fontWeight: '500' }}>{t('profile')}</span>
                 </Link>
 
                 <Link
@@ -399,7 +403,7 @@ const HeaderUserProfile = ({ compact = false }: HeaderUserProfileProps) => {
                     }}>
                         <i className="fas fa-receipt" style={{ color: '#d97706', fontSize: '14px' }}></i>
                     </div>
-                    <span style={{ fontWeight: '500' }}>{t('ประวัติชำระเงิน', 'Payment History')}</span>
+                    <span style={{ fontWeight: '500' }}>{t('paymentHistory')}</span>
                 </Link>
 
                 <div style={{ height: '1px', background: '#f0f0f0', margin: '8px 0' }}></div>
@@ -441,7 +445,7 @@ const HeaderUserProfile = ({ compact = false }: HeaderUserProfileProps) => {
                     }}>
                         <i className="fas fa-sign-out-alt" style={{ color: '#ef4444', fontSize: '14px' }}></i>
                     </div>
-                    <span style={{ fontWeight: '500' }}>{t('ออกจากระบบ', 'Sign Out')}</span>
+                    <span style={{ fontWeight: '500' }}>{t('signOut')}</span>
                 </button>
             </div>
         </div>

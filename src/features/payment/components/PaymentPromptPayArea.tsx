@@ -2,11 +2,13 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useState, useEffect } from 'react';
-import { useLanguage } from '@/features/i18n';
+import { useTranslations } from 'next-intl';
+import { formatLocaleCurrency, useAppLocale } from '@/features/i18n';
 import { useOrderStore } from '@/stores/useOrderStore';
 
 const PaymentPromptPayArea = () => {
-    const { t } = useLanguage();
+    const t = useTranslations('payment.promptPay');
+    const { locale } = useAppLocale();
     const router = useRouter();
     const { orderId: storeOrderId, orderTotal: storeTotal } = useOrderStore();
     const [timeLeft, setTimeLeft] = useState(1 * 60); // 1 minutes in seconds
@@ -67,7 +69,7 @@ const PaymentPromptPayArea = () => {
                                         fontWeight: 'bold',
                                         fontSize: '16px',
                                     }}>✓</div>
-                                    <span style={{ marginLeft: '10px', fontWeight: '500', color: '#004736' }}>{t('รายละเอียด', 'Details')}</span>
+                                    <span style={{ marginLeft: '10px', fontWeight: '500', color: '#004736' }}>{t('stepDetails')}</span>
                                 </div>
 
                                 {/* Line */}
@@ -87,7 +89,7 @@ const PaymentPromptPayArea = () => {
                                         fontWeight: 'bold',
                                         fontSize: '16px',
                                     }}>2</div>
-                                    <span style={{ marginLeft: '10px', fontWeight: '500', color: '#004736' }}>{t('ชำระเงิน', 'Payment')}</span>
+                                    <span style={{ marginLeft: '10px', fontWeight: '500', color: '#004736' }}>{t('stepPayment')}</span>
                                 </div>
 
                                 {/* Line */}
@@ -107,7 +109,7 @@ const PaymentPromptPayArea = () => {
                                         fontWeight: 'bold',
                                         fontSize: '16px',
                                     }}>3</div>
-                                    <span style={{ marginLeft: '10px', fontWeight: '500', color: '#666' }}>{t('ยืนยัน', 'Confirm')}</span>
+                                    <span style={{ marginLeft: '10px', fontWeight: '500', color: '#666' }}>{t('stepConfirm')}</span>
                                 </div>
                             </div>
                         </div>
@@ -118,7 +120,7 @@ const PaymentPromptPayArea = () => {
                 <div className="mb-4">
                     <Link href="/shop-cart" style={{ color: '#666', textDecoration: 'none', fontSize: '18px' }}>
                         <i className="fas fa-arrow-left me-2"></i>
-                        {t('กลับไปเลือกวิธีชำระเงิน', 'Go back and select a payment method.')}
+                        {t('backToSelectPaymentMethod')}
                     </Link>
                 </div>
 
@@ -147,8 +149,8 @@ const PaymentPromptPayArea = () => {
                                 }}>
                                     <img src="/assets/img/prompt-pay-logo.png" alt="PromptPay" style={{ height: '28px' }} />
                                 </div>
-                                <h5 style={{ margin: '0 0 5px', fontWeight: '600', fontSize: '18px', color: '#fff' }}>{t('สแกนเพื่อชำระเงิน', 'Scan to pay.')}</h5>
-                                <p style={{ margin: 0, opacity: 0.8, fontSize: '13px' }}>{t('กรุณาสแกนภายในเวลาที่กำหนด', 'Please scan within the specified time.')}</p>
+                                <h5 style={{ margin: '0 0 5px', fontWeight: '600', fontSize: '18px', color: '#fff' }}>{t('scanToPay')}</h5>
+                                <p style={{ margin: 0, opacity: 0.8, fontSize: '13px' }}>{t('scanWithinTime')}</p>
                             </div>
 
                             {/* QR Code Section */}
@@ -192,10 +194,10 @@ const PaymentPromptPayArea = () => {
 
                                 {/* Amount */}
                                 <h2 style={{ margin: '0 0 5px', color: '#333', fontWeight: 'bold', fontSize: '28px' }}>
-                                    ฿{orderTotal.toLocaleString()}.00
+                                    {formatLocaleCurrency(orderTotal, locale)}
                                 </h2>
                                 <p style={{ margin: '0 0 20px', color: '#666', fontSize: '13px' }}>
-                                    Ref No: <strong>{orderId}</strong>
+                                    {t('refNo')}: <strong>{orderId}</strong>
                                 </p>
 
                                 {/* Steps */}
@@ -218,7 +220,7 @@ const PaymentPromptPayArea = () => {
                                         }}>
                                             <i className="fas fa-mobile-alt" style={{ color: '#004736', fontSize: '14px' }}></i>
                                         </div>
-                                        <p style={{ margin: 0, fontSize: '14px', color: '#666' }}>{t('1. เปิดแอปธนาคาร', '1. Open your banking app.')}</p>
+                                        <p style={{ margin: 0, fontSize: '14px', color: '#666' }}>{t('stepOpenBankApp')}</p>
                                     </div>
                                     <div style={{ textAlign: 'center', flex: 1 }}>
                                         <div style={{
@@ -233,7 +235,7 @@ const PaymentPromptPayArea = () => {
                                         }}>
                                             <i className="fas fa-qrcode" style={{ color: '#004736', fontSize: '14px' }}></i>
                                         </div>
-                                        <p style={{ margin: 0, fontSize: '14px', color: '#666' }}>{t('2. สแกน QR Code', '2. Scan the QR code.')}</p>
+                                        <p style={{ margin: 0, fontSize: '14px', color: '#666' }}>{t('stepScanQr')}</p>
                                     </div>
                                     <div style={{ textAlign: 'center', flex: 1 }}>
                                         <div style={{
@@ -248,7 +250,7 @@ const PaymentPromptPayArea = () => {
                                         }}>
                                             <i className="fas fa-check" style={{ color: '#004736', fontSize: '14px' }}></i>
                                         </div>
-                                        <p style={{ margin: 0, fontSize: '14px', color: '#666' }}>{t('3. ระบบยืนยันอัตโนมัติ', '3. Automatic confirmation system.')}</p>
+                                        <p style={{ margin: 0, fontSize: '14px', color: '#666' }}>{t('stepAutoConfirm')}</p>
                                     </div>
                                 </div>
 
@@ -264,7 +266,7 @@ const PaymentPromptPayArea = () => {
                                     fontSize: '13px',
                                 }}>
                                     <i className="fas fa-download me-2"></i>
-                                    {t('บันทึก QR Code', 'Save QR code')}
+                                    {t('saveQrCode')}
                                 </button>
                             </div>
                         </div>

@@ -1,0 +1,71 @@
+{
+  "profile": {
+    "meta": {
+      "userProfile": {
+        "title": "โปรไฟล์ของฉัน - Pharmacy Academy",
+        "description": "ดูข้อมูลโปรไฟล์ คอร์สเรียน และใบ Certificate ของคุณ",
+        "keywords": "โปรไฟล์, ผู้ใช้, Pharmacy Academy, เภสัชกร, คอร์สเรียน"
+      }
+    },
+    "userProfile": {
+      "signInRequired": "กรุณาเข้าสู่ระบบ",
+      "signIn": "เข้าสู่ระบบ",
+      "accumulatedCredits": "หน่วยกิตสะสม",
+      "professionalInfo": "ข้อมูลวิชาชีพ",
+      "licenseNumber": "เลขใบประกอบวิชาชีพ",
+      "licenseUnavailable": "ยังไม่มีข้อมูลเลขใบประกอบ",
+      "verificationStatusLabel": "สถานะการตรวจสอบ",
+      "pharmacist": "เภสัชกร",
+      "generalUser": "ผู้ใช้ทั่วไป",
+      "totalCourses": "คอร์สทั้งหมด",
+      "inProgress": "กำลังเรียน",
+      "completed": "เรียนจบแล้ว",
+      "cpeCredits": "CPE สะสม",
+      "verificationStatus": {
+        "pending": "รอตรวจสอบ",
+        "verified": "ยืนยันแล้ว",
+        "rejected": "ไม่ผ่านการตรวจสอบ",
+        "unavailable": "ยังไม่มีข้อมูลสถานะ"
+      },
+      "myCourses": "คอร์สเรียนของฉัน",
+      "findMoreCourses": "ค้นหาคอร์สเพิ่ม",
+      "loadingCourses": "กำลังโหลดข้อมูลคอร์ส...",
+      "noCoursesTitle": "ยังไม่มีคอร์สเรียน",
+      "noCoursesDescription": "เริ่มต้นเรียนรู้กับคอร์สดีๆ ได้เลย",
+      "browseCourses": "ค้นหาคอร์ส",
+      "courseFallback": "คอร์สเรียน",
+      "archived": "เก็บถาวร",
+      "credits": "หน่วยกิต",
+      "watch": "ดูจริง",
+      "completedLessons": "จบบท",
+      "continue": "เรียนต่อ",
+      "cancelCourse": "ยกเลิกคอร์ส",
+      "cancelCourseTitle": "ยืนยันการยกเลิกคอร์ส",
+      "cancelCourseDescriptionFree": "เมื่อยกเลิกแล้ว คอร์สฟรีจะหายออกจากรายการคอร์สของฉันทันที แต่คุณยังสามารถกลับมาลงเรียนใหม่ได้ในภายหลัง",
+      "cancelCourseDescriptionPaid": "เมื่อยกเลิกแล้ว ระบบจะสร้างคำขอคืนเงินให้ผู้ดูแลตรวจสอบ และคุณจะไม่สามารถเข้าเรียนต่อได้จนกว่าจะดำเนินการเสร็จ",
+      "cancelReasonLabel": "เหตุผลในการยกเลิก",
+      "cancelReasonPlaceholder": "บอกเหตุผลสั้น ๆ เพื่อให้ทีมช่วยตรวจสอบได้ง่ายขึ้น",
+      "confirmCancelFree": "ยืนยันยกเลิกคอร์ส",
+      "confirmCancelPaid": "ยืนยันยกเลิกและส่งคำขอคืนเงิน",
+      "cancelInProgress": "กำลังยกเลิก...",
+      "keepCourse": "ยังไม่ยกเลิก",
+      "cancelSuccessFree": "ยกเลิกคอร์สเรียบร้อยแล้ว คุณสามารถกลับมาลงเรียนใหม่ได้ทุกเมื่อ",
+      "cancelSuccessPaid": "ยกเลิกคอร์สเรียบร้อยแล้ว และส่งคำขอคืนเงินให้ผู้ดูแลตรวจสอบแล้ว",
+      "cancelError": "ไม่สามารถยกเลิกคอร์สได้ในขณะนี้",
+      "inactiveCoursesTitle": "คอร์สที่ยกเลิกแล้ว / คำขอคืนเงิน",
+      "inactiveCoursesDescription": "รายการคอร์สที่ไม่อยู่ในคอร์สที่กำลังเรียนแล้ว รวมถึงคอร์สที่กำลังรอคืนเงิน",
+      "inactiveCoursesEmpty": "ยังไม่มีคอร์สที่ยกเลิกหรือคำขอคืนเงิน",
+      "cancelled": "ยกเลิกแล้ว",
+      "refundPending": "รอคืนเงิน",
+      "refundApproved": "คืนเงินแล้ว",
+      "refundRejected": "คำขอถูกปฏิเสธ",
+      "cancelledAt": "ยกเลิกเมื่อ",
+      "refundRequestedAt": "ส่งคำขอคืนเงินเมื่อ",
+      "cancelReason": "เหตุผล",
+      "reEnroll": "ลงเรียนอีกครั้ง",
+      "openCourse": "ดูรายละเอียดคอร์ส",
+      "downloadCertificate": "ดาวน์โหลดหนังสือรับรอง",
+      "downloadingCertificate": "กำลังดาวน์โหลดหนังสือรับรอง..."
+    }
+  }
+}

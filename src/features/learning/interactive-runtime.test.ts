@@ -15,6 +15,21 @@ import {
     createLessonVideoFixture,
 } from '@/test/learning-fixtures';
 
+const learningMessages = require('../../messages/th/learning.json') as {
+    learning: {
+        courseArea: Record<string, string>;
+    };
+};
+
+function translate(key: string, values?: Record<string, unknown>) {
+    const template = learningMessages.learning.courseArea[key];
+    if (!template || !values) {
+        return template || key;
+    }
+
+    return template.replace(/\{(\w+)\}/g, (_, token: string) => String(values[token] ?? `{${token}}`));
+}
+
 describe('interactive-runtime', () => {
     it('sorts interactive questions by display time and sort order', () => {
         const sorted = sortInteractiveQuestions([
@@ -60,7 +75,7 @@ describe('interactive-runtime', () => {
             currentTime: 0,
             lessonNotice: '',
             nextPendingInteractive: null,
-        })).toEqual({
+        }, translate)).toEqual({
             tone: 'amber',
             message: 'วิดีโอยังไม่พร้อมใช้งานจริง จึงยังไม่สามารถ trigger คำถาม interactive ตามเวลาได้',
         });
@@ -78,7 +93,7 @@ describe('interactive-runtime', () => {
             currentTime: 30,
             lessonNotice: '',
             nextPendingInteractive: createInteractiveQuestionFixture({ displayAtSeconds: 120 }),
-        })).toEqual({
+        }, translate)).toEqual({
             tone: 'sky',
             message: 'คำถามถัดไปจะแสดงที่ 2:00',
         });
@@ -87,8 +102,8 @@ describe('interactive-runtime', () => {
     it('normalizes playback seconds and availability messages consistently', () => {
         expect(normalizePlaybackSecond(12.9)).toBe(12);
         expect(normalizePlaybackSecond(-5)).toBe(0);
-        expect(getVideoAvailabilityMessage('FAILED', 10)).toContain('วิดีโอบทเรียนนี้มีปัญหา');
-        expect(getVideoAvailabilityMessage('READY', 0)).toContain('ยังอยู่ระหว่างประมวลผล');
+        expect(getVideoAvailabilityMessage('FAILED', 10, translate)).toContain('วิดีโอบทเรียนนี้มีปัญหา');
+        expect(getVideoAvailabilityMessage('READY', 0, translate)).toContain('ยังอยู่ระหว่างประมวลผล');
     });
 
     it('calculates watch percentages for lessons and the course from watched seconds', () => {

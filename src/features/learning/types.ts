@@ -189,6 +189,66 @@ export interface LearningLessonQuizSummary {
     passingScorePercent: number;
     maxAttempts?: number | null;
     questionsCount: number;
+    attemptsUsed?: number;
+    remainingAttempts?: number | null;
+    latestAttempt?: LearningLessonQuizAttemptSummary | null;
+}
+
+export interface LearningLessonQuizAttemptSummary {
+    id: number;
+    attemptNumber: number;
+    scoreObtained?: number;
+    totalScore?: number;
+    scorePercent: number;
+    isPassed: boolean;
+    finishedAt?: string | null;
+}
+
+export interface LearningLessonQuizQuestion {
+    id: number;
+    questionText: string;
+    questionType: LearningQuestionType;
+    options: LearningInteractiveOption[];
+    scoreWeight: number;
+}
+
+export interface LearningLessonQuizRuntime {
+    id: number;
+    lessonId: number;
+    passingScorePercent: number;
+    maxAttempts?: number | null;
+    attemptsUsed: number;
+    remainingAttempts?: number | null;
+    latestAttempt?: LearningLessonQuizAttemptSummary | null;
+    questions: LearningLessonQuizQuestion[];
+}
+
+export interface LearningLessonQuizAnswerSubmission {
+    questionId: number;
+    answerGiven: string;
+}
+
+export interface LearningLessonQuizAnswerResult {
+    questionId: number;
+    answerGiven: string;
+    isCorrect: boolean;
+    pointsEarned: number;
+}
+
+export interface LearningLessonQuizAttemptResult {
+    attemptId: number;
+    quizId: number;
+    lessonId: number;
+    attemptNumber: number;
+    maxAttempts?: number | null;
+    attemptsUsed: number;
+    remainingAttempts?: number | null;
+    scoreObtained: number;
+    totalScore: number;
+    scorePercent: number;
+    isPassed: boolean;
+    finishedAt?: string | null;
+    answers: LearningLessonQuizAnswerResult[];
 }
 
 export interface LearningLessonProgressSnapshot {

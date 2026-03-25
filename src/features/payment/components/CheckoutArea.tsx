@@ -2,8 +2,14 @@
 
 import Link from 'next/link';
 import React, { useState } from 'react';
-import { useCart } from '@/features/cart/hooks';
-import { useLanguage } from '@/features/i18n';
+import { useTranslations } from 'next-intl';
+import { useAudienceFilteredCart } from '@/features/cart/hooks';
+import {
+    formatLocaleCurrency,
+    formatLocaleNumber,
+    getCurrencyUnitLabel,
+    useAppLocale,
+} from '@/features/i18n';
 import {
     createInitialAddressInfo,
     createInitialCompanyInfo,
@@ -13,8 +19,9 @@ import {
 import { voucherApi } from '../services/voucherApi';
 
 const CheckoutArea = () => {
-    const { t } = useLanguage();
-    const { cartItems, removeFromCart, clearCart } = useCart();
+    const t = useTranslations('payment.checkout');
+    const { locale } = useAppLocale();
+    const { cartItems, removeFromCart, clearCart, recentlyRemovedCount } = useAudienceFilteredCart();
     const payableItems = cartItems.filter((item) => Number(item.price) > 0);
     const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('promptpay');
     const [receiptType, setReceiptType] = useState<ReceiptType>('personal');
@@ -28,14 +35,16 @@ const CheckoutArea = () => {
     const [appliedCode, setAppliedCode] = useState('');
 
     const subtotal = payableItems.reduce((sum, item) => sum + item.price, 0);
-    const tax = Math.round(subtotal * 0.07);
     const total = subtotal - discount;
+    const currencyUnitLabel = getCurrencyUnitLabel(locale);
+
+    const formatAmountWithUnit = (amount: number) => `${formatLocaleNumber(amount, locale)} ${currencyUnitLabel}`;
 
     const applyVoucher = async () => {
         const code = voucherCode.toUpperCase().trim();
 
         if (!code) {
-            setDiscountError(t('กรุณากรอกโค้ดส่วนลด', 'Please enter a voucher code'));
+            setDiscountError(t('voucherRequired'));
             return;
         }
 
@@ -44,11 +53,8 @@ const CheckoutArea = () => {
 
             if (!result.isValid) {
                 const errorMsg = result.errorMessage?.startsWith('MIN_ORDER_')
-                    ? t(
-                          `ยอดขั้นต่ำ ${result.errorMessage.replace('MIN_ORDER_', '')} บาท`,
-                          `Minimum order ${result.errorMessage.replace('MIN_ORDER_', '')} THB`,
-                      )
-                    : t('โค้ดส่วนลดไม่ถูกต้อง', 'Invalid voucher code');
+                    ? t('voucherMinimumOrder', { amount: result.errorMessage.replace('MIN_ORDER_', '') })
+                    : t('voucherInvalid');
                 setDiscountError(errorMsg);
                 setDiscount(0);
                 setDiscountApplied(false);
@@ -60,7 +66,7 @@ const CheckoutArea = () => {
             setDiscountError('');
             setAppliedCode(result.appliedCode || code);
         } catch {
-            setDiscountError(t('ไม่สามารถตรวจสอบโค้ดส่วนลดได้', 'Failed to validate voucher code'));
+            setDiscountError(t('voucherValidateFailed'));
             setDiscount(0);
             setDiscountApplied(false);
         }
@@ -78,6 +84,22 @@ const CheckoutArea = () => {
         <>
             <section className="checkout-section section-padding">
                 <div className="container">
+                    {recentlyRemovedCount > 0 && (
+                        <div
+                            style={{
+                                marginBottom: '20px',
+                                border: '1px solid #fdba74',
+                                background: '#fff7ed',
+                                color: '#9a3412',
+                                borderRadius: '14px',
+                                padding: '14px 16px',
+                                fontSize: '15px',
+                                fontWeight: 600,
+                            }}
+                        >
+                            {t('restrictedItemsRemoved', { count: recentlyRemovedCount })}
+                        </div>
+                    )}
                     <div className="row g-4">
                         {/* Left: Payment Options */}
                         <div className="col-lg-7">
@@ -87,7 +109,7 @@ const CheckoutArea = () => {
                                 padding: '24px',
                                 boxShadow: '0 2px 12px rgba(0, 0, 0, 0.06)'
                             }}>
-                                <h5 className="payment-summary-title text-force-22 text-force-bold">{t('เลือกช่องทางชำระเงิน', 'Select Payment Method')}</h5>
+                                <h5 className="payment-summary-title text-force-22 text-force-bold">{t('selectPaymentMethod')}</h5>
 
                                 {/* Payment Methods - Horizontal Layout */}
                                 <div className="payment-methods d-flex gap-3 mb-4">
@@ -122,7 +144,7 @@ const CheckoutArea = () => {
                                             )}
                                         </div>
                                         <div>
-                                            <p className="text-force-20 text-force-bold" style={{ margin: 0, color: '#333' }}>QR PromptPay</p>
+                                            <p className="text-force-20 text-force-bold" style={{ margin: 0, color: '#333' }}>{t('promptPayLabel')}</p>
                                             <img
                                                 src="/assets/img/prompt-pay-logo.png"
                                                 alt="PromptPay"
@@ -169,7 +191,7 @@ const CheckoutArea = () => {
                                             )}
                                         </div>
                                         <div>
-                                            <p className="text-force-20 text-force-bold" style={{ margin: 0, color: '#333' }}>Credit/Debit Card</p>
+                                            <p className="text-force-20 text-force-bold" style={{ margin: 0, color: '#333' }}>{t('cardLabel')}</p>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '6px' }}>
                                                 <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Mastercard-logo.svg/200px-Mastercard-logo.svg.png" alt="Mastercard" style={{ height: '18px' }} />
                                                 <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 38.6 12.3'%3E%3Cpath fill='%231434CB' d='M16 11.9h2.5l1.6-10.2h-2.5L16 11.9zm10.7-10c-.7-.3-1.8-.5-3.1-.5-3.4 0-5.8 1.8-5.8 4.4 0 1.9 1.7 3 3 3.6 1.3.6 1.8 1 1.8 1.6 0 .9-1.1 1.3-2.2 1.3-1.5 0-2.3-.2-3.3-.7l-.5-.2-.5 3.3c.8.4 2.3.7 3.9.7 3.6 0 5.9-1.8 6-4.6 0-1.6-1-2.7-2.9-3.6-1.2-.6-1.9-1-1.9-1.6 0-.6.7-1.2 2-1.2 1.2 0 2 .2 2.7.5l.3.2.5-3.2z'/%3E%3Cpath fill='%231434CB' d='M36.1 1.7H34c-.6 0-1 .2-1.3.8l-4.7 9.4h2.6s.4-1.2.5-1.5h3.2c.1.3.3 1.5.3 1.5h2.3l-2.1-10.2zm-2.1 6.5l1-2.9 1.7 4.8h-2.7v-1.9z'/%3E%3Cpath fill='%23F5A800' d='M12.9 1.7L9.5 9.1l-.3-1.6c-.6-3-2.8-5-5.2-6L11 11.9h2.6l4-10.2h-2.5v-.2z'/%3E%3Cpath fill='%231434CB' d='M7 1.8h-7l-.1.4c2.8.7 5.7 1.9 6.7 3.4l1-3.6C7.5 1.8 7.2 1.8 7 1.8z'/%3E%3C/svg%3E" alt="Visa" style={{ height: '14px' }} />
@@ -218,7 +240,7 @@ const CheckoutArea = () => {
                                                 )}
                                             </div>
                                             <span className="text-force-20 text-force-bold" style={{ color: '#333' }}>
-                                                {t('บุคคลธรรมดา', 'Personal')}
+                                                {t('personal')}
                                             </span>
                                             <input
                                                 type="radio"
@@ -259,7 +281,7 @@ const CheckoutArea = () => {
                                                 )}
                                             </div>
                                             <span className="text-force-20 text-force-bold" style={{ color: '#333' }}>
-                                                {t('อื่นๆ', 'Other')}
+                                                {t('company')}
                                             </span>
                                             <input
                                                 type="radio"
@@ -279,13 +301,13 @@ const CheckoutArea = () => {
                                                 marginBottom: '10px',
                                                 fontStyle: 'italic'
                                             }}>
-                                                {t('กรณีออกในนามนิติบุคคล โปรดระบุที่อยู่และเลขประจำตัวผู้เสียภาษี', 'For corporate invoices, please provide address and tax ID')}
+                                                {t('companyNotice')}
                                             </p>
 
                                             {/* Tax ID - Required */}
                                             <div className="mb-2">
                                                 <label className="text-force-20 text-force-bold" style={{ color: '#000', marginBottom: '8px', display: 'block' }}>
-                                                    {t('เลขประจำตัวผู้เสียภาษี', 'Tax ID')} <span style={{ color: '#ef4444' }}>*</span>
+                                                    {t('taxId')} <span style={{ color: '#ef4444' }}>*</span>
                                                 </label>
                                                 <input
                                                     type="text"
@@ -309,7 +331,7 @@ const CheckoutArea = () => {
                                                 />
                                                 {formErrors.taxId && (
                                                     <span style={{ color: '#ef4444', fontSize: '16px', fontWeight: 'bold' }}>
-                                                        {t('กรุณากรอกเลขประจำตัวผู้เสียภาษี', 'Please enter Tax ID')}
+                                                        {t('taxIdRequired')}
                                                     </span>
                                                 )}
                                             </div>
@@ -317,7 +339,7 @@ const CheckoutArea = () => {
                                             {/* Address Dropdown */}
                                             <div className="mb-2">
                                                 <label className="text-force-20 text-force-bold" style={{ color: '#000', marginBottom: '8px', display: 'block' }}>
-                                                    {t('ที่อยู่', 'Address')}
+                                                    {t('address')}
                                                 </label>
                                                 <select
                                                     className="text-force-20 text-force-bold"
@@ -330,13 +352,13 @@ const CheckoutArea = () => {
                                                         background: '#fff'
                                                     }}
                                                 >
-                                                    <option value="">{t('- เลือกที่อยู่ออกใบเสร็จ -', '- Select address -')}</option>
+                                                    <option value="">{t('selectReceiptAddress')}</option>
                                                 </select>
                                             </div>
 
                                             {/* หรือ กรอกที่อยู่ที่ต้องการออกใบเสร็จ */}
                                             <p className="text-force-20 text-force-bold" style={{ color: '#014D40', marginBottom: '10px', marginTop: '10px' }}>
-                                                {t('หรือ กรอกที่อยู่ที่ต้องการออกใบเสร็จ', 'Or enter address for receipt')}
+                                                {t('manualAddressIntro')}
                                             </p>
 
                                             {/* Address Row 1 - 3 equal columns */}
@@ -344,7 +366,7 @@ const CheckoutArea = () => {
                                                 {/* เลขที่ - Required */}
                                                 <div style={{ flex: 1 }}>
                                                     <label className="text-force-20 text-force-bold" style={{ color: '#000', marginBottom: '8px', display: 'block' }}>
-                                                        {t('เลขที่', 'No.')} <span style={{ color: '#ef4444' }}>*</span>
+                                                        {t('addressNo')} <span style={{ color: '#ef4444' }}>*</span>
                                                     </label>
                                                     <input
                                                         type="text"
@@ -366,13 +388,13 @@ const CheckoutArea = () => {
                                                         }}
                                                     />
                                                     {formErrors.addressNo && (
-                                                        <span style={{ color: '#ef4444', fontSize: '16px', fontWeight: 'bold' }}>{t('กรุณากรอกข้อมูล', 'Please enter data')}</span>
+                                                        <span style={{ color: '#ef4444', fontSize: '16px', fontWeight: 'bold' }}>{t('fieldRequired')}</span>
                                                     )}
                                                 </div>
                                                 {/* หมู่บ้าน/อาคาร */}
                                                 <div style={{ flex: 1 }}>
                                                     <label className="text-force-20 text-force-bold" style={{ color: '#000', marginBottom: '8px', display: 'block' }}>
-                                                        {t('หมู่บ้าน/อาคาร', 'Village/Building')}
+                                                        {t('villageBuilding')}
                                                     </label>
                                                     <input
                                                         type="text"
@@ -391,7 +413,7 @@ const CheckoutArea = () => {
                                                 {/* หมู่ที่ */}
                                                 <div style={{ flex: 1 }}>
                                                     <label className="text-force-20 text-force-bold" style={{ color: '#000', marginBottom: '8px', display: 'block' }}>
-                                                        {t('หมู่ที่', 'Moo')}
+                                                        {t('moo')}
                                                     </label>
                                                     <input
                                                         type="text"
@@ -414,7 +436,7 @@ const CheckoutArea = () => {
                                                 {/* ตรอก/ซอย */}
                                                 <div style={{ flex: 1 }}>
                                                     <label className="text-force-20 text-force-bold" style={{ color: '#000', marginBottom: '8px', display: 'block' }}>
-                                                        {t('ตรอก/ซอย', 'Soi')}
+                                                        {t('soi')}
                                                     </label>
                                                     <input
                                                         type="text"
@@ -433,7 +455,7 @@ const CheckoutArea = () => {
                                                 {/* ถนน */}
                                                 <div style={{ flex: 1 }}>
                                                     <label className="text-force-20 text-force-bold" style={{ color: '#000', marginBottom: '8px', display: 'block' }}>
-                                                        {t('ถนน', 'Road')}
+                                                        {t('road')}
                                                     </label>
                                                     <input
                                                         type="text"
@@ -452,7 +474,7 @@ const CheckoutArea = () => {
                                                 {/* ตำบล/แขวง - Required */}
                                                 <div style={{ flex: 1 }}>
                                                     <label className="text-force-20 text-force-bold" style={{ color: '#000', marginBottom: '8px', display: 'block' }}>
-                                                        {t('ตำบล/แขวง', 'Sub-district')} <span style={{ color: '#ef4444' }}>*</span>
+                                                        {t('subDistrict')} <span style={{ color: '#ef4444' }}>*</span>
                                                     </label>
                                                     <input
                                                         type="text"
@@ -474,7 +496,7 @@ const CheckoutArea = () => {
                                                         }}
                                                     />
                                                     {formErrors.subDistrict && (
-                                                        <span style={{ color: '#ef4444', fontSize: '16px', fontWeight: 'bold' }}>{t('กรุณากรอกข้อมูล', 'Please enter data')}</span>
+                                                        <span style={{ color: '#ef4444', fontSize: '16px', fontWeight: 'bold' }}>{t('fieldRequired')}</span>
                                                     )}
                                                 </div>
                                             </div>
@@ -484,7 +506,7 @@ const CheckoutArea = () => {
                                                 {/* อำเภอ/เขต - Required */}
                                                 <div style={{ flex: 1 }}>
                                                     <label className="text-force-20 text-force-bold" style={{ color: '#000', marginBottom: '8px', display: 'block' }}>
-                                                        {t('อำเภอ/เขต', 'District')} <span style={{ color: '#ef4444' }}>*</span>
+                                                        {t('district')} <span style={{ color: '#ef4444' }}>*</span>
                                                     </label>
                                                     <input
                                                         type="text"
@@ -506,13 +528,13 @@ const CheckoutArea = () => {
                                                         }}
                                                     />
                                                     {formErrors.district && (
-                                                        <span style={{ color: '#ef4444', fontSize: '16px', fontWeight: 'bold' }}>{t('กรุณากรอกข้อมูล', 'Please enter data')}</span>
+                                                        <span style={{ color: '#ef4444', fontSize: '16px', fontWeight: 'bold' }}>{t('fieldRequired')}</span>
                                                     )}
                                                 </div>
                                                 {/* จังหวัด - Required (Changed to input) */}
                                                 <div style={{ flex: 1 }}>
                                                     <label className="text-force-20 text-force-bold" style={{ color: '#000', marginBottom: '8px', display: 'block' }}>
-                                                        {t('จังหวัด', 'Province')} <span style={{ color: '#ef4444' }}>*</span>
+                                                        {t('province')} <span style={{ color: '#ef4444' }}>*</span>
                                                     </label>
                                                     <input
                                                         type="text"
@@ -534,13 +556,13 @@ const CheckoutArea = () => {
                                                         }}
                                                     />
                                                     {formErrors.province && (
-                                                        <span style={{ color: '#ef4444', fontSize: '16px', fontWeight: 'bold' }}>{t('กรุณากรอกข้อมูล', 'Please enter data')}</span>
+                                                        <span style={{ color: '#ef4444', fontSize: '16px', fontWeight: 'bold' }}>{t('fieldRequired')}</span>
                                                     )}
                                                 </div>
                                                 {/* รหัสไปรษณีย์ - Required */}
                                                 <div style={{ flex: 1 }}>
                                                     <label className="text-force-20 text-force-bold" style={{ color: '#000', marginBottom: '8px', display: 'block' }}>
-                                                        {t('รหัสไปรษณีย์', 'Postal Code')} <span style={{ color: '#ef4444' }}>*</span>
+                                                        {t('postalCode')} <span style={{ color: '#ef4444' }}>*</span>
                                                     </label>
                                                     <input
                                                         type="text"
@@ -563,7 +585,7 @@ const CheckoutArea = () => {
                                                         }}
                                                     />
                                                     {formErrors.postalCode && (
-                                                        <span style={{ color: '#ef4444', fontSize: '16px', fontWeight: 'bold' }}>{t('กรุณากรอกข้อมูล', 'Please enter data')}</span>
+                                                        <span style={{ color: '#ef4444', fontSize: '16px', fontWeight: 'bold' }}>{t('fieldRequired')}</span>
                                                     )}
                                                 </div>
                                             </div>
@@ -589,7 +611,7 @@ const CheckoutArea = () => {
                                             setFormErrors(errors);
 
                                             if (hasError) {
-                                                alert(t('กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน', 'Please fill in all required fields'));
+                                                alert(t('requiredFieldsAlert'));
                                                 return;
                                             }
                                         }
@@ -609,16 +631,16 @@ const CheckoutArea = () => {
                                         marginBottom: '16px'
                                     }}
                                 >
-                                    {t('ดำเนินการชำระเงิน', 'Proceed to Payment')}
+                                    {t('proceedToPayment')}
                                 </button>
 
                                 {/* Terms */}
                                 <p className="text-center text-force-16" style={{ color: '#4b5563', margin: 0, marginTop: '8px' }}>
-                                    {t('โดยการดำเนินการต่อ คุณยอมรับ', 'By proceeding, you agree to')}{' '}
-                                    <Link href="#" style={{ color: '#014D40', fontWeight: 'bold', textDecoration: 'underline' }}>{t('เงื่อนไขการให้บริการ', 'Terms of Service')}</Link>
-                                    {' '}{t('และ', 'and')}{' '}
-                                    <Link href="#" style={{ color: '#014D40', fontWeight: 'bold', textDecoration: 'underline' }}>{t('นโยบายความเป็นส่วนตัว', 'Privacy Policy')}</Link>
-                                    {' '}{t('ของ CourseD', 'of CourseD')}
+                                    {t('termsPrefix')}{' '}
+                                    <Link href="#" style={{ color: '#014D40', fontWeight: 'bold', textDecoration: 'underline' }}>{t('termsOfService')}</Link>
+                                    {' '}{t('and')}{' '}
+                                    <Link href="#" style={{ color: '#014D40', fontWeight: 'bold', textDecoration: 'underline' }}>{t('privacyPolicy')}</Link>
+                                    {' '}{t('termsSuffix')}
                                 </p>
                             </div>
                         </div>
@@ -634,7 +656,7 @@ const CheckoutArea = () => {
                                 {/* Header */}
                                 <div className="d-flex justify-content-between align-items-center mb-4">
                                     <h5 className="text-force-22 text-force-bold" style={{ color: '#333', margin: 0 }}>
-                                        {t('คอร์สเรียน', 'Courses')} ({payableItems.length})
+                                        {t('courses')} ({payableItems.length})
                                     </h5>
                                     <button
                                         onClick={clearCart}
@@ -649,7 +671,7 @@ const CheckoutArea = () => {
                                             gap: '6px'
                                         }}
                                     >
-                                        {t('ลบทั้งหมด', 'clear all')}
+                                        {t('clearAll')}
                                     </button>
                                 </div>
 
@@ -657,9 +679,9 @@ const CheckoutArea = () => {
                                 {payableItems.length === 0 ? (
                                     <div className="text-center py-5">
                                         <i className="fas fa-shopping-cart" style={{ fontSize: '48px', color: '#ddd', marginBottom: '16px' }}></i>
-                                        <p style={{ color: '#666' }}>{t('ไม่มีคอร์สในตะกร้า', 'No courses in cart')}</p>
+                                        <p style={{ color: '#666' }}>{t('emptyCart')}</p>
                                         <Link href="/courses-grid" className="theme-btn" style={{ padding: '10px 24px' }}>
-                                            {t('เลือกคอร์สเรียน', 'Browse Courses')}
+                                            {t('browseCourses')}
                                         </Link>
                                     </div>
                                 ) : (
@@ -694,7 +716,7 @@ const CheckoutArea = () => {
                                                         {item.title}
                                                     </h6>
                                                     <p style={{ color: '#666', fontSize: '14px', marginBottom: '4px' }}>
-                                                        Instructors: {item.instructor}
+                                                        {t('instructorLabel')}: {item.instructor}
                                                     </p>
                                                     <span style={{
                                                         background: '#E8F8F4',
@@ -703,7 +725,7 @@ const CheckoutArea = () => {
                                                         borderRadius: '12px',
                                                         fontSize: '12px'
                                                     }}>
-                                                        {item.credits} Credit
+                                                        {item.credits} {t('creditUnit')}
                                                     </span>
                                                 </div>
 
@@ -731,14 +753,14 @@ const CheckoutArea = () => {
                                                                 textDecoration: 'line-through',
                                                                 marginBottom: '1px'
                                                             }}>
-                                                                {item.originalPrice.toLocaleString()} {t('บาท', 'THB')}
+                                                                {formatAmountWithUnit(item.originalPrice)}
                                                             </p>
                                                         )}
                                                         <p className="text-force-20 font-bold" style={{
                                                             color: '#014D40',
                                                             margin: 0
                                                         }}>
-                                                            {item.price.toLocaleString()} {t('บาท', 'THB')}
+                                                            {formatAmountWithUnit(item.price)}
                                                         </p>
                                                     </div>
                                                 </div>
@@ -750,7 +772,7 @@ const CheckoutArea = () => {
                                 {/* Voucher Code Section */}
                                 <div className="voucher-section mb-3">
                                     <label className="text-force-20 text-force-bold" style={{ color: '#333', marginBottom: '8px', display: 'block' }}>
-                                        {t('โค้ดส่วนลด / VOUCHER', 'Discount Code / VOUCHER')}
+                                        {t('voucherLabel')}
                                     </label>
                                     {!discountApplied ? (
                                         <div className="d-flex gap-2">
@@ -784,7 +806,7 @@ const CheckoutArea = () => {
                                                     cursor: 'pointer'
                                                 }}
                                             >
-                                                {t('ยืนยัน', 'Apply')}
+                                                {t('apply')}
                                             </button>
                                         </div>
                                     ) : (
@@ -798,7 +820,7 @@ const CheckoutArea = () => {
                                             borderRadius: '6px'
                                         }}>
                                             <span style={{ color: '#166534', fontWeight: '500', fontSize: '13px' }}>
-                                                {appliedCode} - {t('ลด', 'Save')} ฿{discount.toLocaleString()}
+                                                {appliedCode} - {t('save')} {formatLocaleCurrency(discount, locale)}
                                             </span>
                                             <button
                                                 onClick={removeVoucher}
@@ -818,31 +840,31 @@ const CheckoutArea = () => {
 
                                 {/* Order Summary */}
                                 <div className="order-summary">
-                                    <h6 className="text-force-20 text-force-bold" style={{ color: '#333', marginBottom: '12px' }}>{t('สรุปยอดชำระ', 'Order Summary')}</h6>
+                                    <h6 className="text-force-20 text-force-bold" style={{ color: '#333', marginBottom: '12px' }}>{t('orderSummary')}</h6>
 
                                     <div className="d-flex justify-content-between mb-2">
-                                        <span className="text-force-18" style={{ color: '#666' }}>{t('ราคารวม', 'Subtotal')} ({payableItems.length} {t('รายการ', 'items')})</span>
-                                        <span className="text-force-18">{subtotal.toLocaleString()} {t('บาท', 'THB')}</span>
+                                        <span className="text-force-18" style={{ color: '#666' }}>{t('subtotal')} ({payableItems.length} {t('items')})</span>
+                                        <span className="text-force-18">{formatAmountWithUnit(subtotal)}</span>
                                     </div>
 
                                     {discount > 0 && (
                                         <div className="d-flex justify-content-between mb-2">
                                             <span style={{ color: '#22c55e', fontSize: '13px' }}>
-                                                {t('ส่วนลด', 'Discount')} ({appliedCode})
+                                                {t('discount')} ({appliedCode})
                                             </span>
-                                            <span style={{ color: '#22c55e', fontSize: '13px' }}>-{discount.toLocaleString()} {t('บาท', 'THB')}</span>
+                                            <span style={{ color: '#22c55e', fontSize: '13px' }}>-{formatAmountWithUnit(discount)}</span>
                                         </div>
                                     )}
 
                                     <div className="d-flex justify-content-between mb-3">
-                                        <span style={{ color: '#666', fontSize: '16px' }}>{t('ภาษี (7%)', 'VAT 7%')}</span>
-                                        <span style={{ color: '#999', fontSize: '14px', textDecoration: 'underline' }}>{t('รวมในราคาขายแล้ว', 'Included in price')}</span>
+                                        <span style={{ color: '#666', fontSize: '16px' }}>{t('vat')}</span>
+                                        <span style={{ color: '#999', fontSize: '14px', textDecoration: 'underline' }}>{t('vatIncluded')}</span>
                                     </div>
 
                                     <div className="d-flex justify-content-between pt-2" style={{ borderTop: '1px solid #e0e0e0' }}>
-                                        <strong className="text-force-22 text-force-bold" style={{ color: '#333' }}>{t('ยอดสุทธิ', 'Total')}</strong>
+                                        <strong className="text-force-22 text-force-bold" style={{ color: '#333' }}>{t('total')}</strong>
                                         <strong className="text-force-30 text-force-bold" style={{ color: '#014D40' }}>
-                                            {total.toLocaleString()} {t('บาท', 'THB')}
+                                            {formatAmountWithUnit(total)}
                                         </strong>
                                     </div>
                                 </div>

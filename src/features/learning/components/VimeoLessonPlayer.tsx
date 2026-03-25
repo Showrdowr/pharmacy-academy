@@ -2,6 +2,7 @@
 
 import { AlertCircle } from 'lucide-react';
 import { useEffect, useRef, useState, type MutableRefObject } from 'react';
+import { useTranslations } from 'next-intl';
 
 export type VimeoLessonPlayerInstance = {
     play: () => Promise<void>;
@@ -40,6 +41,18 @@ interface VimeoLessonPlayerProps {
     playerRef?: MutableRefObject<VimeoLessonPlayerInstance | null>;
 }
 
+function buildConfiguredPlaybackUrl(playbackUrl: string) {
+    try {
+        const url = new URL(playbackUrl);
+        url.searchParams.set('speed', '0');
+        url.searchParams.set('cc', '0');
+        url.searchParams.set('quality_selector', '1');
+        return url.toString();
+    } catch {
+        return playbackUrl;
+    }
+}
+
 function normalizePlayerSecond(value: number) {
     if (!Number.isFinite(value) || value <= 0) {
         return 0;
@@ -61,7 +74,9 @@ export function VimeoLessonPlayer({
     onEnded,
     playerRef,
 }: VimeoLessonPlayerProps) {
+    const t = useTranslations('learning.courseArea');
     const containerRef = useRef<HTMLDivElement | null>(null);
+    const configuredPlaybackUrl = buildConfiguredPlaybackUrl(playbackUrl);
 
     const resumeAtRef = useRef(resumeAt);
     const onReadyChangeRef = useRef(onReadyChange);
@@ -166,7 +181,7 @@ export function VimeoLessonPlayer({
             observer.disconnect();
             restoreIframeAttributes();
         };
-    }, [interactionDisabled, playbackUrl]);
+    }, [interactionDisabled, configuredPlaybackUrl]);
 
     useEffect(() => {
         let destroyed = false;
@@ -200,7 +215,7 @@ export function VimeoLessonPlayer({
                 const player = new PlayerClass(
                     containerRef.current,
                     {
-                        url: playbackUrl,
+                        url: configuredPlaybackUrl,
                         dnt: true,
                         responsive: true,
                         title: false,
@@ -214,11 +229,11 @@ export function VimeoLessonPlayer({
                 };
 
                 timeoutId = window.setTimeout(() => {
-                    finishWithError('Vimeo ใช้เวลาตอบสนองนานเกินไป กรุณาลองใหม่อีกครั้ง');
+                    finishWithError(t('playerTimeout'));
                 }, 10000);
 
                 player.on('error', () => {
-                    finishWithError('ไม่สามารถโหลดวิดีโอนี้จาก Vimeo ได้');
+                    finishWithError(t('playerLoadFailed'));
                 });
 
                 player.on('timeupdate', (payload) => {
@@ -275,7 +290,7 @@ export function VimeoLessonPlayer({
                     onInitialTimeResolvedRef.current?.(initialSeconds);
                 }
             } catch {
-                finishWithError('ไม่สามารถเริ่มต้น Vimeo player ได้');
+                finishWithError(t('playerInitFailed'));
             }
         })();
 
@@ -292,7 +307,7 @@ export function VimeoLessonPlayer({
                 void playerInstance.destroy().catch(() => undefined);
             }
         };
-    }, [playbackUrl]);
+    }, [configuredPlaybackUrl, t]);
 
     return (
         <div className="relative h-full w-full">
@@ -302,7 +317,7 @@ export function VimeoLessonPlayer({
             )}
             {isLoading && (
                 <div className="absolute inset-0 z-20 flex items-center justify-center bg-slate-950/70 text-sm font-semibold text-white">
-                    กำลังโหลดวิดีโอ...
+                    {t('playerLoading')}
                 </div>
             )}
             {error && (

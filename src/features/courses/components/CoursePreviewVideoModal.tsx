@@ -2,6 +2,7 @@
 
 import { X } from 'lucide-react';
 import { useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { VimeoLessonPlayer } from '@/features/learning/components/VimeoLessonPlayer';
 
 interface CoursePreviewVideoModalProps {
@@ -17,6 +18,8 @@ export function CoursePreviewVideoModal({
     playbackUrl,
     title,
 }: CoursePreviewVideoModalProps) {
+    const t = useTranslations('courses.detail');
+
     useEffect(() => {
         if (!isOpen) {
             return;
@@ -57,7 +60,7 @@ export function CoursePreviewVideoModal({
                     type="button"
                     onClick={onClose}
                     className="absolute right-4 top-4 z-10 inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition-all hover:bg-white/20"
-                    aria-label="ปิดตัวอย่างวิดีโอ"
+                    aria-label={t('closePreview')}
                 >
                     <X size={18} />
                 </button>

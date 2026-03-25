@@ -1,7 +1,8 @@
 "use client"
 import Link from 'next/link';
 import React from 'react';
-import { useLanguage } from '@/features/i18n';
+import { useTranslations } from 'next-intl';
+import { useAppLocale } from '@/features/i18n';
 import { CATEGORIES, PRICE_RANGES, Course } from '../data/mockData';
 import CourseCard from './CourseCard';
 import { useCourseFilter } from '../hooks/useCourseFilter';
@@ -11,7 +12,8 @@ interface CoursesGridAreaProps {
 }
 
 const CoursesGridArea: React.FC<CoursesGridAreaProps> = ({ initialCourses }) => {
-    const { language, t } = useLanguage();
+    const { locale } = useAppLocale();
+    const t = useTranslations('courses.grid');
     const {
         searchQuery,
         selectedCategory,
@@ -42,7 +44,7 @@ const CoursesGridArea: React.FC<CoursesGridAreaProps> = ({ initialCourses }) => 
                                 >
                                     <span>
                                         <i className="fas fa-filter me-2"></i>
-                                        {t('ค้นหา / คัดกรองคอร์ส', 'Search / Filter Courses')}
+                                        {t('searchFilter')}
                                     </span>
                                     <i className="fas fa-chevron-down"></i>
                                 </button>
@@ -53,13 +55,13 @@ const CoursesGridArea: React.FC<CoursesGridAreaProps> = ({ initialCourses }) => 
                                         {/* Search */}
                                         <div className="courses-sidebar-items">
                                             <div className="wid-title style-2">
-                                                <h5 style={{ fontSize: '20px', fontWeight: 'bold' }}>{t('ค้นหา', 'Search')}</h5>
+                                                <h5 style={{ fontSize: '20px', fontWeight: 'bold' }}>{t('search')}</h5>
                                             </div>
                                             <div className="search-widget">
                                                 <form onSubmit={e => e.preventDefault()}>
                                                     <input
                                                         type="text"
-                                                        placeholder={t('ค้นหาคอร์สเรียน', 'Search courses')}
+                                                        placeholder={t('searchPlaceholder')}
                                                         value={searchQuery}
                                                         onChange={(e) => setSearchQuery(e.target.value)}
                                                         style={{ color: '#333', fontSize: '18px' }}
@@ -72,7 +74,7 @@ const CoursesGridArea: React.FC<CoursesGridAreaProps> = ({ initialCourses }) => 
                                         {/* Price Range Filter */}
                                         <div className="courses-sidebar-items">
                                             <div className="wid-title">
-                                                <h5 style={{ fontSize: '20px', fontWeight: 'bold' }}>{t('ช่วงราคา', 'Price Range')}</h5>
+                                                <h5 style={{ fontSize: '20px', fontWeight: 'bold' }}>{t('priceRange')}</h5>
                                             </div>
                                             <div className="courses-list">
                                                 {PRICE_RANGES.map((range, index) => (
@@ -88,7 +90,7 @@ const CoursesGridArea: React.FC<CoursesGridAreaProps> = ({ initialCourses }) => 
                                                                 <span className="checkmark d-center"></span>
                                                             </span>
                                                             <span className="text-color" style={{ fontSize: '18px' }}>
-                                                                {language === 'th' ? range.label : range.labelEn}
+                                                                {locale === 'th' ? range.label : range.labelEn}
                                                             </span>
                                                         </span>
                                                     </label>
@@ -99,7 +101,7 @@ const CoursesGridArea: React.FC<CoursesGridAreaProps> = ({ initialCourses }) => 
                                         {/* Category Filter */}
                                         <div className="courses-sidebar-items">
                                             <div className="wid-title">
-                                                <h5 style={{ fontSize: '20px', fontWeight: 'bold' }}>{t('หมวดหมู่', 'Category')}</h5>
+                                                <h5 style={{ fontSize: '20px', fontWeight: 'bold' }}>{t('category')}</h5>
                                             </div>
                                             <div className="courses-list" style={{ maxHeight: '300px', overflowY: 'auto' }}>
                                                 {CATEGORIES.map((cat) => (
@@ -113,7 +115,7 @@ const CoursesGridArea: React.FC<CoursesGridAreaProps> = ({ initialCourses }) => 
                                                                 />
                                                                 <span className="checkmark d-center"></span>
                                                             </span>
-                                                            <span className="text-color" style={{ fontSize: '20px' }}>{language === 'th' ? cat.label : cat.labelEn}</span>
+                                                            <span className="text-color" style={{ fontSize: '20px' }}>{locale === 'th' ? cat.label : cat.labelEn}</span>
                                                         </span>
                                                     </label>
                                                 ))}
@@ -121,7 +123,7 @@ const CoursesGridArea: React.FC<CoursesGridAreaProps> = ({ initialCourses }) => 
                                         </div>
                                     </div>
                                     <button onClick={clearFilters} className="theme-btn" style={{ width: '100%', fontSize: '20px', fontWeight: 'bold' }}>
-                                        <i className="far fa-times-circle me-2"></i>{t('ล้างตัวกรอง', 'Clear Filters')}
+                                        <i className="far fa-times-circle me-2"></i>{t('clearFilters')}
                                     </button>
                                 </div>
                             </div> {/* End filter-content */}
@@ -134,16 +136,16 @@ const CoursesGridArea: React.FC<CoursesGridAreaProps> = ({ initialCourses }) => 
                                     <div className="icon-items">
                                         <Link href="/courses-grid"><i className="fas fa-th"></i></Link>
                                     </div>
-                                    <h5>{t('แสดง', 'Showing')} <span>1-{filteredCourses.length}</span> {t('จาก', 'of')} <span>{totalCourses}</span> {t('คอร์ส', 'Courses')}</h5>
+                                    <h5>{t('showing')} <span>1-{filteredCourses.length}</span> {t('of')} <span>{totalCourses}</span> {t('courses')}</h5>
                                 </div>
                             </div>
 
                             {filteredCourses.length === 0 ? (
                                 <div className="no-results text-center py-5">
                                     <i className="fas fa-search" style={{ fontSize: '48px', color: '#ddd', marginBottom: '20px' }}></i>
-                                    <h5 style={{ color: '#666' }}>{t('ไม่พบคอร์สที่ตรงกับเงื่อนไข', 'No courses match your criteria')}</h5>
-                                    <p style={{ color: '#999' }}>{t('ลองเปลี่ยนคำค้นหาหรือตัวกรอง', 'Try changing your search or filters')}</p>
-                                    <button onClick={clearFilters} className="theme-btn mt-3">{t('ดูคอร์สทั้งหมด', 'View All Courses')}</button>
+                                    <h5 style={{ color: '#666' }}>{t('noResultsTitle')}</h5>
+                                    <p style={{ color: '#999' }}>{t('noResultsDescription')}</p>
+                                    <button onClick={clearFilters} className="theme-btn mt-3">{t('viewAllCourses')}</button>
                                 </div>
                             ) : (
                                 <div className="row">

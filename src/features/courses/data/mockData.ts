@@ -19,6 +19,7 @@ export interface Course {
     duration: string;
     image: string;
     description: string;
+    audience?: 'all' | 'general' | 'pharmacist';
 }
 
 export interface Category {
@@ -51,6 +52,7 @@ export const COURSES_DATA: Course[] = [
         duration: '6 ชั่วโมง',
         image: '/assets/img/courses/01.jpg',
         description: 'เรียนรู้หลักการเภสัชวิทยาคลินิกขั้นพื้นฐาน การออกฤทธิ์ของยา และผลข้างเคียง',
+        audience: 'pharmacist',
     },
     {
         id: 2,
@@ -67,6 +69,7 @@ export const COURSES_DATA: Course[] = [
         duration: '8 ชั่วโมง',
         image: '/assets/img/courses/02.jpg',
         description: 'แนวทางการดูแลผู้ป่วยเบาหวาน การปรับขนาดยา และการให้คำปรึกษา',
+        audience: 'pharmacist',
     },
     {
         id: 3,
@@ -83,6 +86,7 @@ export const COURSES_DATA: Course[] = [
         duration: '4 ชั่วโมง',
         image: '/assets/img/courses/03.jpg',
         description: 'ความรู้ด้านกฎหมายเภสัชกรรมและจรรยาบรรณวิชาชีพ',
+        audience: 'all',
     },
     {
         id: 4,
@@ -99,6 +103,7 @@ export const COURSES_DATA: Course[] = [
         duration: '10 ชั่วโมง',
         image: '/assets/img/courses/04.jpg',
         description: 'การเลือกใช้ยาปฏิชีวนะอย่างเหมาะสม และปัญหาเชื้อดื้อยา',
+        audience: 'pharmacist',
     },
     {
         id: 5,
@@ -115,6 +120,7 @@ export const COURSES_DATA: Course[] = [
         duration: '5 ชั่วโมง',
         image: '/assets/img/courses/05.jpg',
         description: 'เทคนิคการบริหารจัดการร้านยา สต็อกสินค้า และการบริการ',
+        audience: 'general',
     },
 ];
 

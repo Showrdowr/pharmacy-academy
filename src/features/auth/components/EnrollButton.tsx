@@ -2,26 +2,37 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useAuth } from "@/features/auth";
+import { getCourseViewerRole, isCourseRestrictedForViewer } from "@/features/courses/audience";
 
 interface EnrollButtonProps {
     courseId?: string;
     className?: string;
     children?: React.ReactNode;
     style?: React.CSSProperties;
+    audience?: 'all' | 'general' | 'pharmacist';
 }
 
 const EnrollButton: React.FC<EnrollButtonProps> = ({
     courseId,
     className = "theme-btn",
-    children = "สมัครเรียน",
+    children,
     style,
+    audience,
 }) => {
+    const t = useTranslations("auth.enrollButton");
     const router = useRouter();
-    const { isAuthenticated, isLoading } = useAuth();
+    const { user, isAuthenticated, isLoading } = useAuth();
+    const viewerRole = getCourseViewerRole(user, isAuthenticated);
 
     const handleClick = () => {
         if (isLoading) return;
+
+        if (courseId && isCourseRestrictedForViewer(audience, viewerRole)) {
+            router.push(`/courses/${courseId}`);
+            return;
+        }
 
         if (!isAuthenticated) {
             // Guest: redirect to login
@@ -44,7 +55,7 @@ const EnrollButton: React.FC<EnrollButtonProps> = ({
             style={style}
             disabled={isLoading}
         >
-            {isLoading ? "กำลังโหลด..." : children}
+            {isLoading ? t("loading") : children ?? t("defaultLabel")}
         </button>
     );
 };

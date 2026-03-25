@@ -21,6 +21,10 @@ export type DifficultyLevel = 'beginner' | 'intermediate' | 'advanced';
  */
 export type CourseStatus = 'draft' | 'published' | 'archived';
 export type CourseVideoStatus = 'PROCESSING' | 'READY' | 'FAILED';
+export type CourseAudience = 'all' | 'general' | 'pharmacist';
+export type EnrollmentStatus = 'ACTIVE' | 'CANCELLED' | 'REFUND_PENDING';
+export type RefundRequestStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
+export type EnrolledCourseStatusFilter = 'active' | 'cancelled' | 'all';
 
 /**
  * ข้อมูลผู้สอน
@@ -70,15 +74,19 @@ export interface CourseSection {
 export interface Course {
     id: number;
     title: string;
+    titleEn?: string | null;
     slug: string;
     description: string;
+    descriptionEn?: string | null;
     details?: string;
+    detailsEn?: string | null;
     shortDescription?: string;
     thumbnail: string;
     price: number;
     originalPrice?: number;
     instructor: Instructor;
     category: CourseCategory;
+    categoryEn?: string | null;
     difficulty: DifficultyLevel;
     duration: number; // total minutes
     lessonsCount: number;
@@ -91,6 +99,8 @@ export interface Course {
     requirements?: string[];
     whatYouWillLearn?: string[];
     tags?: string[];
+    audience?: CourseAudience;
+    relatedCourses?: CourseCard[];
     status: CourseStatus;
     createdAt: string;
     updatedAt: string;
@@ -102,6 +112,7 @@ export interface Course {
 export interface CourseCard {
     id: number;
     title: string;
+    titleEn?: string | null;
     thumbnail: string;
     price: number;
     originalPrice?: number;
@@ -110,11 +121,13 @@ export interface CourseCard {
         avatar?: string;
     };
     category: CourseCategory;
+    categoryEn?: string | null;
     rating: number;
     reviewsCount: number;
     lessonsCount: number;
     duration: number;
     cpeCredits?: number;
+    audience?: CourseAudience;
 }
 
 /**
@@ -138,9 +151,11 @@ export interface EnrolledCourse {
     id: number;
     courseId: number;
     title: string;
+    titleEn?: string | null;
     thumbnail?: string | null;
     authorName?: string | null;
     instructor?: string | null;
+    price?: number;
     cpeCredits?: number;
     cpe?: number;
     watchPercent: number;
@@ -148,14 +163,31 @@ export interface EnrolledCourse {
     progressPercent: number;
     progress?: number;
     status: 'in_progress' | 'completed';
+    enrollmentStatus?: EnrollmentStatus;
     courseStatus?: 'PUBLISHED' | 'ARCHIVED';
     enrolledAt: string;
     lastAccessedAt?: string | null;
     lastAccessedLessonId?: number | null;
     completedAt?: string | null;
+    cancelledAt?: string | null;
+    cancelReason?: string | null;
+    sourceOrderItemId?: number | null;
     certificateUrl?: string | null;
+    certificateCode?: string | null;
     courseTitle?: string;
     hasCertificate?: boolean;
+    audience?: CourseAudience;
+    refundRequest?: {
+        id: number;
+        status: RefundRequestStatus;
+        reason?: string | null;
+        adminNote?: string | null;
+        requestedAt?: string | null;
+        resolvedAt?: string | null;
+        resolvedByAdminId?: string | null;
+        orderItemId?: number | null;
+    } | null;
+    refundRequestStatus?: RefundRequestStatus | null;
 }
 
 /**

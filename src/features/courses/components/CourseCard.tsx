@@ -7,8 +7,10 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import React, { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import EnrollButton from '@/components/common/EnrollButton';
-import { useLanguage } from '@/features/i18n';
+import { normalizeCourseAudience } from '@/features/courses/audience';
+import { getLocalizedContent, useAppLocale } from '@/features/i18n';
 import type { Course } from '../data/mockData';
 import { formatCoursePrice } from '../utils';
 
@@ -49,8 +51,15 @@ function renderStars(rating: number) {
 }
 
 const CourseCard: React.FC<CourseCardProps> = ({ course }) => {
-    const { t } = useLanguage();
+    const { locale } = useAppLocale();
+    const t = useTranslations('courses.card');
+    const audienceT = useTranslations('courses.audience');
     const [imageSrc, setImageSrc] = useState(() => normalizeImageSrc(course.image));
+    const courseTitle = getLocalizedContent(locale, course.title, course.titleEn);
+    const courseCategory = getLocalizedContent(locale, course.category, course.categoryEn);
+    const audience = normalizeCourseAudience(course.audience);
+    const showAudienceBadge = audience !== 'all';
+    const audienceLabel = audienceT(audience);
 
     useEffect(() => {
         setImageSrc(normalizeImageSrc(course.image));
@@ -64,14 +73,14 @@ const CourseCard: React.FC<CourseCardProps> = ({ course }) => {
                     {imageSrc.startsWith('data:') ? (
                         <img
                             src={imageSrc}
-                            alt={course.title}
+                            alt={courseTitle}
                             style={{ objectFit: 'cover', width: '100%', height: '100%' }}
                             onError={() => setImageSrc(FALLBACK_IMAGE)}
                         />
                     ) : (
                         <Image
                             src={imageSrc}
-                            alt={course.title}
+                            alt={courseTitle}
                             fill
                             style={{ objectFit: 'cover' }}
                             sizes="(max-width: 768px) 100vw, 300px"
@@ -82,12 +91,44 @@ const CourseCard: React.FC<CourseCardProps> = ({ course }) => {
                     
                 </div>
                 <div className="courses-content">
+<<<<<<< HEAD
+=======
+                    <ul className="post-cat">
+                        <li>
+                            <Link href="/courses-grid" style={{ fontSize: '16px' }}>{courseCategory}</Link>
+                        </li>
+                        <li>
+                            {[1, 2, 3, 4, 5].map((star) => (
+                                <i key={star} className="fas fa-star" />
+                            ))}
+                        </li>
+                    </ul>
+>>>>>>> 8afa68e (feat: add Thai localization across core application sections)
                     <h5>
-                        <Link href={`/courses/${course.id}`}>{course.title}</Link>
+                        <Link href={`/courses/${course.id}`}>{courseTitle}</Link>
                     </h5>
+<<<<<<< HEAD
                     <h4 className="text-force-20 text-force-bold" style={{ marginTop: '5px', marginBottom: '15px', color: '#ffc107' }}>
                         {formatCoursePrice(course.price)}
                     </h4>
+=======
+                    {showAudienceBadge && (
+                        <div style={{ marginTop: '-4px', marginBottom: '8px' }}>
+                            <span style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                borderRadius: '999px',
+                                background: audience === 'pharmacist' ? '#ede9fe' : '#cffafe',
+                                color: audience === 'pharmacist' ? '#6d28d9' : '#0f766e',
+                                padding: '4px 10px',
+                                fontSize: '13px',
+                                fontWeight: 700,
+                            }}>
+                                {audienceLabel}
+                            </span>
+                        </div>
+                    )}
+>>>>>>> 8afa68e (feat: add Thai localization across core application sections)
                     <div className="client-items">
                         <div
                             className="client-img bg-cover"
@@ -110,7 +151,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ course }) => {
                         </li>
                         <li>
                             <i className="far fa-user" />
-                            {course.students} {t('คน', 'students')}
+                            {course.students} {t('students')}
                         </li>
                     </ul>
                 </div>
@@ -138,14 +179,47 @@ const CourseCard: React.FC<CourseCardProps> = ({ course }) => {
                     overflow: 'hidden',
                     gap: '6px',
                 }}>
+<<<<<<< HEAD
+=======
+                    <ul className="post-cat" style={{ marginBottom: 0, flexShrink: 0 }}>
+                        <li>
+                            <Link href="/courses-grid" style={{ fontSize: '16px' }}>{courseCategory}</Link>
+                        </li>
+                        <li>
+                            {[1, 2, 3, 4, 5].map((star) => (
+                                <i key={star} className="fas fa-star" />
+                            ))}
+                        </li>
+                    </ul>
+>>>>>>> 8afa68e (feat: add Thai localization across core application sections)
                     <h5 style={{ margin: 0, flexShrink: 0 }}>
                         <span style={{ fontSize: '18px', fontWeight: 700, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                            {course.title}
+                            {courseTitle}
                         </span>
                     </h5>
+<<<<<<< HEAD
                     <h4 className="text-force-20 text-force-bold" style={{ margin: 0, flexShrink: 0, marginTop: '5px', marginBottom: '5px' }}>
                         {formatCoursePrice(course.price)}
                     </h4>
+=======
+                    {showAudienceBadge && (
+                        <div style={{ flexShrink: 0 }}>
+                            <span style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                borderRadius: '999px',
+                                background: audience === 'pharmacist' ? '#ede9fe' : '#cffafe',
+                                color: audience === 'pharmacist' ? '#6d28d9' : '#0f766e',
+                                padding: '4px 10px',
+                                fontSize: '13px',
+                                fontWeight: 700,
+                            }}>
+                                {audienceLabel}
+                            </span>
+                        </div>
+                    )}
+                    <h4 className="text-force-20 text-force-bold" style={{ margin: 0, flexShrink: 0 }}>{formatCoursePrice(course.price, locale)}</h4>
+>>>>>>> 8afa68e (feat: add Thai localization across core application sections)
                     <span className="text-force-16" style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', lineHeight: '1.5', flexShrink: 1, minHeight: 0 }}>{course.description}</span>
                     <div className="client-items" style={{ marginTop: 0, flexShrink: 0 }}>
                         <div
@@ -169,13 +243,13 @@ const CourseCard: React.FC<CourseCardProps> = ({ course }) => {
                         </li>
                         <li>
                             <i className="far fa-user" />
-                            {course.students} {t('คน', 'students')}
+                            {course.students} {t('students')}
                         </li>
                     </ul>
                     <div style={{ marginTop: 20, flexShrink: 0, width: '100%' }}>
-                        <EnrollButton courseId={course.id} className="theme-btn yellow-btn">
+                        <EnrollButton courseId={course.id} audience={audience} className="theme-btn yellow-btn">
                             <span className="text-force-20 text-force-bold" style={{ lineHeight: '1' }}>
-                                {t('สมัครเรียน', 'Enroll Now')}
+                                {t('enrollNow')}
                             </span>
                         </EnrollButton>
                     </div>

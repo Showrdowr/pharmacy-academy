@@ -2,11 +2,13 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useLanguage } from '@/features/i18n';
+import { useTranslations } from 'next-intl';
+import { formatLocaleCurrency, useAppLocale } from '@/features/i18n';
 import { useOrderStore } from '@/stores/useOrderStore';
 
 const PaymentCardArea = () => {
-    const { language, t } = useLanguage();
+    const t = useTranslations('payment.card');
+    const { locale } = useAppLocale();
     const router = useRouter();
     const { orderId, orderTotal, orderNumber } = useOrderStore();
     const [cardData, setCardData] = useState({
@@ -17,6 +19,7 @@ const PaymentCardArea = () => {
     });
     const [isProcessing, setIsProcessing] = useState(false);
     const [timeLeft, setTimeLeft] = useState(1 * 60); // 1 minutes in seconds
+    const zeroAmountLabel = locale === 'en' ? 'THB 0' : '฿0';
 
     useEffect(() => {
         if (!orderId) {
@@ -89,13 +92,7 @@ const PaymentCardArea = () => {
         }, 2000);
     };
 
-    // Sample order data
-    const orderItems = [
-        { name: 'เภสัชวิทยาคลินิกเบื้องต้น', nameEn: 'Clinical Pharmacology Basics', price: 1500 },
-        { name: 'การบริบาลผู้ป่วยเบาหวาน', nameEn: 'Diabetes Patient Care', price: 1800 },
-        { name: 'กฎหมายเภสัชกรรม', nameEn: 'Pharmacy Law', price: 1200 },
-    ];
-    const total = orderItems.reduce((sum, item) => sum + item.price, 0);
+    const total = orderTotal || 0;
 
     return (
         <section className="payment-card-section section-padding">
@@ -110,7 +107,7 @@ const PaymentCardArea = () => {
                             boxShadow: '0 2px 12px rgba(0, 0, 0, 0.06)'
                         }}>
                             <h4 className="payment-page-title">
-                                {t('ชำระเงินด้วยบัตรเครดิต/เดบิต', 'Pay with Credit/Debit Card')}
+                                {t('title')}
                             </h4>
 
                             {/* Countdown Timer */}
@@ -134,7 +131,7 @@ const PaymentCardArea = () => {
                                 {/* Card Number */}
                                 <div className="mb-4">
                                     <label className="payment-label text-force-20 text-force-bold">
-                                        {t('หมายเลขบัตร', 'Card Number')}
+                                        {t('cardNumber')}
                                     </label>
                                     <div style={{ position: 'relative' }}>
                                         <input
@@ -168,12 +165,12 @@ const PaymentCardArea = () => {
                                 {/* Card Name */}
                                 <div className="mb-4">
                                     <label className="payment-label text-force-20 text-force-bold">
-                                        {t('ชื่อบนบัตร', 'Name on Card')}
+                                        {t('nameOnCard')}
                                     </label>
                                     <input
                                         type="text"
                                         name="cardName"
-                                        placeholder={t('ชื่อตามที่ปรากฏบนบัตร', 'Name as it appears on card')}
+                                        placeholder={t('nameOnCardPlaceholder')}
                                         value={cardData.cardName}
                                         onChange={handleChange}
                                         required
@@ -193,7 +190,7 @@ const PaymentCardArea = () => {
                                 <div className="row">
                                     <div className="col-6 mb-4">
                                         <label className="payment-label text-force-20 text-force-bold">
-                                            {t('วันหมดอายุ', 'Expiry Date')}
+                                            {t('expiryDate')}
                                         </label>
                                         <input
                                             type="text"
@@ -212,7 +209,7 @@ const PaymentCardArea = () => {
                                     </div>
                                     <div className="col-6 mb-4">
                                         <label className="payment-label text-force-20 text-force-bold">
-                                            CVV
+                                            {t('cvv')}
                                         </label>
                                         <input
                                             type="password"
@@ -253,10 +250,10 @@ const PaymentCardArea = () => {
                                     {isProcessing ? (
                                         <>
                                             <i className="fas fa-spinner fa-spin"></i>
-                                            {t('กำลังดำเนินการ...', 'Processing...')}
+                                            {t('processing')}
                                         </>
                                     ) : (
-                                        <>{t('ชำระเงิน', 'Pay')} ฿{total.toLocaleString()}</>
+                                        <>{t('pay')} {formatLocaleCurrency(total, locale)}</>
                                     )}
                                 </button>
                             </form>
@@ -275,7 +272,7 @@ const PaymentCardArea = () => {
                                     className="payment-summary-price"
                                 >
                                     <i className="fas fa-qrcode"></i>
-                                    {t('ชำระผ่าน QR Code แทน', 'Pay via QR Code instead')}
+                                    {t('payViaQrInstead')}
                                 </a>
                             </div>
 
@@ -290,43 +287,45 @@ const PaymentCardArea = () => {
                             borderRadius: '16px',
                             padding: '32px'
                         }}>
-                            <h5 className="payment-summary-title text-force-22 text-force-bold">{t('สรุปรายการ', 'Order Summary')}</h5>
+                            <h5 className="payment-summary-title text-force-22 text-force-bold">{t('orderSummary')}</h5>
 
                             {/* Order Items */}
-                            {orderItems.map((item, index) => (
-                                <div
-                                    key={index}
-                                    className="d-flex justify-content-between mb-3 pb-3"
-                                    style={{ borderBottom: index < orderItems.length - 1 ? '1px solid #e0e0e0' : 'none' }}
-                                >
-                                    <div style={{ flex: 1 }}>
-                                        <p className="payment-summary-item text-force-18" style={{ margin: 0, color: '#333' }}>
-                                            {language === 'th' ? item.name : item.nameEn}
+                            <div
+                                className="d-flex justify-content-between mb-3 pb-3"
+                                style={{ borderBottom: '1px solid #e0e0e0' }}
+                            >
+                                <div style={{ flex: 1 }}>
+                                    <p className="payment-summary-item text-force-18" style={{ margin: 0, color: '#333' }}>
+                                        {t('courseOrder')}
+                                    </p>
+                                    {orderNumber && (
+                                        <p className="payment-summary-sublabel text-force-16" style={{ margin: '4px 0 0', color: '#6b7280' }}>
+                                            #{orderNumber}
                                         </p>
-                                    </div>
-                                    <span className="payment-summary-price text-force-18 text-force-bold">
-                                        ฿{item.price.toLocaleString()}
-                                    </span>
+                                    )}
                                 </div>
-                            ))}
+                                <span className="payment-summary-price text-force-18 text-force-bold">
+                                    {formatLocaleCurrency(total, locale)}
+                                </span>
+                            </div>
 
                             <hr style={{ margin: '16px 0' }} />
 
                             {/* Totals */}
                             <div className="d-flex justify-content-between mb-2">
-                                <span className="payment-summary-sublabel text-force-18">{t('ราคารวม', 'Subtotal')}</span>
-                                <span className="payment-summary-item text-force-18 text-force-bold">฿{total.toLocaleString()}</span>
+                                <span className="payment-summary-sublabel text-force-18">{t('subtotal')}</span>
+                                <span className="payment-summary-item text-force-18 text-force-bold">{formatLocaleCurrency(total, locale)}</span>
                             </div>
                             <div className="d-flex justify-content-between mb-2">
-                                <span className="payment-summary-sublabel text-force-18">{t('ส่วนลด', 'Discount')}</span>
-                                <span className="payment-summary-item text-force-18 text-force-bold" style={{ color: '#ed0606ff' }}>-฿0</span>
+                                <span className="payment-summary-sublabel text-force-18">{t('discount')}</span>
+                                <span className="payment-summary-item text-force-18 text-force-bold" style={{ color: '#ed0606ff' }}>-{zeroAmountLabel}</span>
                             </div>
 
                             <hr style={{ margin: '16px 0' }} />
 
                             <div className="d-flex justify-content-between">
-                                <strong className="payment-total-label text-force-22 text-force-bold">{t('รวมทั้งหมด', 'Total')}</strong>
-                                <strong className="payment-total-amount text-force-30 text-force-bold">฿{total.toLocaleString()}</strong>
+                                <strong className="payment-total-label text-force-22 text-force-bold">{t('total')}</strong>
+                                <strong className="payment-total-amount text-force-30 text-force-bold">{formatLocaleCurrency(total, locale)}</strong>
                             </div>
 
                             {/* Back Link */}
@@ -342,7 +341,7 @@ const PaymentCardArea = () => {
                                 className="text-force-16 font-medium"
                             >
                                 <i className="fas fa-arrow-left me-2"></i>
-                                {t('กลับไปหน้าตะกร้า', 'Back to Cart')}
+                                {t('backToCart')}
                             </a>
                         </div>
                     </div>

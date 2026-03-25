@@ -1,8 +1,11 @@
 
 import Link from 'next/link';
 import React from 'react';
+import { useTranslations } from 'next-intl';
 
 const BreadcrumbAbout = () => {
+  const t = useTranslations('navigation.breadcrumbs');
+
   return (
     <>
         <section className="breadcrumb-wrapper courses-page-banner">
@@ -24,7 +27,7 @@ const BreadcrumbAbout = () => {
             <div className="container">
                 <div className="row">
                     <div className="page-heading" style={{ textAlign: 'center' }}>
-                        <h1 style={{ color: '#f0c050' }}>เกี่ยวกับเรา</h1>
+                        <h1 style={{ color: '#f0c050' }}>{t('aboutTitle')}</h1>
                     </div>
                 </div>
             </div>

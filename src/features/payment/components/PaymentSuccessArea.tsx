@@ -2,11 +2,13 @@
 
 import Link from 'next/link';
 import React, { useEffect } from 'react';
-import { useLanguage } from '@/features/i18n';
+import { useTranslations } from 'next-intl';
+import { formatLocaleCurrency, formatLocaleDate, useAppLocale } from '@/features/i18n';
 import { useOrderStore } from '@/stores/useOrderStore';
 
 const PaymentSuccessArea = () => {
-    const { t } = useLanguage();
+    const { locale } = useAppLocale();
+    const t = useTranslations('payment.success');
     const { orderId, orderTotal, orderNumber, paymentMethod, clearCurrentOrder } = useOrderStore();
 
     // Clear order store after success page is shown
@@ -19,8 +21,8 @@ const PaymentSuccessArea = () => {
     const transactionData = {
         amount: orderTotal || 0,
         transactionId: orderNumber || orderId || 'N/A',
-        paymentMethod: paymentMethod === 'card' ? 'Credit/Debit Card' : 'PromptPay',
-        date: new Date().toLocaleDateString('th-TH', {
+        paymentMethod: paymentMethod === 'card' ? t('paymentMethodCard') : t('paymentMethodPromptPay'),
+        date: formatLocaleDate(new Date(), locale, {
             year: 'numeric',
             month: 'short',
             day: 'numeric'
@@ -56,14 +58,11 @@ const PaymentSuccessArea = () => {
 
                             {/* Title */}
                             <h2 className="payment-status-title" style={{ color: '#22c55e' }}>
-                                {t('ชำระเงินสำเร็จ!', 'Payment Successful!')}
+                                {t('title')}
                             </h2>
 
                             <p className="payment-status-message" style={{ color: '#666' }}>
-                                {t(
-                                    'การชำระเงินของคุณเสร็จสมบูรณ์ คุณจะได้รับอีเมลยืนยันในไม่ช้า',
-                                    'Your payment has been processed successfully. You will receive a confirmation email shortly.'
-                                )}
+                                {t('message')}
                             </p>
 
                             {/* Transaction Details */}
@@ -77,15 +76,15 @@ const PaymentSuccessArea = () => {
                             }}>
                                 {/* Amount */}
                                 <div className="d-flex justify-content-between align-items-center mb-3 pb-3" style={{ borderBottom: '1px solid #f0f0f0' }}>
-                                    <span className="payment-detail-label">{t('ยอดชำระ', 'Amount')}</span>
+                                    <span className="payment-detail-label">{t('amount')}</span>
                                     <span className="payment-detail-amount">
-                                        ฿{transactionData.amount.toLocaleString()}
+                                        {formatLocaleCurrency(transactionData.amount, locale)}
                                     </span>
                                 </div>
 
                                 {/* Transaction ID */}
                                 <div className="d-flex justify-content-between align-items-center mb-3">
-                                    <span style={{ color: '#666', fontSize: '16px' }}>{t('รหัสธุรกรรม', 'Transaction ID')}</span>
+                                    <span style={{ color: '#666', fontSize: '16px' }}>{t('transactionId')}</span>
                                     <span style={{
                                         color: '#333',
                                         fontSize: '14px',
@@ -100,7 +99,7 @@ const PaymentSuccessArea = () => {
 
                                 {/* Payment Method */}
                                 <div className="d-flex justify-content-between align-items-center mb-3">
-                                    <span className="payment-detail-label">{t('วิธีการชำระ', 'Payment Method')}</span>
+                                    <span className="payment-detail-label">{t('paymentMethod')}</span>
                                     <span className="payment-detail-value">
                                         {transactionData.paymentMethod}
                                     </span>
@@ -108,7 +107,7 @@ const PaymentSuccessArea = () => {
 
                                 {/* Date */}
                                 <div className="d-flex justify-content-between align-items-center mb-3">
-                                    <span className="payment-detail-label">{t('วันที่', 'Date')}</span>
+                                    <span className="payment-detail-label">{t('date')}</span>
                                     <span className="payment-detail-value">
                                         {transactionData.date}
                                     </span>
@@ -116,7 +115,7 @@ const PaymentSuccessArea = () => {
 
                                 {/* Merchant */}
                                 <div className="d-flex justify-content-between align-items-center">
-                                    <span className="payment-detail-label">{t('ผู้รับเงิน', 'Merchant')}</span>
+                                    <span className="payment-detail-label">{t('merchant')}</span>
                                     <span className="payment-detail-value" style={{ fontWeight: '500' }}>
                                         {transactionData.merchant}
                                     </span>
@@ -136,7 +135,7 @@ const PaymentSuccessArea = () => {
                             }}>
                                 <i className="fas fa-envelope" style={{ color: '#22c55e' }}></i>
                                 <span style={{ color: '#22c55e', fontSize: '15px' }}>
-                                    {t('ใบเสร็จส่งไปที่', 'Receipt sent to')} {transactionData.email}
+                                    {t('receiptSentTo')} {transactionData.email}
                                 </span>
                             </div>
 
@@ -161,7 +160,7 @@ const PaymentSuccessArea = () => {
                                 className="payment-btn-main"
                             >
                                 <i className="fas fa-book-open"></i>
-                                {t('ไปที่คอร์สของฉัน', 'Go to My Courses')}
+                                {t('goToMyCourses')}
                             </Link>
 
                             {/* Help Text */}
@@ -170,7 +169,7 @@ const PaymentSuccessArea = () => {
                                 fontSize: '13px',
                                 margin: 0
                             }}>
-                                {t('ต้องการความช่วยเหลือ? ติดต่อเราได้ที่', 'Need help? Contact us at')}{' '}
+                                {t('needHelp')}{' '}
                                 <a href="mailto:support@pharmacyacademy.com" style={{ color: '#22c55e' }}>
                                     support@pharmacyacademy.com
                                 </a>

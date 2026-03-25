@@ -3,8 +3,9 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import React from 'react';
-import { useCart } from '@/features/cart/hooks';
-import { useLanguage } from '@/features/i18n';
+import { useTranslations } from 'next-intl';
+import { useAudienceFilteredCart } from '@/features/cart/hooks';
+import { useAppLocale } from '@/features/i18n';
 import { formatCoursePrice } from '@/features/courses/utils';
 
 const FALLBACK_IMAGE = '/assets/img/courses/01.jpg';
@@ -28,8 +29,9 @@ function normalizeImageSrc(src?: string): string {
 }
 
 const ShopCartArea = () => {
-    const { t } = useLanguage();
-    const { cartItems, removeFromCart, clearCart } = useCart();
+    const { locale } = useAppLocale();
+    const t = useTranslations('courses.cart');
+    const { cartItems, removeFromCart, clearCart, recentlyRemovedCount } = useAudienceFilteredCart();
     const payableItems = cartItems.filter((item) => Number(item.price) > 0);
     const subtotal = payableItems.reduce((sum, item) => sum + Number(item.price || 0), 0);
 
@@ -38,6 +40,22 @@ const ShopCartArea = () => {
             <div className="cart-section section-padding">
                 <div className="container">
                     <div className="cart-list-area">
+                        {recentlyRemovedCount > 0 && (
+                            <div
+                                style={{
+                                    marginBottom: '20px',
+                                    border: '1px solid #fdba74',
+                                    background: '#fff7ed',
+                                    color: '#9a3412',
+                                    borderRadius: '14px',
+                                    padding: '14px 16px',
+                                    fontSize: '15px',
+                                    fontWeight: 600,
+                                }}
+                            >
+                                {t('restrictedItemsRemoved', { count: recentlyRemovedCount })}
+                            </div>
+                        )}
                         {payableItems.length === 0 ? (
                             <div
                                 style={{
@@ -48,12 +66,12 @@ const ShopCartArea = () => {
                                     boxShadow: '0 2px 12px rgba(0, 0, 0, 0.06)',
                                 }}
                             >
-                                <h4 style={{ marginBottom: '12px' }}>{t('ยังไม่มีคอร์สในตะกร้า', 'Your cart is empty')}</h4>
+                                <h4 style={{ marginBottom: '12px' }}>{t('emptyTitle')}</h4>
                                 <p style={{ color: '#666', marginBottom: '20px' }}>
-                                    {t('เลือกคอร์สที่ต้องการแล้วกลับมาชำระเงินได้ที่นี่', 'Browse courses and come back here when you are ready to checkout')}
+                                    {t('emptyDescription')}
                                 </p>
                                 <Link href="/courses-grid" className="theme-btn">
-                                    {t('ไปดูคอร์สเรียน', 'Browse Courses')}
+                                    {t('browseCourses')}
                                 </Link>
                             </div>
                         ) : (
@@ -61,10 +79,10 @@ const ShopCartArea = () => {
                                 <table className="table common-table">
                                     <thead data-aos="fade-down">
                                         <tr>
-                                            <th className="text-center">{t('สินค้า', 'Product')}</th>
-                                            <th className="text-center">{t('ราคา', 'Price')}</th>
-                                            <th className="text-center">{t('จำนวน', 'Quantity')}</th>
-                                            <th className="text-center">{t('ยอดรวมย่อย', 'Subtotal')}</th>
+                                            <th className="text-center">{t('product')}</th>
+                                            <th className="text-center">{t('price')}</th>
+                                            <th className="text-center">{t('quantity')}</th>
+                                            <th className="text-center">{t('subtotal')}</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -84,7 +102,7 @@ const ShopCartArea = () => {
                                                                     color: '#dc2626',
                                                                     cursor: 'pointer',
                                                                 }}
-                                                                aria-label={t('ลบคอร์สออกจากตะกร้า', 'Remove course from cart')}
+                                                                aria-label={t('removeCourse')}
                                                             >
                                                                 <i className="fas fa-times"></i>
                                                             </button>
@@ -114,7 +132,7 @@ const ShopCartArea = () => {
                                                     </td>
                                                     <td className="text-center">
                                                         <span className="price-usd">
-                                                            {formatCoursePrice(item.price)}
+                                                            {formatCoursePrice(item.price, locale)}
                                                         </span>
                                                     </td>
                                                     <td className="price-quantity text-center">
@@ -122,7 +140,7 @@ const ShopCartArea = () => {
                                                     </td>
                                                     <td className="text-center">
                                                         <span className="price-usd">
-                                                            {formatCoursePrice(item.price)}
+                                                            {formatCoursePrice(item.price, locale)}
                                                         </span>
                                                     </td>
                                                 </tr>
@@ -139,22 +157,22 @@ const ShopCartArea = () => {
             <div className="cart-total-area section-padding pt-0">
                 <div className="container">
                     <div className="cart-total-items">
-                        <h3>{t('รวมตะกร้า', 'Cart Totals')}</h3>
+                        <h3>{t('cartTotals')}</h3>
                         <ul>
                             <li>
-                                {t('ยอดรวมย่อย', 'Subtotal')} <span className="subtotal">{formatCoursePrice(subtotal)}</span>
+                                {t('subtotal')} <span className="subtotal">{formatCoursePrice(subtotal, locale)}</span>
                             </li>
                             <li>
-                                {t('ยอดรวม', 'Total')} <span className="price">{formatCoursePrice(subtotal)}</span>
+                                {t('total')} <span className="price">{formatCoursePrice(subtotal, locale)}</span>
                             </li>
                         </ul>
                         <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
                             <Link href="/checkout" className="theme-btn" aria-disabled={payableItems.length === 0}>
-                                {t('ดำเนินการชำระเงิน', 'Proceed to Checkout')}
+                                {t('proceedToCheckout')}
                             </Link>
                             {payableItems.length > 0 && (
                                 <button type="button" onClick={clearCart} className="theme-btn style-2">
-                                    {t('ล้างตะกร้า', 'Clear Cart')}
+                                    {t('clearCart')}
                                 </button>
                             )}
                         </div>

@@ -7,6 +7,7 @@ import {
     createInteractiveQuestionFixture,
     createLearningCourseFixture,
     createLessonFixture,
+    createLessonDocumentFixture,
     createLessonVideoFixture,
 } from '@/test/learning-fixtures';
 
@@ -23,6 +24,8 @@ const testState = vi.hoisted(() => ({
     api: {
         getCourseLearning: vi.fn(),
         submitVideoQuestionAnswer: vi.fn(),
+        getLessonQuizRuntime: vi.fn(),
+        submitLessonQuizAttempt: vi.fn(),
         markLessonComplete: vi.fn(),
         updateLessonProgress: vi.fn(),
     },
@@ -106,6 +109,58 @@ vi.mock('next/navigation', () => ({
     }),
 }));
 
+vi.mock('next-intl', () => {
+    const messages = require('../../../messages/th/learning.json') as {
+        learning: {
+            courseArea: Record<string, string>;
+        };
+    };
+    const translatorCache = new Map<string | undefined, (key: string, values?: Record<string, unknown>) => string>();
+
+    const interpolate = (template: string, values?: Record<string, unknown>) => {
+        if (!values) {
+            return template;
+        }
+
+        return template.replace(/\{(\w+)\}/g, (_, key: string) => String(values[key] ?? `{${key}}`));
+    };
+
+    return {
+        useLocale: () => 'th',
+        useTranslations: (namespace?: string) => {
+            const cachedTranslator = translatorCache.get(namespace);
+            if (cachedTranslator) {
+                return cachedTranslator;
+            }
+
+            const scopedMessages = namespace
+                ? namespace.split('.').reduce<unknown>((acc, part) => {
+                    if (!acc || typeof acc !== 'object') {
+                        return undefined;
+                    }
+
+                    return (acc as Record<string, unknown>)[part];
+                }, messages)
+                : messages;
+
+            const translator = (key: string, values?: Record<string, unknown>) => {
+                const template = typeof scopedMessages === 'object' && scopedMessages
+                    ? (scopedMessages as Record<string, unknown>)[key]
+                    : undefined;
+
+                if (typeof template !== 'string') {
+                    return key;
+                }
+
+                return interpolate(template, values);
+            };
+
+            translatorCache.set(namespace, translator);
+            return translator;
+        },
+    };
+});
+
 vi.mock('next/link', () => ({
     default: ({ href, children, ...props }: any) => (
         <a href={typeof href === 'string' ? href : href?.pathname || '#'} {...props}>
@@ -185,6 +240,8 @@ describe('CourseLearningArea interactive harness', () => {
         testState.routerPush.mockReset();
         testState.api.getCourseLearning.mockReset();
         testState.api.submitVideoQuestionAnswer.mockReset();
+        testState.api.getLessonQuizRuntime.mockReset();
+        testState.api.submitLessonQuizAttempt.mockReset();
         testState.api.markLessonComplete.mockReset();
         testState.api.updateLessonProgress.mockReset();
         testState.api.updateLessonProgress.mockResolvedValue({
@@ -197,6 +254,30 @@ describe('CourseLearningArea interactive harness', () => {
             answerGiven: 'option-a',
             answered: true,
             updatedAt: '2026-03-21T00:00:00.000Z',
+        });
+        testState.api.getLessonQuizRuntime.mockResolvedValue({
+            id: 1,
+            lessonId: 1,
+            passingScorePercent: 80,
+            maxAttempts: null,
+            attemptsUsed: 0,
+            remainingAttempts: null,
+            latestAttempt: null,
+            questions: [],
+        });
+        testState.api.submitLessonQuizAttempt.mockResolvedValue({
+            attemptId: 1,
+            quizId: 1,
+            lessonId: 1,
+            attemptNumber: 1,
+            maxAttempts: null,
+            attemptsUsed: 1,
+            remainingAttempts: null,
+            scoreObtained: 1,
+            totalScore: 1,
+            scorePercent: 100,
+            isPassed: true,
+            answers: [],
         });
         testState.api.markLessonComplete.mockResolvedValue({
             lessonId: 1,
@@ -289,6 +370,82 @@ describe('CourseLearningArea interactive harness', () => {
         });
 
         anchorClickSpy.mockRestore();
+    });
+
+    it('lets learners switch between lesson documents and interactive checkpoints', async () => {
+        const user = userEvent.setup();
+
+        testState.api.getCourseLearning.mockResolvedValue(
+            createLearningCourseFixture({
+                lessons: [
+                    createLessonFixture({
+                        documents: [
+                            createLessonDocumentFixture({
+                                id: 301,
+                                fileName: 'lesson-handout.pdf',
+                            }),
+                        ],
+                        interactiveQuestions: [
+                            createInteractiveQuestionFixture({
+                                id: 401,
+                                questionText: 'คำถามสำหรับแท็บ interactive',
+                            }),
+                        ],
+                    }),
+                ],
+            })
+        );
+
+        render(<CourseLearningArea />);
+
+        const documentsTab = await screen.findByRole('tab', { name: /เอกสารประกอบบทเรียน/i });
+        const interactiveTab = screen.getByRole('tab', { name: /จุดพัก Interactive/i });
+
+        expect(documentsTab).toHaveAttribute('aria-selected', 'true');
+        expect(interactiveTab).toHaveAttribute('aria-selected', 'false');
+        expect(screen.getByText('lesson-handout.pdf')).toBeInTheDocument();
+        expect(screen.queryByText('คำถามสำหรับแท็บ interactive')).not.toBeInTheDocument();
+
+        await user.click(interactiveTab);
+
+        expect(documentsTab).toHaveAttribute('aria-selected', 'false');
+        expect(interactiveTab).toHaveAttribute('aria-selected', 'true');
+        expect(screen.getByText('คำถามสำหรับแท็บ interactive')).toBeInTheDocument();
+        expect(screen.queryByText('lesson-handout.pdf')).not.toBeInTheDocument();
+
+        await user.click(documentsTab);
+
+        expect(documentsTab).toHaveAttribute('aria-selected', 'true');
+        expect(interactiveTab).toHaveAttribute('aria-selected', 'false');
+        expect(screen.getByText('lesson-handout.pdf')).toBeInTheDocument();
+    });
+
+    it('shows the interactive tab content by default when the lesson has no documents', async () => {
+        testState.api.getCourseLearning.mockResolvedValue(
+            createLearningCourseFixture({
+                lessons: [
+                    createLessonFixture({
+                        documents: [],
+                        interactiveQuestions: [
+                            createInteractiveQuestionFixture({
+                                id: 402,
+                                questionText: 'คำถามเดียวของบทเรียนนี้',
+                            }),
+                        ],
+                    }),
+                ],
+            })
+        );
+
+        render(<CourseLearningArea />);
+
+        const documentsTab = await screen.findByRole('tab', { name: /เอกสารประกอบบทเรียน/i });
+        const interactiveTab = screen.getByRole('tab', { name: /จุดพัก Interactive/i });
+
+        expect(documentsTab).toHaveAttribute('aria-selected', 'false');
+        expect(interactiveTab).toHaveAttribute('aria-selected', 'true');
+        expect(screen.getByText('คำถามเดียวของบทเรียนนี้')).toBeInTheDocument();
+        expect(screen.queryByText('ยังไม่มีเอกสารในบทเรียนนี้')).not.toBeInTheDocument();
     });
 
     it('redirects unauthenticated users to sign-in', async () => {
@@ -444,7 +601,7 @@ describe('CourseLearningArea interactive harness', () => {
         });
     });
 
-    it('blocks forward seeking beyond the furthest watched second and rewinds the player', async () => {
+    it('blocks forward seeking beyond the furthest watched second and rewinds the player without showing the page notice', async () => {
         const course = createLearningCourseFixture({
             lessons: [
                 createLessonFixture({
@@ -479,7 +636,7 @@ describe('CourseLearningArea interactive harness', () => {
         await waitFor(() => {
             expect(testState.player.setCurrentTime).toHaveBeenCalledWith(60);
         });
-        expect(await screen.findByText('ไม่สามารถกรอข้ามวิดีโอได้ กรุณาเรียนตามลำดับเวลา')).toBeInTheDocument();
+        expect(screen.getByText('ไม่สามารถกรอข้ามวิดีโอได้ กรุณาเรียนตามลำดับเวลา')).toBeInTheDocument();
         expect(screen.queryByRole('button', { name: 'ส่งคำตอบเพื่อเรียนต่อ' })).not.toBeInTheDocument();
     });
 
@@ -514,7 +671,7 @@ describe('CourseLearningArea interactive harness', () => {
         });
     });
 
-    it('shows a specific lesson notice when completion is blocked by interactive progress', async () => {
+    it('does not show the page notice when completion is blocked by interactive progress', async () => {
         const course = createLearningCourseFixture({
             lessons: [
                 createLessonFixture({
@@ -547,10 +704,10 @@ describe('CourseLearningArea interactive harness', () => {
         await waitFor(() => {
             expect(testState.api.markLessonComplete).toHaveBeenCalledWith(12, 1);
         });
-        expect(await screen.findByText('ยังมีคำถาม interactive ค้างอยู่ กรุณาตอบให้ครบก่อนจบบทเรียน')).toBeInTheDocument();
+        expect(screen.getByText('ยังมีคำถาม interactive ค้างอยู่ กรุณาตอบให้ครบก่อนจบบทเรียน')).toBeInTheDocument();
     });
 
-    it('renders a blocked state instead of mounting the player when the video is unavailable', async () => {
+    it('renders a blocked state instead of mounting the player when the video is unavailable without showing the page notice', async () => {
         const course = createLearningCourseFixture({
             lessons: [
                 createLessonFixture({
@@ -568,7 +725,147 @@ describe('CourseLearningArea interactive harness', () => {
 
         expect(await screen.findByText('วิดีโอบทเรียนนี้ยังอยู่ระหว่างประมวลผลจาก Vimeo จึงยังไม่สามารถรับชมได้ในขณะนี้')).toBeInTheDocument();
         expect(screen.queryByTestId('mock-vimeo-player')).not.toBeInTheDocument();
-        expect(screen.getByText('วิดีโอยังไม่พร้อมใช้งานจริง จึงยังไม่สามารถ trigger คำถาม interactive ตามเวลาได้')).toBeInTheDocument();
+        expect(screen.queryByText('วิดีโอยังไม่พร้อมใช้งานจริง จึงยังไม่สามารถ trigger คำถาม interactive ตามเวลาได้')).not.toBeInTheDocument();
+    });
+
+    it('opens the lesson quiz panel and submits a learner attempt', async () => {
+        const course = createLearningCourseFixture({
+            lessons: [
+                createLessonFixture({
+                    interactiveQuestions: [],
+                    documents: [],
+                    progress: { lastWatchedSeconds: 600, isCompleted: false },
+                    lessonQuiz: {
+                        id: 44,
+                        passingScorePercent: 70,
+                        maxAttempts: 3,
+                        questionsCount: 1,
+                        attemptsUsed: 0,
+                        remainingAttempts: 3,
+                        latestAttempt: null,
+                    },
+                }),
+            ],
+        });
+        testState.api.getCourseLearning.mockResolvedValue(course);
+        testState.api.getLessonQuizRuntime.mockResolvedValue({
+            id: 44,
+            lessonId: 1,
+            passingScorePercent: 70,
+            maxAttempts: 3,
+            attemptsUsed: 0,
+            remainingAttempts: 3,
+            latestAttempt: null,
+            questions: [
+                {
+                    id: 401,
+                    questionText: 'คำถามท้ายบท',
+                    questionType: 'MULTIPLE_CHOICE',
+                    scoreWeight: 1,
+                    options: [
+                        { id: 'option-a', text: 'คำตอบ A' },
+                        { id: 'option-b', text: 'คำตอบ B' },
+                    ],
+                },
+            ],
+        });
+        testState.api.submitLessonQuizAttempt.mockResolvedValue({
+            attemptId: 10,
+            quizId: 44,
+            lessonId: 1,
+            attemptNumber: 1,
+            maxAttempts: 3,
+            attemptsUsed: 1,
+            remainingAttempts: 2,
+            scoreObtained: 1,
+            totalScore: 1,
+            scorePercent: 100,
+            isPassed: true,
+            finishedAt: '2026-03-24T00:00:00.000Z',
+            answers: [
+                {
+                    questionId: 401,
+                    answerGiven: 'option-a',
+                    isCorrect: true,
+                    pointsEarned: 1,
+                },
+            ],
+        });
+
+        const user = userEvent.setup();
+        render(<CourseLearningArea />);
+
+        expect(await screen.findByText('Quiz ท้ายบท')).toBeInTheDocument();
+        await user.click(screen.getByRole('button', { name: 'เริ่มทำแบบทดสอบ' }));
+
+        expect(await screen.findByRole('button', { name: 'คำตอบ A' })).toBeInTheDocument();
+        await user.click(screen.getByRole('button', { name: 'คำตอบ A' }));
+        await user.click(screen.getByRole('button', { name: 'ส่งแบบทดสอบ' }));
+
+        await waitFor(() => {
+            expect(testState.api.submitLessonQuizAttempt).toHaveBeenCalledWith(1, [
+                { questionId: 401, answerGiven: 'option-a' },
+            ]);
+        });
+        expect(await screen.findByText('คุณผ่านแบบทดสอบท้ายบทแล้ว')).toBeInTheDocument();
+    });
+
+    it('keeps the lesson quiz locked until the learner finishes the lesson', async () => {
+        const course = createLearningCourseFixture({
+            lessons: [
+                createLessonFixture({
+                    interactiveQuestions: [],
+                    documents: [],
+                    progress: { lastWatchedSeconds: 120, isCompleted: false },
+                    lessonQuiz: {
+                        id: 44,
+                        passingScorePercent: 70,
+                        maxAttempts: 3,
+                        questionsCount: 1,
+                        attemptsUsed: 0,
+                        remainingAttempts: 3,
+                        latestAttempt: null,
+                    },
+                }),
+            ],
+        });
+        testState.api.getCourseLearning.mockResolvedValue(course);
+
+        render(<CourseLearningArea />);
+
+        expect(await screen.findByText('Quiz ท้ายบท')).toBeInTheDocument();
+        const lockedQuizButton = screen.getByRole('button', { name: 'เรียนให้เสร็จก่อน' });
+        expect(lockedQuizButton).toBeDisabled();
+        expect(testState.api.getLessonQuizRuntime).not.toHaveBeenCalled();
+    });
+
+    it('hides the completion button until the learner passes the lesson quiz', async () => {
+        const course = createLearningCourseFixture({
+            lessons: [
+                createLessonFixture({
+                    interactiveQuestions: [],
+                    documents: [],
+                    progress: { lastWatchedSeconds: 600, isCompleted: false },
+                    lessonQuiz: {
+                        id: 45,
+                        passingScorePercent: 70,
+                        maxAttempts: 3,
+                        questionsCount: 1,
+                        attemptsUsed: 0,
+                        remainingAttempts: 3,
+                        latestAttempt: null,
+                    },
+                }),
+            ],
+        });
+        testState.api.getCourseLearning.mockResolvedValue(course);
+
+        render(<CourseLearningArea />);
+
+        expect(await screen.findByText('Quiz ท้ายบท')).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'เริ่มทำแบบทดสอบ' })).toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: 'ต้องผ่าน Quiz ท้ายบทก่อน' })).not.toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: 'บันทึกว่าจบบทเรียน' })).not.toBeInTheDocument();
     });
 
     it('renders locked lessons from a sanitized payload without leaking player, documents, or interactive content', async () => {
@@ -685,7 +982,7 @@ describe('CourseLearningArea interactive harness', () => {
         expect(screen.getAllByText('คำถามที่ถูกล็อกฝั่ง backend').length).toBeGreaterThan(1);
     });
 
-    it('shows a specific lesson notice when the backend rejects lesson completion with LESSON_LOCKED', async () => {
+    it('does not show the page notice when the backend rejects lesson completion with LESSON_LOCKED', async () => {
         const course = createLearningCourseFixture({
             lessons: [
                 createLessonFixture({
@@ -711,7 +1008,7 @@ describe('CourseLearningArea interactive harness', () => {
         await waitFor(() => {
             expect(testState.api.markLessonComplete).toHaveBeenCalledWith(12, 1);
         });
-        expect(await screen.findByText('กรุณาเรียนบทก่อนหน้าให้เสร็จก่อน')).toBeInTheDocument();
+        expect(screen.getByText('กรุณาเรียนบทก่อนหน้าให้เสร็จก่อน')).toBeInTheDocument();
     });
 
     it('keeps modal state stable while lesson progress refresh updates the same lesson snapshot', async () => {
@@ -859,7 +1156,7 @@ describe('CourseLearningArea interactive harness', () => {
         expect(await screen.findByRole('heading', { name: 'บทเรียนถัดไป' })).toBeInTheDocument();
     });
 
-    it('shows watch progress percentages for both the course and the active lesson', async () => {
+    it('shows watch progress percentages in the remaining progress surfaces after removing the lesson progress bar', async () => {
         const course = createLearningCourseFixture({
             progressPercent: 0,
             lessons: [
@@ -888,10 +1185,10 @@ describe('CourseLearningArea interactive harness', () => {
         expect(screen.getByText('25%')).toBeInTheDocument();
         expect(screen.getByText('จบแล้ว 0/2 บท (0%)')).toBeInTheDocument();
         expect(screen.getByText('ดูไปแล้ว 5:00 (50%)')).toBeInTheDocument();
-        expect(screen.getByText('ความคืบหน้าบทเรียน')).toBeInTheDocument();
+        expect(screen.queryByText('ความคืบหน้าบทเรียน')).not.toBeInTheDocument();
     });
 
-    it('keeps the completion button disabled until the lesson is watched to the end', async () => {
+    it('shows the incomplete lesson status without rendering the completion button until the lesson is watched to the end', async () => {
         const course = createLearningCourseFixture({
             lessons: [
                 createLessonFixture({
@@ -909,8 +1206,8 @@ describe('CourseLearningArea interactive harness', () => {
             emitInitialPosition(590);
         });
 
-        const completionButton = screen.getByRole('button', { name: 'ต้องดูวิดีโอให้จบก่อน' });
-        expect(completionButton).toBeDisabled();
+        expect(screen.getByText('ต้องดูวิดีโอให้จบก่อน')).toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: 'ต้องดูวิดีโอให้จบก่อน' })).not.toBeInTheDocument();
         expect(testState.api.markLessonComplete).not.toHaveBeenCalled();
     });
 

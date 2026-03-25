@@ -1,79 +1,73 @@
 "use client"
 import React from 'react';
+import { useTranslations } from 'next-intl';
 
-interface CourseDescriptionProps {
-    shortDescription: string;
-    fullDescription: string;
-    lessons: any[];
-}
-
-/**
- * Description Section Component
- */
 export const DescriptionSection: React.FC<{
     shortDescription: string;
     fullDescription: string;
-}> = ({ shortDescription, fullDescription }) => (
-    <div className="description-section mb-5 p-0">
-        {/* Short Description */}
-        <div className="short-description mb-4">
-            <div className="d-flex align-items-center gap-2 mb-3">
-                <i className="fas fa-bookmark" style={{ fontSize: '28px', color: '#14b8a6', fontWeight: 'bold' }}></i>
-                <h3 style={{ margin: 0, fontSize: '28px', fontWeight: 'bold', color: '#333' }}>คำอธิบายโดยย่อ</h3>
-            </div>
-            <p style={{
-                fontSize: '22px',
-                lineHeight: '1.6',
-                color: '#555',
-                padding: '16px',
-                backgroundColor: '#f0fdf4',
-                borderRadius: '8px',
-                borderLeft: '4px solid #14b8a6',
-                margin: 0,
-                whiteSpace: 'pre-line'
-            }}>
-                {shortDescription || 'ยังไม่มีบทสรุป'}
-            </p>
-        </div>
+}> = ({ shortDescription, fullDescription }) => {
+    const t = useTranslations('courses.detail');
 
-        {/* Full Description */}
-        <div className="full-description">
-            <div className="d-flex align-items-center gap-2 mb-3">
-                <i className="fas fa-book-open" style={{ fontSize: '28px', color: '#3b82f6', fontWeight: 'bold' }}></i>
-                <h3 style={{ margin: 0, fontSize: '28px', fontWeight: 'bold', color: '#333' }}>รายละเอียดคอร์ส</h3>
+    return (
+        <div className="description-section mb-5 p-0">
+            <div className="short-description mb-4">
+                <div className="d-flex align-items-center gap-2 mb-3">
+                    <i className="fas fa-bookmark" style={{ fontSize: '28px', color: '#14b8a6', fontWeight: 'bold' }}></i>
+                    <h3 style={{ margin: 0, fontSize: '28px', fontWeight: 'bold', color: '#333' }}>{t('shortDescriptionTitle')}</h3>
+                </div>
+                <p style={{
+                    fontSize: '22px',
+                    lineHeight: '1.6',
+                    color: '#555',
+                    padding: '16px',
+                    backgroundColor: '#f0fdf4',
+                    borderRadius: '8px',
+                    borderLeft: '4px solid #14b8a6',
+                    margin: 0,
+                    whiteSpace: 'pre-line'
+                }}>
+                    {shortDescription || t('shortDescriptionFallback')}
+                </p>
             </div>
-            <div style={{
-                fontSize: '22px',
-                lineHeight: '1.8',
-                color: '#555',
-                padding: '16px',
-                backgroundColor: '#eff6ff',
-                borderRadius: '8px',
-                borderLeft: '4px solid #3b82f6',
-            }}>
-                <div style={{ whiteSpace: 'pre-line' }} dangerouslySetInnerHTML={{
-                    __html: fullDescription || 'ยังไม่มีรายละเอียด'
-                }} />
+
+            <div className="full-description">
+                <div className="d-flex align-items-center gap-2 mb-3">
+                    <i className="fas fa-book-open" style={{ fontSize: '28px', color: '#3b82f6', fontWeight: 'bold' }}></i>
+                    <h3 style={{ margin: 0, fontSize: '28px', fontWeight: 'bold', color: '#333' }}>{t('fullDescriptionTitle')}</h3>
+                </div>
+                <div style={{
+                    fontSize: '22px',
+                    lineHeight: '1.8',
+                    color: '#555',
+                    padding: '16px',
+                    backgroundColor: '#eff6ff',
+                    borderRadius: '8px',
+                    borderLeft: '4px solid #3b82f6',
+                }}>
+                    <div style={{ whiteSpace: 'pre-line' }} dangerouslySetInnerHTML={{
+                        __html: fullDescription || t('fullDescriptionFallback')
+                    }} />
+                </div>
             </div>
         </div>
-    </div>
-);
+    );
+};
 
-/**
- * Lessons Section Component
- */
 export const LessonsSection: React.FC<{
     lessons: any[];
     title?: string;
-}> = ({ lessons, title = 'เนื้อหาในบทเรียน' }) => {
+}> = ({ lessons, title }) => {
+    const t = useTranslations('courses.detail');
+    const resolvedTitle = title || t('lessonsTitle');
+
     if (!lessons || lessons.length === 0) {
         return (
             <div className="lessons-section mb-5">
                 <div className="d-flex align-items-center gap-2 mb-3">
                     <i className="fas fa-list-check" style={{ fontSize: '28px', color: '#f59e0b', fontWeight: 'bold' }}></i>
-                    <h3 style={{ margin: 0, fontSize: '28px', fontWeight: 'bold', color: '#333' }}>{title}</h3>
+                    <h3 style={{ margin: 0, fontSize: '28px', fontWeight: 'bold', color: '#333' }}>{resolvedTitle}</h3>
                 </div>
-                <p style={{ fontSize: '22px', color: '#999', fontStyle: 'italic' }}>ยังไม่มีบทเรียน</p>
+                <p style={{ fontSize: '22px', color: '#999', fontStyle: 'italic' }}>{t('noLessons')}</p>
             </div>
         );
     }
@@ -82,16 +76,17 @@ export const LessonsSection: React.FC<{
         if (!seconds || seconds <= 0) return '-';
         const hours = Math.floor(seconds / 3600);
         const minutes = Math.floor((seconds % 3600) / 60);
-        if (hours > 0) return `${hours} ชม. ${minutes} นาที`;
-        return `${minutes} นาที`;
+        if (hours > 0 && minutes > 0) return t('durationHourMinute', { hours, minutes });
+        if (hours > 0) return t('durationHourOnly', { hours });
+        return t('durationMinuteOnly', { minutes });
     };
 
-        return (
+    return (
         <div className="lessons-section mb-5">
             <div className="d-flex align-items-center gap-2 mb-4">
                 <i className="fas fa-list-check" style={{ fontSize: '28px', color: '#f59e0b', fontWeight: 'bold' }}></i>
                 <h3 style={{ margin: 0, fontSize: '28px', fontWeight: 'bold', color: '#333' }}>
-                    {title} ({lessons.length} บท)
+                    {t('lessonsTitleWithCount', { title: resolvedTitle, count: lessons.length })}
                 </h3>
             </div>
 
@@ -135,7 +130,7 @@ export const LessonsSection: React.FC<{
                                     fontWeight: '600',
                                     color: '#333'
                                 }}>
-                                    {lesson.title || `บทเรียนที่ ${index + 1}`}
+                                    {lesson.title || t('lessonTitleFallback', { index: index + 1 })}
                                 </h5>
                                 {lesson.description && (
                                     <p style={{

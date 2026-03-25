@@ -5,6 +5,7 @@
  */
 
 import { useState, useCallback } from 'react';
+import { getClientMessage } from '@/features/i18n/runtime';
 import { voucherApi } from '../services/voucherApi';
 
 interface UseVoucherReturn {
@@ -17,7 +18,7 @@ interface UseVoucherReturn {
 
     // Actions
     setVoucherCode: (code: string) => void;
-    applyVoucher: (subtotal: number, t: (th: string, en: string) => string) => Promise<void>;
+    applyVoucher: (subtotal: number) => Promise<void>;
     removeVoucher: () => void;
 }
 
@@ -28,11 +29,11 @@ export const useVoucher = (): UseVoucherReturn => {
     const [discountError, setDiscountError] = useState('');
     const [appliedCode, setAppliedCode] = useState('');
 
-    const applyVoucher = useCallback(async (subtotal: number, t: (th: string, en: string) => string) => {
+    const applyVoucher = useCallback(async (subtotal: number) => {
         const code = voucherCode.toUpperCase().trim();
 
         if (!code) {
-            setDiscountError(t('กรุณากรอกโค้ดส่วนลด', 'Please enter a voucher code'));
+            setDiscountError(getClientMessage('payment.checkout.voucherRequired'));
             return;
         }
 
@@ -41,11 +42,10 @@ export const useVoucher = (): UseVoucherReturn => {
 
             if (!result.isValid) {
                 const errorMsg = result.errorMessage?.startsWith('MIN_ORDER_')
-                    ? t(
-                          `ยอดขั้นต่ำ ${result.errorMessage.replace('MIN_ORDER_', '')} บาท`,
-                          `Minimum order ${result.errorMessage.replace('MIN_ORDER_', '')} THB`,
-                      )
-                    : t('โค้ดส่วนลดไม่ถูกต้อง', 'Invalid voucher code');
+                    ? getClientMessage('payment.checkout.voucherMinimumOrder', {
+                        amount: result.errorMessage.replace('MIN_ORDER_', ''),
+                    })
+                    : getClientMessage('payment.checkout.voucherInvalid');
                 setDiscountError(errorMsg);
                 setDiscount(0);
                 setDiscountApplied(false);
@@ -57,7 +57,7 @@ export const useVoucher = (): UseVoucherReturn => {
             setDiscountError('');
             setAppliedCode(result.appliedCode || code);
         } catch {
-            setDiscountError(t('ไม่สามารถตรวจสอบโค้ดส่วนลดได้', 'Failed to validate voucher code'));
+            setDiscountError(getClientMessage('payment.checkout.voucherValidateFailed'));
             setDiscount(0);
             setDiscountApplied(false);
         }

@@ -3,13 +3,17 @@ import MarqueeOne from '@/components/common/MarqueeOne';
 import FooterTwo from '@/components/layout/footers/FooterTwo';
 import HeaderTwo from '@/components/layout/headers/HeaderTwo';
 import { SignInArea } from '@/features/auth';
-
 import { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
 
-export const metadata: Metadata = {
-    title: "เข้าสู่ระบบ - Pharmacy Academy",
-    description: "เข้าสู่ระบบเพื่อเรียนรู้และสะสม CPE",
-};
+export async function generateMetadata(): Promise<Metadata> {
+    const t = await getTranslations('auth.meta.signIn');
+
+    return {
+        title: t('title'),
+        description: t('description'),
+    };
+}
 
 const SignInPage = () => {
     return (

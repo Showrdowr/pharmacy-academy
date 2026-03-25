@@ -5,11 +5,16 @@ import HeaderTwo from '@/components/layout/headers/HeaderTwo';
 import { PaymentHistoryArea } from '@/features/payment';
 
 import { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
 
-export const metadata: Metadata = {
-    title: "ประวัติการชำระเงิน - Pharmacy Academy",
-    description: "ดูประวัติการชำระเงินทั้งหมด",
-};
+export async function generateMetadata(): Promise<Metadata> {
+    const t = await getTranslations('payment.meta.history');
+
+    return {
+        title: t('title'),
+        description: t('description'),
+    };
+}
 
 const PaymentHistoryPage = () => {
     return (

@@ -1,326 +1,100 @@
 "use client"
-import React from 'react';
-import Link from 'next/link';
-import { Autoplay } from 'swiper/modules';
-import { Swiper, SwiperSlide } from 'swiper/react';
 
+import React, { useMemo } from 'react';
+import { useTranslations } from 'next-intl';
+import { useAuth } from '@/features/auth';
+import { filterVisibleCoursesForViewer, getCourseViewerRole } from '@/features/courses/audience';
+import { formatCourseDuration, resolveCourseDurationMinutes, resolveCourseStudentsCount } from '@/features/courses/course-card-display';
+import { getLocalizedContent, useAppLocale } from '@/features/i18n';
+import type { Course as GridCourse } from '../data/mockData';
+import CourseCard from './CourseCard';
 
+type RelatedCourseItem = {
+    id: number;
+    title?: string | null;
+    titleEn?: string | null;
+    description?: string | null;
+    descriptionEn?: string | null;
+    thumbnail?: string | null;
+    authorName?: string | null;
+    price?: number | null;
+    cpeCredits?: number | null;
+    enrolledCount?: number | null;
+    enrollmentsCount?: number | null;
+    durationMinutes?: number | null;
+    totalDurationSeconds?: number | null;
+    audience?: string | null;
+    category?: { name?: string | null; nameEn?: string | null } | string | null;
+};
 
-const RelatedCourses = () => {
+interface RelatedCoursesProps {
+    courses?: RelatedCourseItem[];
+}
+
+function getCategoryName(course: RelatedCourseItem, locale: 'th' | 'en') {
+    if (typeof course.category === 'string') {
+        return course.category;
+    }
+
+    return locale === 'en'
+        ? course.category?.nameEn || course.category?.name || ''
+        : course.category?.name || course.category?.nameEn || '';
+}
+
+const RelatedCourses: React.FC<RelatedCoursesProps> = ({ courses = [] }) => {
+    const t = useTranslations('courses.detail');
+    const { locale } = useAppLocale();
+    const { user, isAuthenticated } = useAuth();
+    const viewerRole = getCourseViewerRole(user, isAuthenticated);
+
+    const mappedCourses = useMemo<GridCourse[]>(
+        () =>
+            filterVisibleCoursesForViewer(courses, viewerRole).map((course) => ({
+                id: Number(course.id),
+                title: String(course.title || t('fallbackCourseTitle')),
+                titleEn: String(course.titleEn || course.title || t('fallbackCourseTitle')),
+                category: getCategoryName(course, 'th') || t('otherCategory'),
+                categoryEn: getCategoryName(course, 'en') || getCategoryName(course, 'th') || t('otherCategory'),
+                instructor: String(course.authorName || t('instructorFallback')),
+                cpe: Number(course.cpeCredits || 0),
+                price: Number(course.price || 0),
+                level: t('skillLevelAll'),
+                rating: 5,
+                students: resolveCourseStudentsCount(course),
+                duration: formatCourseDuration(
+                    resolveCourseDurationMinutes(course),
+                    t,
+                    t('fallbackDuration'),
+                ),
+                image: String(course.thumbnail || '/assets/img/courses/01.jpg'),
+                description:
+                    getLocalizedContent(locale, course.description, course.descriptionEn)
+                    || getLocalizedContent(locale, course.title, course.titleEn)
+                    || t('qualityCourse'),
+                audience: typeof course.audience === 'string' ? course.audience as GridCourse['audience'] : 'all',
+            })),
+        [courses, locale, t, viewerRole]
+    );
+
+    if (mappedCourses.length === 0) {
+        return null;
+    }
+
     return (
-        <>
-            <section className="popular-courses-section fix section-padding pt-0">
-                <div className="container">
-                    <div className="section-title text-center">
-                        <h2 className="wow fadeInUp">Related Courses</h2>
-                    </div>
-                    <Swiper
-                        spaceBetween={30}
-                        speed={1500}
-                        loop={true}
-                        autoplay={{
-                            delay: 1500,
-                            disableOnInteraction: false
-                        }}
-                        pagination={{
-                            el: ".dot",
-                            clickable: true
-                        }}
-                        modules={[Autoplay]}
-                        breakpoints={{
-                            1199: {
-                                slidesPerView: 3,
-                            },
-                            991: {
-                                slidesPerView: 2,
-                            },
-                            767: {
-                                slidesPerView: 2,
-                            },
-                            575: {
-                                slidesPerView: 1,
-                            },
-                            0: {
-                                slidesPerView: 1,
-                            },
-                        }}
-                        className="swiper courses-slider">
-
-                        <SwiperSlide className="swiper-slide">
-                            <div className="courses-card-main-items">
-                                <div className="courses-card-items style-2">
-                                    <div className="courses-image">
-                                        <img src="/assets/img/courses/09.jpg" alt="img" />
-                                        <h3 className="courses-title">Web Design</h3>
-                                        <h4 className="topic-title">Advance Web Design</h4>
-                                        <div className="arrow-items">
-                                            <div className="GlidingArrow">
-                                                <img src="/assets/img/courses/a1.png" alt="img" />
-                                            </div>
-                                            <div className="GlidingArrow delay1">
-                                                <img src="/assets/img/courses/a2.png" alt="img" />
-                                            </div>
-                                            <div className="GlidingArrow delay2">
-                                                <img src="/assets/img/courses/a3.png" alt="img" />
-                                            </div>
-                                            <div className="GlidingArrow delay3">
-                                                <img src="/assets/img/courses/a4.png" alt="img" />
-                                            </div>
-                                            <div className="GlidingArrow delay4">
-                                                <img src="/assets/img/courses/a5.png" alt="img" />
-                                            </div>
-                                            <div className="GlidingArrow delay5">
-                                                <img src="/assets/img/courses/a6.png" alt="img" />
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="courses-content">
-                                        <ul className="post-cat">
-                                            <li>
-                                                <Link href="/courses">Design</Link>
-                                            </li>
-                                            <li>
-                                                <i className="fas fa-star"></i>
-                                                <i className="fas fa-star"></i>
-                                                <i className="fas fa-star"></i>
-                                                <i className="fas fa-star"></i>
-                                                <i className="fas fa-star"></i>
-                                            </li>
-                                        </ul>
-                                        <h3>
-                                            <Link href="/courses/1">
-                                                Learn With Advance Web
-                                                Design (UX/UI) Course
-                                            </Link>
-                                        </h3>
-                                        <div className="client-items">
-                                            <div className="client-img bg-cover" style={{ background: `url(/assets/img/courses/client-1.png)` }}></div>
-                                            <p>Paul C. Deleon</p>
-                                        </div>
-                                        <ul className="post-class">
-                                            <li>
-                                                <i className="far fa-books"></i>
-                                                Lessons
-                                            </li>
-                                            <li>
-                                                <i className="far fa-user"></i>
-                                                80 Students
-                                            </li>
-                                            <li>
-                                                <Link href="/courses/1" className="theme-btn">Enroll Now</Link>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-                        </SwiperSlide>
-                        <SwiperSlide className="swiper-slide">
-                            <div className="courses-card-main-items">
-                                <div className="courses-card-items style-2">
-                                    <div className="courses-image">
-                                        <img src="/assets/img/courses/10.jpg" alt="img" />
-                                        <h3 className="courses-title">Business Finance</h3>
-                                        <h4 className="topic-title">Finance and Business</h4>
-                                        <div className="arrow-items">
-                                            <div className="GlidingArrow">
-                                                <img src="/assets/img/courses/a1.png" alt="img" />
-                                            </div>
-                                            <div className="GlidingArrow delay1">
-                                                <img src="/assets/img/courses/a2.png" alt="img" />
-                                            </div>
-                                            <div className="GlidingArrow delay2">
-                                                <img src="/assets/img/courses/a3.png" alt="img" />
-                                            </div>
-                                            <div className="GlidingArrow delay3">
-                                                <img src="/assets/img/courses/a4.png" alt="img" />
-                                            </div>
-                                            <div className="GlidingArrow delay4">
-                                                <img src="/assets/img/courses/a5.png" alt="img" />
-                                            </div>
-                                            <div className="GlidingArrow delay5">
-                                                <img src="/assets/img/courses/a6.png" alt="img" />
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="courses-content">
-                                        <ul className="post-cat">
-                                            <li>
-                                                <Link href="/courses">Business</Link>
-                                            </li>
-                                            <li>
-                                                <i className="fas fa-star"></i>
-                                                <i className="fas fa-star"></i>
-                                                <i className="fas fa-star"></i>
-                                                <i className="fas fa-star"></i>
-                                                <i className="fas fa-star"></i>
-                                            </li>
-                                        </ul>
-                                        <h3>
-                                            <Link href="/courses/1">
-                                                Finance Management Building
-                                                Wealth Security
-                                            </Link>
-                                        </h3>
-                                        <div className="client-items">
-                                            <div className="client-img bg-cover" style={{ background: `url(/assets/img/courses/client-1.png)` }}></div>
-                                            <p>Paul C. Deleon</p>
-                                        </div>
-                                        <ul className="post-class">
-                                            <li>
-                                                <i className="far fa-books"></i>
-                                                Lessons
-                                            </li>
-                                            <li>
-                                                <i className="far fa-user"></i>
-                                                80 Students
-                                            </li>
-                                            <li>
-                                                <Link href="/courses/1" className="theme-btn">Enroll Now</Link>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-                        </SwiperSlide>
-                        <SwiperSlide className="swiper-slide">
-                            <div className="courses-card-main-items">
-                                <div className="courses-card-items style-2">
-                                    <div className="courses-image">
-                                        <img src="/assets/img/courses/11.jpg" alt="img" />
-                                        <h3 className="courses-title">Programming</h3>
-                                        <h4 className="topic-title">Advance Machine <br /> Learning</h4>
-                                        <div className="arrow-items">
-                                            <div className="GlidingArrow">
-                                                <img src="/assets/img/courses/a1.png" alt="img" />
-                                            </div>
-                                            <div className="GlidingArrow delay1">
-                                                <img src="/assets/img/courses/a2.png" alt="img" />
-                                            </div>
-                                            <div className="GlidingArrow delay2">
-                                                <img src="/assets/img/courses/a3.png" alt="img" />
-                                            </div>
-                                            <div className="GlidingArrow delay3">
-                                                <img src="/assets/img/courses/a4.png" alt="img" />
-                                            </div>
-                                            <div className="GlidingArrow delay4">
-                                                <img src="/assets/img/courses/a5.png" alt="img" />
-                                            </div>
-                                            <div className="GlidingArrow delay5">
-                                                <img src="/assets/img/courses/a6.png" alt="img" />
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="courses-content">
-                                        <ul className="post-cat">
-                                            <li>
-                                                <Link href="/courses">Programming</Link>
-                                            </li>
-                                            <li>
-                                                <i className="fas fa-star"></i>
-                                                <i className="fas fa-star"></i>
-                                                <i className="fas fa-star"></i>
-                                                <i className="fas fa-star"></i>
-                                                <i className="fas fa-star"></i>
-                                            </li>
-                                        </ul>
-                                        <h3>
-                                            <Link href="/courses/1">
-                                                Introduction to Data Science and Machine Learning
-                                            </Link>
-                                        </h3>
-                                        <div className="client-items">
-                                            <div className="client-img bg-cover" style={{ background: `url(/assets/img/courses/client-1.png)` }}></div>
-                                            <p>Paul C. Deleon</p>
-                                        </div>
-                                        <ul className="post-class">
-                                            <li>
-                                                <i className="far fa-books"></i>
-                                                Lessons
-                                            </li>
-                                            <li>
-                                                <i className="far fa-user"></i>
-                                                80 Students
-                                            </li>
-                                            <li>
-                                                <Link href="/courses/1" className="theme-btn">Enroll Now</Link>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-                        </SwiperSlide>
-                        <SwiperSlide className="swiper-slide">
-                            <div className="courses-card-main-items">
-                                <div className="courses-card-items style-2">
-                                    <div className="courses-image">
-                                        <img src="/assets/img/courses/11.jpg" alt="img" />
-                                        <h3 className="courses-title">Programming</h3>
-                                        <h4 className="topic-title">Advance Machine <br /> Learning</h4>
-                                        <div className="arrow-items">
-                                            <div className="GlidingArrow">
-                                                <img src="/assets/img/courses/a1.png" alt="img" />
-                                            </div>
-                                            <div className="GlidingArrow delay1">
-                                                <img src="/assets/img/courses/a2.png" alt="img" />
-                                            </div>
-                                            <div className="GlidingArrow delay2">
-                                                <img src="/assets/img/courses/a3.png" alt="img" />
-                                            </div>
-                                            <div className="GlidingArrow delay3">
-                                                <img src="/assets/img/courses/a4.png" alt="img" />
-                                            </div>
-                                            <div className="GlidingArrow delay4">
-                                                <img src="/assets/img/courses/a5.png" alt="img" />
-                                            </div>
-                                            <div className="GlidingArrow delay5">
-                                                <img src="/assets/img/courses/a6.png" alt="img" />
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="courses-content">
-                                        <ul className="post-cat">
-                                            <li>
-                                                <Link href="/courses">Programming</Link>
-                                            </li>
-                                            <li>
-                                                <i className="fas fa-star"></i>
-                                                <i className="fas fa-star"></i>
-                                                <i className="fas fa-star"></i>
-                                                <i className="fas fa-star"></i>
-                                                <i className="fas fa-star"></i>
-                                            </li>
-                                        </ul>
-                                        <h3>
-                                            <Link href="/courses/1">
-                                                Introduction to Data Science and Machine Learning
-                                            </Link>
-                                        </h3>
-                                        <div className="client-items">
-                                            <div className="client-img bg-cover" style={{ background: `url(/assets/img/courses/client-1.png)` }}></div>
-                                            <p>Paul C. Deleon</p>
-                                        </div>
-                                        <ul className="post-class">
-                                            <li>
-                                                <i className="far fa-books"></i>
-                                                Lessons
-                                            </li>
-                                            <li>
-                                                <i className="far fa-user"></i>
-                                                80 Students
-                                            </li>
-                                            <li>
-                                                <Link href="/courses/1" className="theme-btn">Enroll Now</Link>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-                        </SwiperSlide>
-
-                    </Swiper>
+        <section className="popular-courses-section fix section-padding pt-0">
+            <div className="container">
+                <div className="section-title text-center">
+                    <h2 className="wow fadeInUp">{t('relatedCoursesTitle')}</h2>
                 </div>
-            </section>
-        </>
+                <div className="row">
+                    {mappedCourses.slice(0, 4).map((course) => (
+                        <div key={course.id} className="col-xl-3 col-lg-4 col-md-6">
+                            <CourseCard course={course} />
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </section>
     );
 };
 

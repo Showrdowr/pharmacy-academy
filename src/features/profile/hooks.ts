@@ -11,6 +11,7 @@ import type {
     Certificate,
     NotificationPreferences,
 } from './types';
+import { normalizeAuthUser } from '@/features/auth/role';
 import { authService } from '@/features/auth/services/authApi';
 import { coursesService } from '@/features/courses/services/coursesApi';
 
@@ -28,14 +29,16 @@ export function useProfile() {
         setError(null);
 
         try {
-            const user = await authService.getCurrentUser();
+            const rawUser = await authService.getCurrentUser();
+            const user = normalizeAuthUser(rawUser);
             if (user) {
                 setProfile({
                     id: user.id,
                     name: user.fullName || '',
                     email: user.email,
-                    role: user.role === 'pharmacist' ? 'pharmacist' : 'general',
+                    role: user.role,
                     pharmacistLicense: user.professionalLicenseNumber,
+                    pharmacistVerificationStatus: user.pharmacistVerificationStatus,
                     totalCourses: 0,
                     completedCourses: 0,
                     totalCPECredits: 0,
