@@ -40,9 +40,8 @@ function formatDisplayDate(value: unknown, locale: string): string {
     });
 }
 
-// Dynamic Open Graph & Metadata generation
 export async function generateMetadata({
-    params
+    params,
 }: {
     params: Promise<{ id: string }>
 }): Promise<Metadata> {
@@ -70,7 +69,7 @@ export async function generateMetadata({
                 title: courseTitle,
                 description: courseDesc,
                 images: [courseImage],
-            }
+            },
         };
     } catch (error) {
         return {
@@ -85,7 +84,6 @@ export default async function CourseDetailsPage({
 }: {
     params: Promise<{ id: string }>
 }) {
-    // Await params in Next.js 15
     const resolvedParams = await params;
     const locale = await getLocale();
     const appLocale: AppLocale = locale === 'en' ? 'en' : 'th';
@@ -118,13 +116,10 @@ export default async function CourseDetailsPage({
             const lessonsCount = toNumber(course.lessonsCount) || lessons.length;
             const lessonVideoDurationSeconds = lessons.reduce(
                 (sum: number, lesson: any) => sum + toNumber(lesson?.video?.duration),
-                0
+                0,
             );
-            const durationMinutes =
-                toNumber(course.duration) || Math.round(lessonVideoDurationSeconds / 60);
-            const normalizedSkillLevel = String(
-                course.skillLevel || course.level || course.difficulty || ''
-            ).toLowerCase();
+            const durationMinutes = toNumber(course.duration) || Math.round(lessonVideoDurationSeconds / 60);
+            const normalizedSkillLevel = String(course.skillLevel || course.level || course.difficulty || '').toLowerCase();
             const studentsCount =
                 toNumber(course.studentsCount) ||
                 toNumber(course.enrollmentsCount) ||
@@ -195,12 +190,15 @@ export default async function CourseDetailsPage({
                         description: relatedCourse.description || null,
                         descriptionEn: relatedCourse.descriptionEn || null,
                         thumbnail: relatedCourse.thumbnail || '/assets/img/courses/01.jpg',
-                        authorName: relatedCourse.authorName || t('instructorFallback'),
+                        authorName: relatedCourse.authorName || relatedCourse.instructor?.name || t('instructorFallback'),
                         price: toNumber(relatedCourse.price),
                         cpeCredits: toNumber(relatedCourse.cpeCredits),
                         enrolledCount: toNumber(relatedCourse.enrolledCount ?? relatedCourse.enrollmentsCount),
                         durationMinutes: toNumber(relatedCourse.durationMinutes),
                         totalDurationSeconds: toNumber(relatedCourse.totalDurationSeconds),
+                        rating: toNumber(relatedCourse.rating),
+                        reviewsCount: toNumber(relatedCourse.reviewsCount),
+                        lessonsCount: toNumber(relatedCourse.lessonsCount),
                         audience: relatedCourse.audience || 'all',
                         category: relatedCourse.category || null,
                     }))
@@ -210,7 +208,7 @@ export default async function CourseDetailsPage({
             };
         }
     } catch (e) {
-        // API failed — course not found
+        // API failed; course not found
     }
 
     if (!initialCourseData) {

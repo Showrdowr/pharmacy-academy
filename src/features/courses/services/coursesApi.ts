@@ -7,6 +7,7 @@ import type {
     CourseProgress,
     EnrolledCourse,
     EnrolledCourseStatusFilter,
+    RelatedCourseSummary,
 } from '../types';
 
 import { api, toApiError } from '@/lib/api';
@@ -63,14 +64,7 @@ function normalizeCoursesListResponse(payload: RawCoursesListPayload): CoursesLi
     };
 }
 
-/**
- * Courses API Service
- * จัดการ API calls ทั้งหมดที่เกี่ยวกับ Courses
- */
 export const coursesService = {
-    /**
-     * ดึงรายการคอร์สทั้งหมด
-     */
     async getCourses(params: CourseFilters & { page?: number; limit?: number }): Promise<CoursesListResponse> {
         const queryParams = new URLSearchParams();
 
@@ -91,37 +85,28 @@ export const coursesService = {
         return normalizeCoursesListResponse(response.data);
     },
 
-    /**
-     * ดึงข้อมูลคอร์สตาม ID
-     */
     async getCourseDetail(id: number): Promise<Course> {
         const response = await api.get<Course>(`/public/courses/${id}`);
-        if (!response.success) throw toApiError(response, 'ไม่พบคอร์สที่ต้องการ');
+        if (!response.success) throw toApiError(response, 'Course not found');
         return {
             ...normalizeCourseAudienceValue(response.data),
-            relatedCourses: Array.isArray((response.data as Course & { relatedCourses?: CourseCard[] }).relatedCourses)
-                ? (response.data as Course & { relatedCourses?: CourseCard[] }).relatedCourses?.map((course) => normalizeCourseAudienceValue(course))
+            relatedCourses: Array.isArray((response.data as Course & { relatedCourses?: RelatedCourseSummary[] }).relatedCourses)
+                ? (response.data as Course & { relatedCourses?: RelatedCourseSummary[] }).relatedCourses?.map((course) => normalizeCourseAudienceValue(course))
                 : [],
         };
     },
 
-    /**
-     * ดึงข้อมูลคอร์สตาม Slug
-     */
     async getCourseBySlug(slug: string): Promise<Course> {
         const response = await api.get<Course>(`/courses/slug/${slug}`);
-        if (!response.success) throw toApiError(response, 'ไม่พบคอร์สที่ต้องการ');
+        if (!response.success) throw toApiError(response, 'Course not found');
         return {
             ...normalizeCourseAudienceValue(response.data),
-            relatedCourses: Array.isArray((response.data as Course & { relatedCourses?: CourseCard[] }).relatedCourses)
-                ? (response.data as Course & { relatedCourses?: CourseCard[] }).relatedCourses?.map((course) => normalizeCourseAudienceValue(course))
+            relatedCourses: Array.isArray((response.data as Course & { relatedCourses?: RelatedCourseSummary[] }).relatedCourses)
+                ? (response.data as Course & { relatedCourses?: RelatedCourseSummary[] }).relatedCourses?.map((course) => normalizeCourseAudienceValue(course))
                 : [],
         };
     },
 
-    /**
-     * ดึงคอร์สที่ลงทะเบียนแล้ว (ต้อง login)
-     */
     async getEnrolledCourses(status: EnrolledCourseStatusFilter = 'active'): Promise<EnrolledCourse[]> {
         const response = await api.get<EnrolledCourse[]>('/courses/enrolled', { status });
         if (!response.success) throw toApiError(response, 'Failed to fetch enrolled courses');
@@ -144,34 +129,22 @@ export const coursesService = {
         return response.data;
     },
 
-    /**
-     * ลงทะเบียนคอร์ส
-     */
     async enrollCourse(courseId: number): Promise<void> {
         const response = await api.post<void>(`/courses/${courseId}/enroll`);
         if (!response.success) throw toApiError(response, 'Failed to enroll course');
     },
 
-    /**
-     * ดึงความคืบหน้าการเรียน
-     */
     async getCourseProgress(courseId: number): Promise<CourseProgress> {
         const response = await api.get<CourseProgress>(`/courses/${courseId}/progress`);
         if (!response.success) throw toApiError(response, 'Failed to fetch progress');
         return response.data;
     },
 
-    /**
-     * อัพเดทความคืบหน้า - Mark lesson as complete
-     */
     async markLessonComplete(courseId: number, lessonId: number): Promise<void> {
         const response = await api.post<void>(`/courses/${courseId}/lessons/${lessonId}/complete`);
         if (!response.success) throw toApiError(response, 'Failed to mark lesson as complete');
     },
 
-    /**
-     * ดึง Related Courses
-     */
     async getRelatedCourses(courseId: number, limit = 4): Promise<CourseCard[]> {
         const response = await api.get<CourseCard[]>(`/courses/${courseId}/related?limit=${limit}`);
         if (!response.success) throw toApiError(response, 'Failed to fetch related courses');
@@ -180,9 +153,6 @@ export const coursesService = {
             : [];
     },
 
-    /**
-     * ดึง Featured Courses
-     */
     async getFeaturedCourses(limit = 6): Promise<CourseCard[]> {
         const response = await api.get<CourseCard[]>(`/courses/featured?limit=${limit}`);
         if (!response.success) throw toApiError(response, 'Failed to fetch featured courses');
@@ -191,9 +161,6 @@ export const coursesService = {
             : [];
     },
 
-    /**
-     * ดึง Popular Courses
-     */
     async getPopularCourses(limit = 8): Promise<CourseCard[]> {
         const response = await api.get<CourseCard[]>(`/courses/popular?limit=${limit}`);
         if (!response.success) throw toApiError(response, 'Failed to fetch popular courses');

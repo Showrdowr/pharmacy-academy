@@ -38,16 +38,59 @@ function normalizeImageSrc(src?: string): string {
     return `/${normalized}`;
 }
 
+function normalizeRating(rating: number) {
+    if (!Number.isFinite(rating)) return 0;
+    return Math.min(5, Math.max(0, rating));
+}
+
+function normalizeReviewsCount(reviewsCount?: number) {
+    if (!Number.isFinite(reviewsCount)) return 0;
+    return Math.max(0, Math.floor(reviewsCount ?? 0));
+}
+
 function renderStars(rating: number) {
     return [1, 2, 3, 4, 5].map((star) => {
-        if (rating >= star) {
-            return <i key={star} className="fas fa-star" />;
-        } else if (rating >= star - 0.7) {
-            return <i key={star} className="fas fa-star-half-alt" />;
-        } else {
-            return <i key={star} className="far fa-star" />;
-        }
+        const isFilled = rating >= star;
+        const isHalf = !isFilled && rating >= star - 0.5;
+
+        return (
+            <i
+                key={star}
+                className={isFilled ? 'fas fa-star' : isHalf ? 'fas fa-star-half-alt' : 'far fa-star'}
+                style={{ color: isFilled || isHalf ? '#f6c453' : '#cbd5e1' }}
+            />
+        );
     });
+}
+
+function renderReviewSummary(rating: number, reviewsCount?: number) {
+    const normalizedRating = normalizeRating(rating);
+    const normalizedReviewsCount = normalizeReviewsCount(reviewsCount);
+
+    if (normalizedReviewsCount === 0) {
+        return (
+            <span
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '2px' }}
+                aria-label="No reviews yet"
+            >
+                {renderStars(0)}
+            </span>
+        );
+    }
+
+    return (
+        <span
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', minWidth: 0 }}
+            aria-label={`${normalizedRating.toFixed(1)} out of 5 from ${normalizedReviewsCount} reviews`}
+        >
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '2px' }}>
+                {renderStars(normalizedRating)}
+            </span>
+            <span style={{ fontSize: '14px', color: '#4b5563', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                {normalizedRating.toFixed(1)} ({normalizedReviewsCount})
+            </span>
+        </span>
+    );
 }
 
 const CourseCard: React.FC<CourseCardProps> = ({ course }) => {
@@ -124,8 +167,8 @@ const CourseCard: React.FC<CourseCardProps> = ({ course }) => {
                         <li style={{ minWidth: 0, flexShrink: 1 }}>
                             <Link href="/courses-grid" style={{ fontSize: '16px', display: 'inline-block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%', verticalAlign: 'middle' }}>{courseCategory}</Link>
                         </li>
-                        <li style={{ flexShrink: 0, whiteSpace: 'nowrap' }}>
-                            {renderStars(course.rating)}
+                        <li style={{ flexShrink: 0, whiteSpace: 'nowrap', display: 'flex', alignItems: 'center' }}>
+                            {renderReviewSummary(course.rating, course.reviewsCount)}
                         </li>
                     </ul>
                     <ul className="post-class">
@@ -197,8 +240,8 @@ const CourseCard: React.FC<CourseCardProps> = ({ course }) => {
                         <li style={{ minWidth: 0, flexShrink: 1 }}>
                             <Link href="/courses-grid" style={{ fontSize: '16px', display: 'inline-block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%', verticalAlign: 'middle' }}>{courseCategory}</Link>
                         </li>
-                        <li style={{ flexShrink: 0, whiteSpace: 'nowrap' }}>
-                            {renderStars(course.rating)}
+                        <li style={{ flexShrink: 0, whiteSpace: 'nowrap', display: 'flex', alignItems: 'center' }}>
+                            {renderReviewSummary(course.rating, course.reviewsCount)}
                         </li>
                     </ul>
                     <ul className="post-class" style={{ marginBottom: 0, flexShrink: 0 }}>

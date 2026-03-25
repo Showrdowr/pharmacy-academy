@@ -7,31 +7,19 @@ import { filterVisibleCoursesForViewer, getCourseViewerRole } from '@/features/c
 import { formatCourseDuration, resolveCourseDurationMinutes, resolveCourseStudentsCount } from '@/features/courses/course-card-display';
 import { getLocalizedContent, useAppLocale } from '@/features/i18n';
 import type { Course as GridCourse } from '../data/mockData';
+import type { RelatedCourseSummary } from '../types';
 import CourseCard from './CourseCard';
 
-type RelatedCourseItem = {
-    id: number;
-    title?: string | null;
-    titleEn?: string | null;
-    description?: string | null;
-    descriptionEn?: string | null;
-    thumbnail?: string | null;
-    authorName?: string | null;
-    price?: number | null;
-    cpeCredits?: number | null;
-    enrolledCount?: number | null;
-    enrollmentsCount?: number | null;
-    durationMinutes?: number | null;
-    totalDurationSeconds?: number | null;
-    audience?: string | null;
-    category?: { name?: string | null; nameEn?: string | null } | string | null;
-};
-
 interface RelatedCoursesProps {
-    courses?: RelatedCourseItem[];
+    courses?: RelatedCourseSummary[];
 }
 
-function getCategoryName(course: RelatedCourseItem, locale: 'th' | 'en') {
+function toNumber(value: unknown): number {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function getCategoryName(course: RelatedCourseSummary, locale: 'th' | 'en') {
     if (typeof course.category === 'string') {
         return course.category;
     }
@@ -49,31 +37,34 @@ const RelatedCourses: React.FC<RelatedCoursesProps> = ({ courses = [] }) => {
 
     const mappedCourses = useMemo<GridCourse[]>(
         () =>
-            filterVisibleCoursesForViewer(courses, viewerRole).map((course) => ({
-                id: Number(course.id),
-                title: String(course.title || t('fallbackCourseTitle')),
-                titleEn: String(course.titleEn || course.title || t('fallbackCourseTitle')),
-                category: getCategoryName(course, 'th') || t('otherCategory'),
-                categoryEn: getCategoryName(course, 'en') || getCategoryName(course, 'th') || t('otherCategory'),
-                instructor: String(course.authorName || t('instructorFallback')),
-                cpe: Number(course.cpeCredits || 0),
-                price: Number(course.price || 0),
-                level: t('skillLevelAll'),
-                rating: 5,
-                students: resolveCourseStudentsCount(course),
-                duration: formatCourseDuration(
-                    resolveCourseDurationMinutes(course),
-                    t,
-                    t('fallbackDuration'),
-                ),
-                image: String(course.thumbnail || '/assets/img/courses/01.jpg'),
-                description:
-                    getLocalizedContent(locale, course.description, course.descriptionEn)
-                    || getLocalizedContent(locale, course.title, course.titleEn)
-                    || t('qualityCourse'),
-                audience: typeof course.audience === 'string' ? course.audience as GridCourse['audience'] : 'all',
-            })),
-        [courses, locale, t, viewerRole]
+            filterVisibleCoursesForViewer(courses, viewerRole)
+                .map((course) => ({
+                    id: Number(course.id),
+                    title: String(course.title || t('fallbackCourseTitle')),
+                    titleEn: String(course.titleEn || course.title || t('fallbackCourseTitle')),
+                    category: getCategoryName(course, 'th') || t('otherCategory'),
+                    categoryEn: getCategoryName(course, 'en') || getCategoryName(course, 'th') || t('otherCategory'),
+                    instructor: String(course.authorName || t('instructorFallback')),
+                    cpe: Number(course.cpeCredits || 0),
+                    price: Number(course.price || 0),
+                    audience: typeof course.audience === 'string' ? course.audience as GridCourse['audience'] : 'all',
+                    level: t('skillLevelAll'),
+                    rating: toNumber(course.rating),
+                    reviewsCount: toNumber(course.reviewsCount),
+                    students: resolveCourseStudentsCount(course),
+                    duration: formatCourseDuration(
+                        resolveCourseDurationMinutes(course),
+                        t,
+                        t('fallbackDuration'),
+                    ),
+                    image: String(course.thumbnail || '/assets/img/courses/01.jpg'),
+                    description:
+                        getLocalizedContent(locale, course.description, course.descriptionEn) ||
+                        getLocalizedContent(locale, course.title, course.titleEn) ||
+                        t('qualityCourse'),
+                }))
+                .filter((course) => course.id > 0),
+        [courses, locale, t, viewerRole],
     );
 
     if (mappedCourses.length === 0) {

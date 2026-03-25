@@ -27,7 +27,6 @@ export default async function CoursesGridPage({
 }: {
     searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
-    // Await searchParams in Next.js 15
     const resolvedParams = await searchParams;
     const locale = await getLocale();
     const appLocale: AppLocale = locale === 'en' ? 'en' : 'th';
@@ -43,30 +42,41 @@ export default async function CoursesGridPage({
         const response = await coursesService.getCourses({
             search,
             category: categoryQuery as any,
-            limit: 12
+            limit: 12,
         });
 
-        const mapApiCourseToGridCourse = (apiCourse: any) => ({
-            id: apiCourse.id,
-            title: apiCourse.title,
-            titleEn: apiCourse.titleEn || apiCourse.title,
-            category: apiCourse.category?.name || t('fallbackCategory'),
-            categoryEn: apiCourse.category?.nameEn || apiCourse.category?.name || t('fallbackCategory'),
-            instructor: apiCourse.authorName || t('fallbackInstructor'),
-            cpe: apiCourse.cpeCredits || 0,
-            price: Number(apiCourse.price) || 0,
-            audience: apiCourse.audience || 'all',
-            level: t('fallbackLevel'),
-            rating: 5,
-            students: resolveCourseStudentsCount(apiCourse),
-            duration: formatCourseDuration(
-                resolveCourseDurationMinutes(apiCourse),
-                detailT,
-                t('fallbackDuration'),
-            ),
-            image: apiCourse.thumbnail || '/assets/img/courses/01.jpg',
-            description: getLocalizedContent(appLocale, apiCourse.description, apiCourse.descriptionEn) || t('fallbackDescription'),
-        });
+        const mapApiCourseToGridCourse = (apiCourse: any) => {
+            const categoryValue = apiCourse.category;
+            const categoryName = typeof categoryValue === 'string'
+                ? categoryValue
+                : categoryValue?.name || t('fallbackCategory');
+            const categoryNameEn = typeof categoryValue === 'object'
+                ? categoryValue?.nameEn || categoryValue?.name || categoryName
+                : categoryName;
+
+            return {
+                id: apiCourse.id,
+                title: apiCourse.title,
+                titleEn: apiCourse.titleEn || apiCourse.title,
+                category: categoryName,
+                categoryEn: categoryNameEn,
+                instructor: apiCourse.authorName || apiCourse.instructor?.name || t('fallbackInstructor'),
+                cpe: apiCourse.cpeCredits || 0,
+                price: Number(apiCourse.price) || 0,
+                audience: apiCourse.audience || 'all',
+                level: t('fallbackLevel'),
+                rating: Number(apiCourse.rating) || 0,
+                reviewsCount: Number(apiCourse.reviewsCount) || 0,
+                students: resolveCourseStudentsCount(apiCourse),
+                duration: formatCourseDuration(
+                    resolveCourseDurationMinutes(apiCourse),
+                    detailT,
+                    t('fallbackDuration'),
+                ),
+                image: apiCourse.thumbnail || '/assets/img/courses/01.jpg',
+                description: getLocalizedContent(appLocale, apiCourse.description, apiCourse.descriptionEn) || t('fallbackDescription'),
+            };
+        };
 
         if (response && Array.isArray(response)) {
             initialData = response.map(mapApiCourseToGridCourse);
@@ -74,7 +84,7 @@ export default async function CoursesGridPage({
             initialData = response.courses.map(mapApiCourseToGridCourse);
         }
     } catch (e) {
-        // API failed — show empty grid
+        // API failed; show empty grid
     }
 
     return (

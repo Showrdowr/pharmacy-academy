@@ -1,8 +1,5 @@
 // Course Types for Pharmacy Academy LMS
 
-/**
- * หมวดหมู่คอร์สเรียน
- */
 export type CourseCategory =
     | 'pharmaceutical-care'
     | 'drug-interaction'
@@ -11,14 +8,7 @@ export type CourseCategory =
     | 'hospital-pharmacy'
     | 'general';
 
-/**
- * ระดับความยาก
- */
 export type DifficultyLevel = 'beginner' | 'intermediate' | 'advanced';
-
-/**
- * สถานะของคอร์ส
- */
 export type CourseStatus = 'draft' | 'published' | 'archived';
 export type CourseVideoStatus = 'PROCESSING' | 'READY' | 'FAILED';
 export type CourseAudience = 'all' | 'general' | 'pharmacist';
@@ -26,9 +16,6 @@ export type EnrollmentStatus = 'ACTIVE' | 'CANCELLED' | 'REFUND_PENDING';
 export type RefundRequestStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
 export type EnrolledCourseStatusFilter = 'active' | 'cancelled' | 'all';
 
-/**
- * ข้อมูลผู้สอน
- */
 export interface Instructor {
     id: number;
     name: string;
@@ -47,30 +34,42 @@ export interface CoursePreviewVideo {
     playbackUrl: string | null;
 }
 
-/**
- * บทเรียนในคอร์ส
- */
+export interface RelatedCourseSummary {
+    id: number;
+    title: string;
+    titleEn?: string | null;
+    description?: string | null;
+    descriptionEn?: string | null;
+    thumbnail?: string | null;
+    authorName?: string | null;
+    price?: number | null;
+    cpeCredits?: number | null;
+    audience?: CourseAudience | string | null;
+    enrolledCount?: number | null;
+    enrollmentsCount?: number | null;
+    totalDurationSeconds?: number | null;
+    durationMinutes?: number | null;
+    category?: CourseCategory | string | { name?: string | null; nameEn?: string | null } | null;
+    rating?: number | null;
+    reviewsCount?: number | null;
+    lessonsCount?: number | null;
+}
+
 export interface Lesson {
     id: number;
     title: string;
-    duration: number; // minutes
+    duration: number;
     type: 'video' | 'document' | 'quiz';
     isCompleted?: boolean;
     videoUrl?: string;
 }
 
-/**
- * หมวดหมู่บทเรียน (Section)
- */
 export interface CourseSection {
     id: number;
     title: string;
     lessons: Lesson[];
 }
 
-/**
- * ข้อมูลคอร์สเรียนหลัก
- */
 export interface Course {
     id: number;
     title: string;
@@ -88,27 +87,25 @@ export interface Course {
     category: CourseCategory;
     categoryEn?: string | null;
     difficulty: DifficultyLevel;
-    duration: number; // total minutes
+    duration: number;
     lessonsCount: number;
     studentsCount: number;
     rating: number;
     reviewsCount: number;
-    cpeCredits?: number; // หน่วยกิต CPE สำหรับเภสัชกร
+    cpeCredits?: number;
     previewVideo?: CoursePreviewVideo | null;
+    relatedCourses?: RelatedCourseSummary[];
+    relatedCourseIds?: number[];
     sections?: CourseSection[];
     requirements?: string[];
     whatYouWillLearn?: string[];
     tags?: string[];
     audience?: CourseAudience;
-    relatedCourses?: CourseCard[];
     status: CourseStatus;
     createdAt: string;
     updatedAt: string;
 }
 
-/**
- * คอร์สในรูปแบบ Card (ข้อมูลย่อ)
- */
 export interface CourseCard {
     id: number;
     title: string;
@@ -130,9 +127,6 @@ export interface CourseCard {
     audience?: CourseAudience;
 }
 
-/**
- * ความคืบหน้าการเรียน
- */
 export interface CourseProgress {
     courseId: number;
     completedLessons: number[];
@@ -144,9 +138,6 @@ export interface CourseProgress {
     lastAccessedAt: string;
 }
 
-/**
- * คอร์สที่กำลังเรียน (My Courses)
- */
 export interface EnrolledCourse {
     id: number;
     courseId: number;
@@ -190,9 +181,6 @@ export interface EnrolledCourse {
     refundRequestStatus?: RefundRequestStatus | null;
 }
 
-/**
- * Filter สำหรับค้นหาคอร์ส
- */
 export interface CourseFilters {
     search?: string;
     category?: CourseCategory;
@@ -205,9 +193,6 @@ export interface CourseFilters {
     sortBy?: 'popular' | 'newest' | 'price-low' | 'price-high' | 'rating';
 }
 
-/**
- * Response จาก API
- */
 export interface CoursesListResponse {
     courses: CourseCard[];
     total: number;

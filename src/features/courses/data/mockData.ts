@@ -15,6 +15,7 @@ export interface Course {
     price: number;
     level: string;
     rating: number;
+    reviewsCount: number;
     students: number;
     duration: string;
     image: string;
@@ -48,6 +49,7 @@ export const COURSES_DATA: Course[] = [
         price: 1500,
         level: 'Beginner',
         rating: 4.8,
+        reviewsCount: 124,
         students: 245,
         duration: '6 ชั่วโมง',
         image: '/assets/img/courses/01.jpg',
@@ -65,6 +67,7 @@ export const COURSES_DATA: Course[] = [
         price: 1800,
         level: 'Intermediate',
         rating: 4.9,
+        reviewsCount: 98,
         students: 189,
         duration: '8 ชั่วโมง',
         image: '/assets/img/courses/02.jpg',
@@ -82,6 +85,7 @@ export const COURSES_DATA: Course[] = [
         price: 1200,
         level: 'All Level',
         rating: 4.7,
+        reviewsCount: 73,
         students: 312,
         duration: '4 ชั่วโมง',
         image: '/assets/img/courses/03.jpg',
@@ -99,6 +103,7 @@ export const COURSES_DATA: Course[] = [
         price: 2000,
         level: 'Intermediate',
         rating: 4.6,
+        reviewsCount: 51,
         students: 156,
         duration: '10 ชั่วโมง',
         image: '/assets/img/courses/04.jpg',
@@ -116,6 +121,7 @@ export const COURSES_DATA: Course[] = [
         price: 1600,
         level: 'Beginner',
         rating: 4.5,
+        reviewsCount: 42,
         students: 198,
         duration: '5 ชั่วโมง',
         image: '/assets/img/courses/05.jpg',
