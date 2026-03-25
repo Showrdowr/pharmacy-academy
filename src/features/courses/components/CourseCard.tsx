@@ -91,27 +91,9 @@ const CourseCard: React.FC<CourseCardProps> = ({ course }) => {
                     
                 </div>
                 <div className="courses-content">
-<<<<<<< HEAD
-=======
-                    <ul className="post-cat">
-                        <li>
-                            <Link href="/courses-grid" style={{ fontSize: '16px' }}>{courseCategory}</Link>
-                        </li>
-                        <li>
-                            {[1, 2, 3, 4, 5].map((star) => (
-                                <i key={star} className="fas fa-star" />
-                            ))}
-                        </li>
-                    </ul>
->>>>>>> 8afa68e (feat: add Thai localization across core application sections)
                     <h5>
                         <Link href={`/courses/${course.id}`}>{courseTitle}</Link>
                     </h5>
-<<<<<<< HEAD
-                    <h4 className="text-force-20 text-force-bold" style={{ marginTop: '5px', marginBottom: '15px', color: '#ffc107' }}>
-                        {formatCoursePrice(course.price)}
-                    </h4>
-=======
                     {showAudienceBadge && (
                         <div style={{ marginTop: '-4px', marginBottom: '8px' }}>
                             <span style={{
@@ -128,7 +110,9 @@ const CourseCard: React.FC<CourseCardProps> = ({ course }) => {
                             </span>
                         </div>
                     )}
->>>>>>> 8afa68e (feat: add Thai localization across core application sections)
+                    <h4 className="text-force-20 text-force-bold" style={{ marginTop: '5px', marginBottom: '15px', color: '#ffc107' }}>
+                        {formatCoursePrice(course.price, locale)}
+                    </h4>
                     <div className="client-items">
                         <div
                             className="client-img bg-cover"
@@ -138,7 +122,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ course }) => {
                     </div>
                     <ul className="post-cat" style={{ marginTop: '10px', marginBottom: '15px', display: 'flex', flexWrap: 'nowrap', alignItems: 'center', gap: '8px', justifyContent: 'space-between' }}>
                         <li style={{ minWidth: 0, flexShrink: 1 }}>
-                            <Link href="/courses-grid" style={{ fontSize: '16px', display: 'inline-block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%', verticalAlign: 'middle' }}>{course.category}</Link>
+                            <Link href="/courses-grid" style={{ fontSize: '16px', display: 'inline-block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%', verticalAlign: 'middle' }}>{courseCategory}</Link>
                         </li>
                         <li style={{ flexShrink: 0, whiteSpace: 'nowrap' }}>
                             {renderStars(course.rating)}
@@ -179,29 +163,11 @@ const CourseCard: React.FC<CourseCardProps> = ({ course }) => {
                     overflow: 'hidden',
                     gap: '6px',
                 }}>
-<<<<<<< HEAD
-=======
-                    <ul className="post-cat" style={{ marginBottom: 0, flexShrink: 0 }}>
-                        <li>
-                            <Link href="/courses-grid" style={{ fontSize: '16px' }}>{courseCategory}</Link>
-                        </li>
-                        <li>
-                            {[1, 2, 3, 4, 5].map((star) => (
-                                <i key={star} className="fas fa-star" />
-                            ))}
-                        </li>
-                    </ul>
->>>>>>> 8afa68e (feat: add Thai localization across core application sections)
                     <h5 style={{ margin: 0, flexShrink: 0 }}>
                         <span style={{ fontSize: '18px', fontWeight: 700, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                             {courseTitle}
                         </span>
                     </h5>
-<<<<<<< HEAD
-                    <h4 className="text-force-20 text-force-bold" style={{ margin: 0, flexShrink: 0, marginTop: '5px', marginBottom: '5px' }}>
-                        {formatCoursePrice(course.price)}
-                    </h4>
-=======
                     {showAudienceBadge && (
                         <div style={{ flexShrink: 0 }}>
                             <span style={{
@@ -219,7 +185,6 @@ const CourseCard: React.FC<CourseCardProps> = ({ course }) => {
                         </div>
                     )}
                     <h4 className="text-force-20 text-force-bold" style={{ margin: 0, flexShrink: 0 }}>{formatCoursePrice(course.price, locale)}</h4>
->>>>>>> 8afa68e (feat: add Thai localization across core application sections)
                     <span className="text-force-16" style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', lineHeight: '1.5', flexShrink: 1, minHeight: 0 }}>{course.description}</span>
                     <div className="client-items" style={{ marginTop: 0, flexShrink: 0 }}>
                         <div
@@ -230,7 +195,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ course }) => {
                     </div>
                     <ul className="post-cat" style={{ marginBottom: 0, flexShrink: 0, marginTop: '10px', display: 'flex', flexWrap: 'nowrap', alignItems: 'center', gap: '8px', justifyContent: 'space-between' }}>
                         <li style={{ minWidth: 0, flexShrink: 1 }}>
-                            <Link href="/courses-grid" style={{ fontSize: '16px', display: 'inline-block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%', verticalAlign: 'middle' }}>{course.category}</Link>
+                            <Link href="/courses-grid" style={{ fontSize: '16px', display: 'inline-block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%', verticalAlign: 'middle' }}>{courseCategory}</Link>
                         </li>
                         <li style={{ flexShrink: 0, whiteSpace: 'nowrap' }}>
                             {renderStars(course.rating)}

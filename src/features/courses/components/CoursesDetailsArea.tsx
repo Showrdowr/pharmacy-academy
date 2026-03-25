@@ -151,15 +151,9 @@ const CoursesDetailsArea: React.FC<CoursesDetailsAreaProps> = ({ initialData }) 
     const isRefundApproved = enrollmentStatus === 'REFUND_PENDING' && refundRequestStatus === 'APPROVED';
     const isRefundRejected = enrollmentStatus === 'REFUND_PENDING' && refundRequestStatus === 'REJECTED';
     const shouldAutoStartFree = searchParams.get('intent') === 'start-free';
-<<<<<<< HEAD
-    
-    const cpeCredits = Number(initialData?.cpeCredits) || 0;
+    const cpeCredits = Number(initialData?.cpeCredits) || Number(initialData?.cpe) || 0;
     const ratingParam = Number(initialData?.rating);
     const rating = Number.isFinite(ratingParam) ? ratingParam : 0;
-=======
-    const cpeCredits = Number(initialData?.cpeCredits) || Number(initialData?.cpe) || 0;
-    const rating = Number(initialData?.rating) || 4.5;
->>>>>>> 8afa68e (feat: add Thai localization across core application sections)
     const conferenceCode = initialData?.conferenceCode || '-';
     const publishedAt = initialData?.publishedAt || null;
     const createdAt = initialData?.createdAt || new Date().toISOString();

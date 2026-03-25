@@ -130,48 +130,7 @@ export const CourseInfoCard: React.FC<{
     conferenceCode: string;
     skillLevel: string;
     language: string;
-<<<<<<< HEAD
-}> = ({ instructor, lessonsCount, rating = 0, conferenceCode, skillLevel, language }) => (
-    <div className="courses-items mb-4">
-        <div className="courses-content p-4" style={{ border: '1px solid #e0e0e0', borderRadius: '12px', backgroundColor: '#f9f9f9' }}>
-            <div className="d-flex align-items-center gap-2 mb-3">
-                <i className="fas fa-chalkboard-user" style={{ fontSize: '28px', color: '#8b5cf6' }}></i>
-                <h5 style={{ margin: 0, fontSize: '28px', fontWeight: 'bold', color: '#333' }}>ข้อมูลคอร์ส</h5>
-            </div>
-            <ul style={{ listStyle: 'none', padding: 0, margin: 0, fontSize: '20px' }}>
-                <li style={{ marginBottom: '16px', display: 'flex', justifyContent: 'space-between' }}>
-                    <span style={{ color: '#666', fontWeight: '500' }}>ผู้สอน</span>
-                    <span style={{ fontWeight: '600', color: '#333', textAlign: 'right' }}>{instructor}</span>
-                </li>
-                <li style={{ marginBottom: '16px', display: 'flex', justifyContent: 'space-between' }}>
-                    <span style={{ color: '#666', fontWeight: '500' }}>บทเรียน</span>
-                    <span style={{ fontWeight: '600', color: '#333' }}>{lessonsCount} บท</span>
-                </li>
-                <li style={{ marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ color: '#666', fontWeight: '500' }}>คะแนนรีวิว</span>
-                    <span style={{ fontWeight: '600', color: '#f59e0b', fontSize: '22px' }}>
-                        {rating.toFixed(1)} 
-                        <i className="fas fa-star" style={{ marginLeft: '4px', fontSize: '18px' }}></i>
-                    </span>
-                </li>
-                <li style={{ marginBottom: '16px', display: 'flex', justifyContent: 'space-between' }}>
-                    <span style={{ color: '#666', fontWeight: '500' }}>ระดับ</span>
-                    <span style={{ fontWeight: '600', color: '#333' }}>{skillLevel}</span>
-                </li>
-                <li style={{ marginBottom: '16px', display: 'flex', justifyContent: 'space-between' }}>
-                    <span style={{ color: '#666', fontWeight: '500' }}>ภาษา</span>
-                    <span style={{ fontWeight: '600', color: '#333' }}>{language}</span>
-                </li>
-                <li style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <span style={{ color: '#666', fontWeight: '500' }}>Conference Code</span>
-                    <span style={{ fontWeight: '600', color: '#333' }}>{conferenceCode}</span>
-                </li>
-            </ul>
-        </div>
-    </div>
-);
-=======
-}> = ({ instructor, lessonsCount, rating = 4.5, conferenceCode, skillLevel, language }) => {
+}> = ({ instructor, lessonsCount, rating = 0, conferenceCode, skillLevel, language }) => {
     const t = useTranslations('courses.detail');
     const { locale } = useAppLocale();
 
@@ -215,7 +174,6 @@ export const CourseInfoCard: React.FC<{
         </div>
     );
 };
->>>>>>> 8afa68e (feat: add Thai localization across core application sections)
 
 export const TimelineCard: React.FC<{
     publishedAt: string | null;

@@ -69,45 +69,9 @@ export default async function CoursesGridPage({
         });
 
         if (response && Array.isArray(response)) {
-<<<<<<< HEAD
-            initialData = response.map((apiCourse: any) => ({
-                id: apiCourse.id,
-                title: apiCourse.title,
-                titleEn: apiCourse.title,
-                category: apiCourse.category?.name || 'อื่นๆ',
-                categoryEn: apiCourse.category?.name || 'Other',
-                instructor: apiCourse.authorName || 'ผู้สอน',
-                cpe: apiCourse.cpeCredits || 0,
-                price: Number(apiCourse.price) || 0,
-                level: 'All Level',
-                rating: Number(apiCourse.rating) || 0,
-                students: 0,
-                duration: '0 ชั่วโมง',
-                image: apiCourse.thumbnail || '/assets/img/courses/01.jpg',
-                description: apiCourse.description || 'คอร์สเรียนคุณภาพ',
-            }));
-        } else if (response && response.courses) {
-            initialData = response.courses.map((apiCourse: any) => ({
-                id: apiCourse.id,
-                title: apiCourse.title,
-                titleEn: apiCourse.title,
-                category: apiCourse.category?.name || 'อื่นๆ',
-                categoryEn: apiCourse.category?.name || 'Other',
-                instructor: apiCourse.authorName || 'ผู้สอน',
-                cpe: apiCourse.cpeCredits || 0,
-                price: Number(apiCourse.price) || 0,
-                level: 'All Level',
-                rating: Number(apiCourse.rating) || 0,
-                students: 0,
-                duration: '0 ชั่วโมง',
-                image: apiCourse.thumbnail || '/assets/img/courses/01.jpg',
-                description: apiCourse.description || 'คอร์สเรียนคุณภาพ',
-            }));
-=======
             initialData = response.map(mapApiCourseToGridCourse);
         } else if (response && response.courses) {
             initialData = response.courses.map(mapApiCourseToGridCourse);
->>>>>>> 8afa68e (feat: add Thai localization across core application sections)
         }
     } catch (e) {
         // API failed — show empty grid
