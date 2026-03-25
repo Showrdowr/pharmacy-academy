@@ -133,9 +133,10 @@ export const CATEGORIES: Category[] = [
 // Price ranges for filtering
 export const PRICE_RANGES: PriceRange[] = [
     { label: 'ทุกราคา', labelEn: 'All Prices', min: 0, max: Infinity },
-    { label: '0 - 1,000 บาท', labelEn: '0 - 1,000 THB', min: 0, max: 1000 },
-    { label: '1,001 - 5,000 บาท', labelEn: '1,001 - 5,000 THB', min: 1001, max: 5000 },
-    { label: '5,001+ บาท', labelEn: '5,001+ THB', min: 5001, max: Infinity },
+    { label: 'ฟรี', labelEn: 'Free', min: 0, max: 0 },
+    { label: '1-1,000 บาท', labelEn: '1-1,000 THB', min: 1, max: 1000 },
+    { label: '1,001-5,000 บาท', labelEn: '1,001-5,000 THB', min: 1001, max: 5000 },
+    { label: '5,001+บาท', labelEn: '5,001+ THB', min: 5001, max: Infinity },
 ];
 
 // Course levels
