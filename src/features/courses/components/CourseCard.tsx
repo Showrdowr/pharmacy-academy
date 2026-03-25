@@ -36,6 +36,18 @@ function normalizeImageSrc(src?: string): string {
     return `/${normalized}`;
 }
 
+function renderStars(rating: number) {
+    return [1, 2, 3, 4, 5].map((star) => {
+        if (rating >= star) {
+            return <i key={star} className="fas fa-star" />;
+        } else if (rating >= star - 0.7) {
+            return <i key={star} className="fas fa-star-half-alt" />;
+        } else {
+            return <i key={star} className="far fa-star" />;
+        }
+    });
+}
+
 const CourseCard: React.FC<CourseCardProps> = ({ course }) => {
     const { t } = useLanguage();
     const [imageSrc, setImageSrc] = useState(() => normalizeImageSrc(course.image));
@@ -70,19 +82,12 @@ const CourseCard: React.FC<CourseCardProps> = ({ course }) => {
                     
                 </div>
                 <div className="courses-content">
-                    <ul className="post-cat">
-                        <li>
-                            <Link href="/courses-grid" style={{ fontSize: '16px' }}>{course.category}</Link>
-                        </li>
-                        <li>
-                            {[1, 2, 3, 4, 5].map((star) => (
-                                <i key={star} className="fas fa-star" />
-                            ))}
-                        </li>
-                    </ul>
                     <h5>
                         <Link href={`/courses/${course.id}`}>{course.title}</Link>
                     </h5>
+                    <h4 className="text-force-20 text-force-bold" style={{ marginTop: '5px', marginBottom: '15px', color: '#ffc107' }}>
+                        {formatCoursePrice(course.price)}
+                    </h4>
                     <div className="client-items">
                         <div
                             className="client-img bg-cover"
@@ -90,6 +95,14 @@ const CourseCard: React.FC<CourseCardProps> = ({ course }) => {
                         />
                         <p>{course.instructor}</p>
                     </div>
+                    <ul className="post-cat" style={{ marginTop: '10px', marginBottom: '15px', display: 'flex', flexWrap: 'nowrap', alignItems: 'center', gap: '8px', justifyContent: 'space-between' }}>
+                        <li style={{ minWidth: 0, flexShrink: 1 }}>
+                            <Link href="/courses-grid" style={{ fontSize: '16px', display: 'inline-block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%', verticalAlign: 'middle' }}>{course.category}</Link>
+                        </li>
+                        <li style={{ flexShrink: 0, whiteSpace: 'nowrap' }}>
+                            {renderStars(course.rating)}
+                        </li>
+                    </ul>
                     <ul className="post-class">
                         <li>
                             <i className="far fa-clock" />
@@ -125,22 +138,14 @@ const CourseCard: React.FC<CourseCardProps> = ({ course }) => {
                     overflow: 'hidden',
                     gap: '6px',
                 }}>
-                    <ul className="post-cat" style={{ marginBottom: 0, flexShrink: 0 }}>
-                        <li>
-                            <Link href="/courses-grid" style={{ fontSize: '16px' }}>{course.category}</Link>
-                        </li>
-                        <li>
-                            {[1, 2, 3, 4, 5].map((star) => (
-                                <i key={star} className="fas fa-star" />
-                            ))}
-                        </li>
-                    </ul>
                     <h5 style={{ margin: 0, flexShrink: 0 }}>
                         <span style={{ fontSize: '18px', fontWeight: 700, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                             {course.title}
                         </span>
                     </h5>
-                    <h4 className="text-force-20 text-force-bold" style={{ margin: 0, flexShrink: 0 }}>{formatCoursePrice(course.price)}</h4>
+                    <h4 className="text-force-20 text-force-bold" style={{ margin: 0, flexShrink: 0, marginTop: '5px', marginBottom: '5px' }}>
+                        {formatCoursePrice(course.price)}
+                    </h4>
                     <span className="text-force-16" style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', lineHeight: '1.5', flexShrink: 1, minHeight: 0 }}>{course.description}</span>
                     <div className="client-items" style={{ marginTop: 0, flexShrink: 0 }}>
                         <div
@@ -149,6 +154,14 @@ const CourseCard: React.FC<CourseCardProps> = ({ course }) => {
                         />
                         <p style={{ margin: 0 }}>{course.instructor}</p>
                     </div>
+                    <ul className="post-cat" style={{ marginBottom: 0, flexShrink: 0, marginTop: '10px', display: 'flex', flexWrap: 'nowrap', alignItems: 'center', gap: '8px', justifyContent: 'space-between' }}>
+                        <li style={{ minWidth: 0, flexShrink: 1 }}>
+                            <Link href="/courses-grid" style={{ fontSize: '16px', display: 'inline-block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%', verticalAlign: 'middle' }}>{course.category}</Link>
+                        </li>
+                        <li style={{ flexShrink: 0, whiteSpace: 'nowrap' }}>
+                            {renderStars(course.rating)}
+                        </li>
+                    </ul>
                     <ul className="post-class" style={{ marginBottom: 0, flexShrink: 0 }}>
                         <li>
                             <i className="far fa-clock" />

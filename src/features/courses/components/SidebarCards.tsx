@@ -149,7 +149,7 @@ export const CourseInfoCard: React.FC<{
     conferenceCode: string;
     skillLevel: string;
     language: string;
-}> = ({ instructor, lessonsCount, rating = 4.5, conferenceCode, skillLevel, language }) => (
+}> = ({ instructor, lessonsCount, rating = 0, conferenceCode, skillLevel, language }) => (
     <div className="courses-items mb-4">
         <div className="courses-content p-4" style={{ border: '1px solid #e0e0e0', borderRadius: '12px', backgroundColor: '#f9f9f9' }}>
             <div className="d-flex align-items-center gap-2 mb-3">

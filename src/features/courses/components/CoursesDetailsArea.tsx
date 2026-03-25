@@ -107,7 +107,8 @@ const CoursesDetailsArea: React.FC<CoursesDetailsAreaProps> = ({ initialData }) 
     const shouldAutoStartFree = searchParams.get('intent') === 'start-free';
     
     const cpeCredits = Number(initialData?.cpeCredits) || 0;
-    const rating = Number(initialData?.rating) || 4.5;
+    const ratingParam = Number(initialData?.rating);
+    const rating = Number.isFinite(ratingParam) ? ratingParam : 0;
     const conferenceCode = initialData?.conferenceCode || '-';
     const status = initialData?.status || 'DRAFT';
     const publishedAt = initialData?.publishedAt || null;
