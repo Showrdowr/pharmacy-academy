@@ -11,31 +11,12 @@ import { useTranslations } from 'next-intl';
 import EnrollButton from '@/components/common/EnrollButton';
 import { normalizeCourseAudience } from '@/features/courses/audience';
 import { getLocalizedContent, useAppLocale } from '@/features/i18n';
+import { COURSE_FALLBACK_IMAGE, normalizeCourseImageSrc, shouldUseNativeImageTag } from '@/features/courses/image-src';
 import type { Course } from '../data/mockData';
 import { formatCoursePrice } from '../utils';
 
 interface CourseCardProps {
     course: Course;
-}
-
-const FALLBACK_IMAGE = '/assets/img/courses/01.jpg';
-const EXTERNAL_IMAGE_PATTERN = /^(https?:\/\/|data:|blob:)/i;
-const BASE64_PATTERN = /^[A-Za-z0-9+/=\r\n]+$/;
-
-function normalizeImageSrc(src?: string): string {
-    if (!src) return FALLBACK_IMAGE;
-
-    const normalized = src.trim();
-    if (!normalized) return FALLBACK_IMAGE;
-    if (EXTERNAL_IMAGE_PATTERN.test(normalized)) return normalized;
-    if (normalized.startsWith('/')) return normalized;
-
-    const sanitized = normalized.replace(/\s+/g, '');
-    if (sanitized.length > 100 && BASE64_PATTERN.test(sanitized)) {
-        return `data:image/jpeg;base64,${sanitized}`;
-    }
-
-    return `/${normalized}`;
 }
 
 function normalizeRating(rating: number) {
@@ -97,7 +78,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ course }) => {
     const { locale } = useAppLocale();
     const t = useTranslations('courses.card');
     const audienceT = useTranslations('courses.audience');
-    const [imageSrc, setImageSrc] = useState(() => normalizeImageSrc(course.image));
+    const [imageSrc, setImageSrc] = useState(() => normalizeCourseImageSrc(course.image));
     const courseTitle = getLocalizedContent(locale, course.title, course.titleEn);
     const courseCategory = getLocalizedContent(locale, course.category, course.categoryEn);
     const audience = normalizeCourseAudience(course.audience);
@@ -105,7 +86,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ course }) => {
     const audienceLabel = audienceT(audience);
 
     useEffect(() => {
-        setImageSrc(normalizeImageSrc(course.image));
+        setImageSrc(normalizeCourseImageSrc(course.image));
     }, [course.image]);
 
     return (
@@ -113,12 +94,12 @@ const CourseCard: React.FC<CourseCardProps> = ({ course }) => {
             {/* Default card state */}
             <div className="courses-card-items" style={{ marginTop: '15px' }}>
                 <div className="courses-image" style={{ position: 'relative', height: '140px', overflow: 'hidden' }}>
-                    {imageSrc.startsWith('data:') ? (
+                    {shouldUseNativeImageTag(imageSrc) ? (
                         <img
                             src={imageSrc}
                             alt={courseTitle}
                             style={{ objectFit: 'cover', width: '100%', height: '100%' }}
-                            onError={() => setImageSrc(FALLBACK_IMAGE)}
+                            onError={() => setImageSrc(COURSE_FALLBACK_IMAGE)}
                         />
                     ) : (
                         <Image
@@ -127,7 +108,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ course }) => {
                             fill
                             style={{ objectFit: 'cover' }}
                             sizes="(max-width: 768px) 100vw, 300px"
-                            onError={() => setImageSrc(FALLBACK_IMAGE)}
+                            onError={() => setImageSrc(COURSE_FALLBACK_IMAGE)}
                         />
                     )}
                     

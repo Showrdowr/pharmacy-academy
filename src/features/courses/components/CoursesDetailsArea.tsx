@@ -10,6 +10,7 @@ import { useAuth } from '@/features/auth';
 import { ApiError } from '@/lib/api';
 import { coursesService } from '@/features/courses/services/coursesApi';
 import { getCourseViewerRole, isCourseRestrictedForViewer, normalizeCourseAudience } from '@/features/courses/audience';
+import { COURSE_FALLBACK_IMAGE, normalizeCourseImageSrc, shouldUseNativeImageTag } from '@/features/courses/image-src';
 import type { EnrolledCourse } from '@/features/courses/types';
 import { getLocalizedContent, useAppLocale } from '@/features/i18n';
 import { isFreeCourse } from '../utils';
@@ -32,10 +33,6 @@ interface CoursesDetailsAreaProps {
     initialData?: any;
 }
 
-const FALLBACK_IMAGE = '/assets/img/courses/01.jpg';
-const EXTERNAL_IMAGE_PATTERN = /^(https?:\/\/|data:|blob:)/i;
-const BASE64_PATTERN = /^[A-Za-z0-9+/=\r\n]+$/;
-
 function getCategoryLabel(category: unknown): string {
     if (typeof category === 'string') return category;
     if (category && typeof category === 'object' && 'name' in category) {
@@ -43,22 +40,6 @@ function getCategoryLabel(category: unknown): string {
         if (typeof name === 'string') return name;
     }
     return '';
-}
-
-function normalizeImageSrc(src?: string): string {
-    if (!src) return FALLBACK_IMAGE;
-
-    const normalized = src.trim();
-    if (!normalized) return FALLBACK_IMAGE;
-    if (EXTERNAL_IMAGE_PATTERN.test(normalized)) return normalized;
-    if (normalized.startsWith('/')) return normalized;
-
-    const sanitized = normalized.replace(/\s+/g, '');
-    if (sanitized.length > 100 && BASE64_PATTERN.test(sanitized)) {
-        return `data:image/jpeg;base64,${sanitized}`;
-    }
-
-    return `/${normalized}`;
 }
 
 function isPreviewVideoReady(video: {
@@ -128,7 +109,7 @@ const CoursesDetailsArea: React.FC<CoursesDetailsAreaProps> = ({ initialData }) 
     const isFree = isFreeCourse(price);
     const instructorName = initialData?.instructor || initialData?.authorName || t('instructorFallback');
     const coverImage = initialData?.image || '/assets/img/courses/details-1.jpg';
-    const [coverImageSrc, setCoverImageSrc] = useState(() => normalizeImageSrc(coverImage));
+    const [coverImageSrc, setCoverImageSrc] = useState(() => normalizeCourseImageSrc(coverImage));
     const shortDescription = getLocalizedContent(locale, initialData?.description, initialData?.descriptionEn) || t('qualityCourse');
     const fullDescription = getLocalizedContent(locale, initialData?.details, initialData?.detailsEn) || shortDescription;
     const category = getLocalizedContent(locale, initialData?.category, initialData?.categoryEn) || getCategoryLabel(initialData?.category) || t('otherCategory');
@@ -164,7 +145,7 @@ const CoursesDetailsArea: React.FC<CoursesDetailsAreaProps> = ({ initialData }) 
     const courseAudienceLabel = audienceT(courseAudience);
 
     useEffect(() => {
-        setCoverImageSrc(normalizeImageSrc(coverImage));
+        setCoverImageSrc(normalizeCourseImageSrc(coverImage));
     }, [coverImage]);
 
     const loadEnrolledCourses = useCallback(async () => {
@@ -325,12 +306,12 @@ const CoursesDetailsArea: React.FC<CoursesDetailsAreaProps> = ({ initialData }) 
                                         marginBottom: '40px',
                                         borderRadius: '12px'
                                     }}>
-                                        {coverImageSrc.startsWith('data:') ? (
+                                        {shouldUseNativeImageTag(coverImageSrc) ? (
                                             <img
                                                 src={coverImageSrc}
                                                 alt={title}
                                                 style={{ objectFit: 'cover', width: '100%', height: '100%' }}
-                                                onError={() => setCoverImageSrc(FALLBACK_IMAGE)}
+                                                onError={() => setCoverImageSrc(COURSE_FALLBACK_IMAGE)}
                                             />
                                         ) : (
                                             <Image
@@ -340,7 +321,7 @@ const CoursesDetailsArea: React.FC<CoursesDetailsAreaProps> = ({ initialData }) 
                                                 style={{ objectFit: 'cover' }}
                                                 sizes="(max-width: 768px) 100vw, 800px"
                                                 priority
-                                                onError={() => setCoverImageSrc(FALLBACK_IMAGE)}
+                                                onError={() => setCoverImageSrc(COURSE_FALLBACK_IMAGE)}
                                             />
                                         )}
                                         {canPlayPreviewVideo && (

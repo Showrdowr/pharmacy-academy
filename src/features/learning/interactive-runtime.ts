@@ -13,6 +13,7 @@ export interface InteractiveRuntimeStatus {
 }
 
 type LearningCourseAreaTranslator = (key: string, values?: Record<string, string | number | Date>) => string;
+type LessonProgressComponent = 'video' | 'interactive' | 'quiz';
 
 interface InteractiveRuntimeStatusInput {
     lesson: LearningLessonData | null | undefined;
@@ -42,6 +43,103 @@ export function calculateWatchPercent(watchedSeconds?: number | null, duration?:
 
     const normalizedWatchedSeconds = Math.max(0, Number(watchedSeconds || 0));
     return Math.min(100, Number(((Math.min(normalizedWatchedSeconds, normalizedDuration) / normalizedDuration) * 100).toFixed(2)));
+}
+
+/**
+ * Alias for calculateWatchPercent — used for the "View Bar" UI.
+ * Returns 0–100 representing the percentage of the video the learner has watched.
+ */
+export function calculateViewPercent(watchedSeconds?: number | null, duration?: number | null) {
+    return calculateWatchPercent(watchedSeconds, duration);
+}
+
+const LESSON_PROGRESS_COMPONENT_WEIGHTS: Record<LessonProgressComponent, number> = {
+    video: 70,
+    interactive: 10,
+    quiz: 20,
+};
+
+function roundProgressPercent(value: number) {
+    return Math.min(100, Math.max(0, Number(value.toFixed(2))));
+}
+
+function getAvailableLessonProgressComponents(lesson: LearningLessonData) {
+    const components: LessonProgressComponent[] = [];
+
+    if (lesson.video) {
+        components.push('video');
+    }
+
+    if (lesson.interactiveQuestions.length > 0) {
+        components.push('interactive');
+    }
+
+    if (lesson.lessonQuiz) {
+        components.push('quiz');
+    }
+
+    return components;
+}
+
+export function calculateLessonProgressPercent(
+    lesson: LearningLessonData | null | undefined,
+    options?: { currentTime?: number | null },
+) {
+    if (!lesson) {
+        return 0;
+    }
+
+    if (lesson.status === 'completed' || lesson.progress.isCompleted) {
+        return 100;
+    }
+
+    const activeComponents = getAvailableLessonProgressComponents(lesson);
+    if (activeComponents.length === 0) {
+        return 0;
+    }
+
+    const totalWeight = activeComponents.reduce(
+        (sum, component) => sum + LESSON_PROGRESS_COMPONENT_WEIGHTS[component],
+        0,
+    );
+    const watchedSeconds = Math.max(
+        Number(lesson.progress.lastWatchedSeconds ?? 0),
+        Number(options?.currentTime ?? 0),
+    );
+    const componentProgress: Record<LessonProgressComponent, number> = {
+        video: calculateWatchPercent(watchedSeconds, Number(lesson.video?.duration ?? 0)) / 100,
+        interactive: lesson.interactiveQuestions.length > 0
+            ? lesson.interactiveQuestions.filter((question) => question.answered).length / lesson.interactiveQuestions.length
+            : 0,
+        quiz: lesson.lessonQuiz?.latestAttempt?.isPassed ? 1 : 0,
+    };
+
+    const weightedPercent = activeComponents.reduce((sum, component) => {
+        const normalizedWeight = (LESSON_PROGRESS_COMPONENT_WEIGHTS[component] / totalWeight) * 100;
+        return sum + (normalizedWeight * componentProgress[component]);
+    }, 0);
+
+    return roundProgressPercent(weightedPercent);
+}
+
+export function calculateCourseProgressPercent(
+    course: LearningCourseData | null | undefined,
+    options?: { activeLessonId?: number | null; currentTime?: number | null },
+) {
+    if (!course || course.lessons.length === 0) {
+        return 0;
+    }
+
+    const totalProgress = course.lessons.reduce((sum, lesson) => (
+        sum + calculateLessonProgressPercent(
+            lesson,
+            lesson.id === options?.activeLessonId
+                ? { currentTime: options?.currentTime }
+                : undefined,
+        )
+    ), 0);
+
+    return roundProgressPercent(totalProgress / course.lessons.length);
 }
 
 export function calculateCourseWatchPercent(

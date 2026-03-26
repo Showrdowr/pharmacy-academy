@@ -70,6 +70,7 @@
       "startQuiz": "เริ่มทำแบบทดสอบ",
       "retakeQuiz": "ทำแบบทดสอบอีกครั้ง",
       "quizLoadFailed": "โหลดแบบทดสอบท้ายบทไม่สำเร็จ",
+      "quizProgressSyncFailed": "ไม่สามารถบันทึกความคืบหน้าก่อนเริ่มแบบทดสอบได้ กรุณาลองใหม่อีกครั้ง",
       "quizSubmitFailed": "ส่งแบบทดสอบท้ายบทไม่สำเร็จ",
       "quizAnswerRequired": "กรุณาตอบคำถามให้ครบทุกข้อก่อนส่งแบบทดสอบ",
       "quizPassRequired": "ต้องผ่าน Quiz ท้ายบทก่อนจบบทเรียน",
@@ -123,7 +124,18 @@
       "questionTypeMultipleChoice": "ตัวเลือก",
       "questionTypeTrueFalse": "ถูก/ผิด",
       "questionTypeShortAnswer": "คำตอบสั้น",
-      "pagePreparing": "กำลังเตรียมหน้าเรียนวิดีโอ"
+      "pagePreparing": "กำลังเตรียมหน้าเรียนวิดีโอ",
+      "viewBar": "สถานะการดูวิดีโอ",
+      "viewBarCompleted": "ดูวิดีโอจบแล้ว ✓",
+      "progressBar": "ความคืบหน้าบทเรียน",
+      "progressBarCompleted": "บทเรียนจบแล้ว ✓",
+      "goToNextLesson": "ไปบทเรียนถัดไป",
+      "videoWeight": "วิดีโอ",
+      "quizWeight": "Quiz ท้ายบท",
+      "autoCompleteSaving": "กำลังบันทึกว่าจบบทเรียน...",
+      "quizRequiredForProgress": "ต้องผ่าน Quiz ท้ายบทเพื่อจบบทเรียน",
+      "videoWatchProgress": "ดูวิดีโอไปแล้ว {percent}%",
+      "quizUnlocked": "ดูวิดีโอจบแล้ว ทำ Quiz ได้เลย"
     }
   }
 }

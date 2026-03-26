@@ -1,5 +1,7 @@
 import {
+    calculateCourseProgressPercent,
     calculateCourseWatchPercent,
+    calculateLessonProgressPercent,
     calculateWatchPercent,
     canRenderLessonVideo,
     getInteractiveRuntimeStatus,
@@ -12,6 +14,7 @@ import {
     createInteractiveQuestionFixture,
     createLearningCourseFixture,
     createLessonFixture,
+    createLessonQuizSummaryFixture,
     createLessonVideoFixture,
 } from '@/test/learning-fixtures';
 
@@ -124,5 +127,47 @@ describe('interactive-runtime', () => {
 
         expect(calculateWatchPercent(300, 600)).toBe(50);
         expect(calculateCourseWatchPercent(course, { activeLessonId: 1, currentTime: 300 })).toBe(25);
+        expect(calculateLessonProgressPercent(course.lessons[0], { currentTime: 300 })).toBe(50);
+        expect(calculateCourseProgressPercent(course, { activeLessonId: 1, currentTime: 300 })).toBe(25);
+    });
+
+    it('weights lesson progress by video, interactive checkpoints, and quiz pass state', () => {
+        const lesson = createLessonFixture({
+            progress: { lastWatchedSeconds: 300, isCompleted: false },
+            interactiveQuestions: [
+                createInteractiveQuestionFixture({ id: 1, answered: true }),
+                createInteractiveQuestionFixture({ id: 2, answered: false, sortOrder: 2 }),
+            ],
+            lessonQuiz: {
+                id: 44,
+                passingScorePercent: 70,
+                questionsCount: 3,
+                latestAttempt: {
+                    id: 9,
+                    attemptNumber: 1,
+                    scorePercent: 66.67,
+                    isPassed: false,
+                },
+            },
+        });
+
+        expect(calculateLessonProgressPercent(lesson)).toBe(40);
+    });
+
+    it('renormalizes progress weights when a lesson does not have every component', () => {
+        const lesson = createLessonFixture({
+            progress: { lastWatchedSeconds: 450, isCompleted: false },
+            interactiveQuestions: [],
+            lessonQuiz: createLessonQuizSummaryFixture({
+                latestAttempt: {
+                    id: 15,
+                    attemptNumber: 1,
+                    scorePercent: 80,
+                    isPassed: true,
+                },
+            }),
+        });
+
+        expect(calculateLessonProgressPercent(lesson)).toBe(80.56);
     });
 });

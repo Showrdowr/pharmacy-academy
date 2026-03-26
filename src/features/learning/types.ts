@@ -176,6 +176,11 @@ export interface LearningLessonVideo {
     playbackUrl: string | null;
 }
 
+export interface LearningLessonVideoSyncResult {
+    lessonId: number;
+    video: LearningLessonVideo | null;
+}
+
 export interface LearningLessonDocument {
     id: number;
     fileName: string;

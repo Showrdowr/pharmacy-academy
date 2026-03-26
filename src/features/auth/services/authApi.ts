@@ -9,6 +9,7 @@ import type {
 import { API_BASE_URL } from '@/config';
 import { getClientMessage } from '@/features/i18n/runtime';
 import { normalizeAuthUser } from '../role';
+import { clearLearningProgressCache } from '@/features/learning/progress-cache';
 
 // Helper: get the correct storage based on rememberMe preference
 function getStorage(): Storage {
@@ -176,6 +177,7 @@ export const authService = {
         sessionStorage.removeItem('ontrack_user');
         sessionStorage.removeItem('token');
         localStorage.removeItem('rememberMe');
+        clearLearningProgressCache();
     },
 
     /**
@@ -205,6 +207,7 @@ export const authService = {
                 localStorage.removeItem('ontrack_user');
                 sessionStorage.removeItem('token');
                 sessionStorage.removeItem('ontrack_user');
+                clearLearningProgressCache();
             }
         } catch (error) {
             console.error('Error fetching user:', error);

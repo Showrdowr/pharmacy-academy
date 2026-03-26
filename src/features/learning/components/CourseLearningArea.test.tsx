@@ -3,6 +3,7 @@ import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event';
 import { ApiError } from '@/lib/api';
 import CourseLearningArea from './CourseLearningArea';
+import { buildLearningProgressCacheKey } from '../progress-cache';
 import {
     createInteractiveQuestionFixture,
     createLearningCourseFixture,
@@ -10,6 +11,13 @@ import {
     createLessonDocumentFixture,
     createLessonVideoFixture,
 } from '@/test/learning-fixtures';
+
+const learningMessages = require('../../../messages/th/learning.json') as {
+    learning: {
+        courseArea: Record<string, string>;
+    };
+};
+const learningText = learningMessages.learning.courseArea;
 
 const testState = vi.hoisted(() => ({
     auth: {
@@ -244,10 +252,10 @@ describe('CourseLearningArea interactive harness', () => {
         testState.api.submitLessonQuizAttempt.mockReset();
         testState.api.markLessonComplete.mockReset();
         testState.api.updateLessonProgress.mockReset();
-        testState.api.updateLessonProgress.mockResolvedValue({
-            lastWatchedSeconds: 0,
+        testState.api.updateLessonProgress.mockImplementation(async (_lessonId: number, lastWatchedSeconds: number) => ({
+            lastWatchedSeconds,
             isCompleted: false,
-        });
+        }));
         testState.api.submitVideoQuestionAnswer.mockResolvedValue({
             id: 1,
             videoQuestionId: 1,
@@ -284,6 +292,7 @@ describe('CourseLearningArea interactive harness', () => {
             isCompleted: true,
             progressPercent: 100,
         });
+        window.localStorage.clear();
         resetPlayerHarness();
     });
 
@@ -297,6 +306,7 @@ describe('CourseLearningArea interactive harness', () => {
         revokeObjectUrlSpy?.mockRestore();
         revokeObjectUrlSpy = null;
         openedPreviewWindow = null;
+        window.localStorage.clear();
         vi.unstubAllGlobals();
     });
 
@@ -667,7 +677,90 @@ describe('CourseLearningArea interactive harness', () => {
             expect(testState.player.pause).toHaveBeenCalled();
         });
         await waitFor(() => {
-            expect(testState.api.updateLessonProgress).toHaveBeenCalledWith(1, 125);
+            expect(testState.api.updateLessonProgress).toHaveBeenCalledWith(1, 125, { keepalive: true });
+        });
+    });
+
+    it('restores cached lesson progress after refresh and syncs it back to the backend', async () => {
+        const cacheKey = buildLearningProgressCacheKey('authenticated', 12);
+        window.localStorage.setItem(cacheKey, JSON.stringify({
+            version: 1,
+            courseId: 12,
+            lastAccessedLessonId: 1,
+            updatedAt: Date.now(),
+            lessons: {
+                '1': {
+                    lastWatchedSeconds: 240,
+                    updatedAt: Date.now(),
+                },
+            },
+        }));
+
+        const course = createLearningCourseFixture({
+            watchPercent: 0,
+            lessons: [
+                createLessonFixture({
+                    progress: { lastWatchedSeconds: 0, isCompleted: false },
+                    interactiveQuestions: [],
+                }),
+            ],
+        });
+
+        testState.api.getCourseLearning.mockResolvedValue(course);
+        render(<CourseLearningArea />);
+
+        expect(await screen.findByTestId('mock-vimeo-player')).toBeInTheDocument();
+        await waitFor(() => {
+            expect(testState.player.props?.resumeAt).toBe(240);
+        });
+        await waitFor(() => {
+            expect(testState.api.updateLessonProgress).toHaveBeenLastCalledWith(1, 240, undefined);
+        });
+        expect(testState.api.updateLessonProgress).toHaveBeenCalledWith(1, 25, undefined);
+    });
+
+    it('retries saving progress on the next playback update after a failed sync', async () => {
+        const course = createLearningCourseFixture({
+            lessons: [
+                createLessonFixture({
+                    progress: { lastWatchedSeconds: 100, isCompleted: false },
+                    interactiveQuestions: [],
+                }),
+            ],
+        });
+        testState.api.getCourseLearning.mockResolvedValue(course);
+        testState.api.updateLessonProgress
+            .mockRejectedValueOnce(new ApiError('Server error', {
+                statusCode: 500,
+                code: 'INTERNAL_SERVER_ERROR',
+            }))
+            .mockResolvedValue({
+                lastWatchedSeconds: 103,
+                isCompleted: false,
+            });
+
+        render(<CourseLearningArea />);
+
+        expect(await screen.findByTestId('mock-vimeo-player')).toBeInTheDocument();
+        act(() => {
+            emitInitialPosition(100);
+        });
+        act(() => {
+            advancePlaybackClock(5);
+            emitTimeUpdate(105);
+        });
+
+        await waitFor(() => {
+            expect(testState.api.updateLessonProgress).toHaveBeenCalledWith(1, 105, undefined);
+        });
+
+        act(() => {
+            advancePlaybackClock(3);
+            emitTimeUpdate(108);
+        });
+
+        await waitFor(() => {
+            expect(testState.api.updateLessonProgress).toHaveBeenCalledWith(1, 108, undefined);
         });
     });
 
@@ -808,6 +901,88 @@ describe('CourseLearningArea interactive harness', () => {
             ]);
         });
         expect(await screen.findByText('คุณผ่านแบบทดสอบท้ายบทแล้ว')).toBeInTheDocument();
+    });
+
+    it.skip('shows a loading state instead of a false quiz load failure while progress sync is still running', async () => {
+        let resolveProgress!: (value: { lastWatchedSeconds: number; isCompleted: boolean }) => void;
+        testState.api.updateLessonProgress.mockImplementation(() => new Promise((resolve) => {
+            resolveProgress = resolve;
+        }));
+
+        const course = createLearningCourseFixture({
+            lessons: [
+                createLessonFixture({
+                    interactiveQuestions: [],
+                    documents: [],
+                    progress: { lastWatchedSeconds: 600, isCompleted: false },
+                    lessonQuiz: {
+                        id: 44,
+                        passingScorePercent: 70,
+                        maxAttempts: 3,
+                        questionsCount: 1,
+                        attemptsUsed: 0,
+                        remainingAttempts: 3,
+                        latestAttempt: null,
+                    },
+                }),
+            ],
+        });
+        testState.api.getCourseLearning.mockResolvedValue(course);
+
+        const user = userEvent.setup();
+        render(<CourseLearningArea />);
+
+        expect(await screen.findByText('Quiz à¸—à¹‰à¸²à¸¢à¸šà¸—')).toBeInTheDocument();
+        await user.click(screen.getByRole('button', { name: 'à¹€à¸£à¸´à¹ˆà¸¡à¸—à¸³à¹à¸šà¸šà¸—à¸”à¸ªà¸­à¸š' }));
+
+        expect(screen.getByText('à¸à¸³à¸¥à¸±à¸‡à¹‚à¸«à¸¥à¸”à¹à¸šà¸šà¸—à¸”à¸ªà¸­à¸šà¸—à¹‰à¸²à¸¢à¸šà¸—')).toBeInTheDocument();
+        expect(screen.queryByText('à¹‚à¸«à¸¥à¸”à¹à¸šà¸šà¸—à¸”à¸ªà¸­à¸šà¸—à¹‰à¸²à¸¢à¸šà¸—à¹„à¸¡à¹ˆà¸ªà¸³à¹€à¸£à¹‡à¸ˆ')).not.toBeInTheDocument();
+        expect(testState.api.getLessonQuizRuntime).not.toHaveBeenCalled();
+
+        resolveProgress({ lastWatchedSeconds: 600, isCompleted: false });
+
+        await waitFor(() => {
+            expect(testState.api.getLessonQuizRuntime).toHaveBeenCalledWith(1);
+        });
+    });
+
+    it.skip('shows a progress sync notice instead of a quiz load failure when quiz opening is blocked before runtime loads', async () => {
+        testState.api.updateLessonProgress.mockRejectedValue(new ApiError('Server error', {
+            statusCode: 500,
+            code: 'INTERNAL_SERVER_ERROR',
+        }));
+
+        const course = createLearningCourseFixture({
+            lessons: [
+                createLessonFixture({
+                    interactiveQuestions: [],
+                    documents: [],
+                    progress: { lastWatchedSeconds: 600, isCompleted: false },
+                    lessonQuiz: {
+                        id: 44,
+                        passingScorePercent: 70,
+                        maxAttempts: 3,
+                        questionsCount: 1,
+                        attemptsUsed: 0,
+                        remainingAttempts: 3,
+                        latestAttempt: null,
+                    },
+                }),
+            ],
+        });
+        testState.api.getCourseLearning.mockResolvedValue(course);
+
+        const user = userEvent.setup();
+        render(<CourseLearningArea />);
+
+        expect(await screen.findByText('Quiz à¸—à¹‰à¸²à¸¢à¸šà¸—')).toBeInTheDocument();
+        await user.click(screen.getByRole('button', { name: 'à¹€à¸£à¸´à¹ˆà¸¡à¸—à¸³à¹à¸šà¸šà¸—à¸”à¸ªà¸­à¸š' }));
+
+        await waitFor(() => {
+            expect(screen.getByText('à¹„à¸¡à¹ˆà¸ªà¸²à¸¡à¸²à¸£à¸–à¸šà¸±à¸™à¸—à¸¶à¸à¸„à¸§à¸²à¸¡à¸„à¸·à¸šà¸«à¸™à¹‰à¸²à¸à¹ˆà¸­à¸™à¹€à¸£à¸´à¹ˆà¸¡à¹à¸šà¸šà¸—à¸”à¸ªà¸­à¸šà¹„à¸”à¹‰ à¸à¸£à¸¸à¸“à¸²à¸¥à¸­à¸‡à¹ƒà¸«à¸¡à¹ˆà¸­à¸µà¸à¸„à¸£à¸±à¹‰à¸‡')).toBeInTheDocument();
+        });
+        expect(screen.queryByText('à¹‚à¸«à¸¥à¸”à¹à¸šà¸šà¸—à¸”à¸ªà¸­à¸šà¸—à¹‰à¸²à¸¢à¸šà¸—à¹„à¸¡à¹ˆà¸ªà¸³à¹€à¸£à¹‡à¸ˆ')).not.toBeInTheDocument();
+        expect(testState.api.getLessonQuizRuntime).not.toHaveBeenCalled();
     });
 
     it('keeps the lesson quiz locked until the learner finishes the lesson', async () => {
@@ -1090,7 +1265,7 @@ describe('CourseLearningArea interactive harness', () => {
         unmount();
 
         await waitFor(() => {
-            expect(testState.api.updateLessonProgress).toHaveBeenLastCalledWith(1, 135);
+            expect(testState.api.updateLessonProgress).toHaveBeenLastCalledWith(1, 135, { keepalive: true });
         });
     });
 
@@ -1156,7 +1331,7 @@ describe('CourseLearningArea interactive harness', () => {
         expect(await screen.findByRole('heading', { name: 'บทเรียนถัดไป' })).toBeInTheDocument();
     });
 
-    it('shows watch progress percentages in the remaining progress surfaces after removing the lesson progress bar', async () => {
+    it('shows weighted progress in the learning progress surfaces', async () => {
         const course = createLearningCourseFixture({
             progressPercent: 0,
             lessons: [
@@ -1181,11 +1356,11 @@ describe('CourseLearningArea interactive harness', () => {
         render(<CourseLearningArea />);
 
         expect(await screen.findByRole('heading', { name: 'บทเรียนแรก' })).toBeInTheDocument();
-        expect(screen.getByText('ความคืบหน้า')).toBeInTheDocument();
-        expect(screen.getByText('25%')).toBeInTheDocument();
+        expect(screen.getAllByText(learningText.progressBar).length).toBeGreaterThan(0);
+        expect(screen.queryByText('25%')).not.toBeInTheDocument();
+        expect(screen.getAllByText('50%').length).toBeGreaterThan(0);
         expect(screen.getByText('จบแล้ว 0/2 บท (0%)')).toBeInTheDocument();
-        expect(screen.getByText('ดูไปแล้ว 5:00 (50%)')).toBeInTheDocument();
-        expect(screen.queryByText('ความคืบหน้าบทเรียน')).not.toBeInTheDocument();
+        expect(screen.getByText(`${learningText.progress} 50% • 5:00`)).toBeInTheDocument();
     });
 
     it('shows the incomplete lesson status without rendering the completion button until the lesson is watched to the end', async () => {

@@ -154,22 +154,25 @@ class ApiClient {
         return this.request<T>(endpoint, { method: 'GET', params });
     }
 
-    async post<T>(endpoint: string, body?: unknown) {
+    async post<T>(endpoint: string, body?: unknown, options: Omit<RequestOptions, 'method' | 'body' | 'params'> = {}) {
         return this.request<T>(endpoint, {
+            ...options,
             method: 'POST',
             body: buildRequestBody(body),
         });
     }
 
-    async put<T>(endpoint: string, body?: unknown) {
+    async put<T>(endpoint: string, body?: unknown, options: Omit<RequestOptions, 'method' | 'body' | 'params'> = {}) {
         return this.request<T>(endpoint, {
+            ...options,
             method: 'PUT',
             body: buildRequestBody(body),
         });
     }
 
-    async patch<T>(endpoint: string, body?: unknown) {
+    async patch<T>(endpoint: string, body?: unknown, options: Omit<RequestOptions, 'method' | 'body' | 'params'> = {}) {
         return this.request<T>(endpoint, {
+            ...options,
             method: 'PATCH',
             body: buildRequestBody(body),
         });

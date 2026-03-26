@@ -70,6 +70,7 @@
       "startQuiz": "Start Quiz",
       "retakeQuiz": "Retake Quiz",
       "quizLoadFailed": "Failed to load the lesson quiz",
+      "quizProgressSyncFailed": "We couldn't sync your lesson progress before starting the quiz. Please try again.",
       "quizSubmitFailed": "Failed to submit the lesson quiz",
       "quizAnswerRequired": "Please answer every question before submitting the quiz",
       "quizPassRequired": "You must pass the lesson quiz before completing this lesson",
@@ -123,7 +124,18 @@
       "questionTypeMultipleChoice": "Multiple choice",
       "questionTypeTrueFalse": "True/False",
       "questionTypeShortAnswer": "Short answer",
-      "pagePreparing": "Preparing your learning page"
+      "pagePreparing": "Preparing your learning page",
+      "viewBar": "Video Watch Progress",
+      "viewBarCompleted": "Video completed ✓",
+      "progressBar": "Lesson Progress",
+      "progressBarCompleted": "Lesson completed ✓",
+      "goToNextLesson": "Go to next lesson",
+      "videoWeight": "Video",
+      "quizWeight": "Lesson Quiz",
+      "autoCompleteSaving": "Saving lesson completion...",
+      "quizRequiredForProgress": "Pass the lesson quiz to complete this lesson",
+      "videoWatchProgress": "Watched {percent}%",
+      "quizUnlocked": "Video completed, start the quiz now"
     }
   }
 }

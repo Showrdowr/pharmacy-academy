@@ -19,27 +19,41 @@ import {
     Sparkles,
 } from 'lucide-react';
 import { useAuth } from '@/features/auth';
-import { ApiError } from '@/lib/api';
 import {
-    calculateCourseWatchPercent,
+    calculateLessonProgressPercent,
+    calculateViewPercent,
     calculateWatchPercent,
     canRenderLessonVideo,
     formatDuration,
     getNextPendingInteractive,
-    getVideoAvailabilityMessage,
     normalizePlaybackSecond,
 } from '../interactive-runtime';
+import {
+    writeLearningProgressCache,
+} from '../progress-cache';
 import { learningApi } from '../services/learningApi';
 import { InteractivePromptModal } from './InteractivePromptModal';
-import { VimeoLessonPlayer, type VimeoLessonPlayerInstance } from './VimeoLessonPlayer';
+import { VimeoLessonPlayer } from './VimeoLessonPlayer';
 import { formatLocaleDate, useAppLocale } from '@/features/i18n';
+import {
+    getApiErrorMessage,
+    getLessonErrorNotice,
+    isApiError,
+    isForbiddenApiError,
+    isUnauthorizedApiError,
+    resolveLessonSupplementTab,
+    type LessonSupplementTab,
+    type LearningCourseAreaTranslator,
+} from '../course-learning-utils';
+import { useLearningCourseLoad } from '../hooks/useLearningCourseLoad';
+import { useLessonProgressSync } from '../hooks/useLessonProgressSync';
+import { useLessonQuizFlow } from '../hooks/useLessonQuizFlow';
+import { useLessonVideoSync } from '../hooks/useLessonVideoSync';
 import type {
     LearningCourseData,
     LearningInteractiveQuestion,
     LearningLessonData,
     LearningLessonDocument,
-    LearningLessonQuizAttemptResult,
-    LearningLessonQuizRuntime,
     LearningQuestionType,
 } from '../types';
 
@@ -65,96 +79,6 @@ function isDataUrl(value?: string | null) {
     return typeof value === 'string' && value.startsWith('data:');
 }
 
-type LoadCourseLearningMode = 'followServerCurrentLesson' | 'preserveSelectedLesson';
-type LessonSupplementTab = 'documents' | 'interactive';
-
-function isApiError(error: unknown): error is ApiError {
-    return error instanceof ApiError;
-}
-
-function getApiErrorMessage(error: unknown, fallbackMessage: string) {
-    if (error instanceof Error && error.message) {
-        return error.message;
-    }
-
-    return fallbackMessage;
-}
-
-function isUnauthorizedApiError(error: unknown) {
-    return isApiError(error) && (error.statusCode === 401 || error.code === 'UNAUTHORIZED');
-}
-
-function isForbiddenApiError(error: unknown) {
-    return isApiError(error) && (
-        error.statusCode === 403
-        || error.code === 'FORBIDDEN'
-        || error.code === 'COURSE_NOT_ENROLLED'
-    );
-}
-
-function getLessonErrorNotice(error: unknown, interactiveIncompleteMessage: string) {
-    if (!isApiError(error)) {
-        return null;
-    }
-
-    switch (error.code) {
-        case 'INTERACTIVE_INCOMPLETE':
-            return interactiveIncompleteMessage;
-        case 'LESSON_VIDEO_INCOMPLETE':
-        case 'LESSON_LOCKED':
-        case 'LESSON_QUIZ_INCOMPLETE':
-        case 'LESSON_QUIZ_ATTEMPTS_EXHAUSTED':
-            return error.message;
-        default:
-            return null;
-    }
-}
-
-function getProgressSyncNotice(error: unknown) {
-    if (!isApiError(error)) {
-        return null;
-    }
-
-    switch (error.code) {
-        case 'VIDEO_SKIP_NOT_ALLOWED':
-        case 'LESSON_LOCKED':
-            return error.message;
-        default:
-            return null;
-    }
-}
-
-function findFirstAvailableLesson(lessons: LearningLessonData[]) {
-    return lessons.find((lesson) => lesson.status !== 'locked') || lessons[0] || null;
-}
-
-function resolveLessonSupplementTab(
-    lesson: LearningLessonData | null,
-    preferredTab: LessonSupplementTab,
-): LessonSupplementTab {
-    if (!lesson) {
-        return 'documents';
-    }
-
-    if (preferredTab === 'documents' && lesson.documents.length > 0) {
-        return 'documents';
-    }
-
-    if (preferredTab === 'interactive' && lesson.interactiveQuestions.length > 0) {
-        return 'interactive';
-    }
-
-    if (lesson.documents.length > 0) {
-        return 'documents';
-    }
-
-    if (lesson.interactiveQuestions.length > 0) {
-        return 'interactive';
-    }
-
-    return preferredTab;
-}
-
 function logInteractiveDebug(event: string, payload?: Record<string, unknown>) {
     if (process.env.NODE_ENV !== 'development') {
         return;
@@ -162,8 +86,6 @@ function logInteractiveDebug(event: string, payload?: Record<string, unknown>) {
 
     console.info('[interactive]', event, payload || {});
 }
-
-type LearningCourseAreaTranslator = (key: string, values?: Record<string, string | number | Date>) => string;
 
 function getInteractiveQuestionTypeLabel(
     questionType: LearningQuestionType,
@@ -181,30 +103,13 @@ function getInteractiveQuestionTypeLabel(
     }
 }
 
-function getLessonQuizAccessNotice(error: unknown) {
-    if (!isApiError(error)) {
-        return null;
-    }
-
-    switch (error.code) {
-        case 'INTERACTIVE_INCOMPLETE':
-        case 'LESSON_VIDEO_INCOMPLETE':
-        case 'LESSON_LOCKED':
-        case 'LESSON_QUIZ_ATTEMPTS_EXHAUSTED':
-            return error.message;
-        default:
-            return null;
-    }
-}
-
 const CourseLearningArea = () => {
     const SEEK_AHEAD_TOLERANCE_SECONDS = 2;
-    const NATURAL_PLAYBACK_GRACE_SECONDS = 2;
     const router = useRouter();
     const searchParams = useSearchParams();
     const { locale } = useAppLocale();
     const t = useTranslations('learning.courseArea');
-    const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
+    const { isAuthenticated, isLoading: isAuthLoading, user } = useAuth();
 
     const [course, setCourse] = useState<LearningCourseData | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -219,43 +124,73 @@ const CourseLearningArea = () => {
     const [isAnswerSubmitting, setIsAnswerSubmitting] = useState(false);
     const [isCompletingLesson, setIsCompletingLesson] = useState(false);
     const [selectedSupplementTab, setSelectedSupplementTab] = useState<LessonSupplementTab>('documents');
-    const [isQuizPanelOpen, setIsQuizPanelOpen] = useState(false);
-    const [isQuizLoading, setIsQuizLoading] = useState(false);
-    const [isQuizSubmitting, setIsQuizSubmitting] = useState(false);
-    const [lessonQuizRuntime, setLessonQuizRuntime] = useState<LearningLessonQuizRuntime | null>(null);
-    const [lessonQuizAnswers, setLessonQuizAnswers] = useState<Record<number, string>>({});
-    const [lessonQuizError, setLessonQuizError] = useState('');
-    const [lessonQuizResult, setLessonQuizResult] = useState<LearningLessonQuizAttemptResult | null>(null);
-
-    const playerRef = useRef<VimeoLessonPlayerInstance | null>(null);
-    const activeLessonRef = useRef<LearningLessonData | null>(null);
-    const currentTimeRef = useRef(0);
     const activeQuestionIdRef = useRef<number | null>(null);
     const answeredIdsRef = useRef<Set<number>>(new Set());
-    const watchedSecondsByLessonRef = useRef(new Map<number, number>());
-    const maxReachedSecondsByLessonRef = useRef(new Map<number, number>());
-    const lastPlaybackObservationByLessonRef = useRef(new Map<number, { seconds: number; observedAt: number }>());
-    const lastRequestedSecondsByLessonRef = useRef(new Map<number, number>());
-    const progressRequestVersionByLessonRef = useRef(new Map<number, number>());
-
     const courseId = parseCourseId(searchParams.get('courseId') || searchParams.get('id'));
+    const progressCacheUserKey = user?.id ?? (isAuthenticated ? 'authenticated' : 'anonymous');
 
     const activeLesson = useMemo(
         () => course?.lessons.find((lesson) => lesson.id === activeLessonId) || null,
         [course, activeLessonId]
     );
-    const activeLessonQuiz = activeLesson?.lessonQuiz ?? null;
-    const isLessonQuizPassed = Boolean(activeLessonQuiz?.latestAttempt?.isPassed);
-    const isLessonQuizExhausted = Boolean(
-        activeLessonQuiz
-        && !activeLessonQuiz.latestAttempt?.isPassed
-        && activeLessonQuiz.remainingAttempts !== null
-        && activeLessonQuiz.remainingAttempts !== undefined
-        && activeLessonQuiz.remainingAttempts <= 0
-    );
     const isInteractiveModalOpen = Boolean(activeQuestion);
-    const activeLessonVideo = activeLesson?.video ?? null;
-    const playableVideo = canRenderLessonVideo(activeLessonVideo) ? activeLessonVideo : null;
+    const playerLoadFailedMessage = t('playerLoadFailed');
+
+    const {
+        activeLessonVideoAvailabilityMessage,
+        activeLessonVideoSyncError,
+        isActiveLessonVideoSyncing,
+        playableVideo,
+        resetVideoSyncState,
+    } = useLessonVideoSync({
+        courseId,
+        activeLesson,
+        setCourse,
+        playerLoadFailedMessage,
+        t,
+    });
+
+    const {
+        activeLessonRef,
+        currentTimeRef,
+        getKnownMaxReachedSeconds,
+        getTrackedLessonSeconds,
+        hydrateServerProgress,
+        lastRequestedSecondsByLessonRef,
+        maxReachedSecondsByLessonRef,
+        persistProgress,
+        playerRef,
+        recordPlaybackObservation,
+        rollbackForwardSeek,
+        shouldTreatAsForwardSkip,
+        syncPlaybackState,
+        watchedSecondsByLessonRef,
+    } = useLessonProgressSync({
+        courseId,
+        progressCacheUserKey,
+        activeLesson,
+        shouldPersistOnPageLifecycle: Boolean(playableVideo),
+        seekBlockedMessage: t('seekBlocked'),
+        setCourse,
+        setCurrentTime,
+        setLessonNotice,
+    });
+
+    const { loadCourseLearning } = useLearningCourseLoad({
+        courseId,
+        isAuthenticated,
+        isAuthLoading,
+        progressCacheUserKey,
+        pushRoute: router.push,
+        t,
+        setCourse,
+        setIsLoading,
+        setPageError,
+        setActiveLessonId,
+        hydrateServerProgress,
+        persistProgress,
+        resetVideoSyncState,
+    });
 
     const answeredIds = useMemo(
         () => new Set(
@@ -269,10 +204,6 @@ const CourseLearningArea = () => {
         () => getNextPendingInteractive(activeLesson, answeredIds, currentTime),
         [activeLesson, answeredIds, currentTime]
     );
-    const courseWatchPercent = useMemo(() => {
-        const derivedWatchPercent = calculateCourseWatchPercent(course, { activeLessonId, currentTime });
-        return Math.max(Number(course?.watchPercent ?? 0), derivedWatchPercent);
-    }, [course, activeLessonId, currentTime]);
     const activeLessonWatchPercent = useMemo(
         () => calculateWatchPercent(
             Math.max(
@@ -283,9 +214,13 @@ const CourseLearningArea = () => {
         ),
         [activeLesson, currentTime]
     );
-    const roundedCourseWatchPercent = Math.round(courseWatchPercent);
+    const activeLessonProgressPercent = useMemo(
+        () => calculateLessonProgressPercent(activeLesson, { currentTime }),
+        [activeLesson, currentTime],
+    );
     const roundedCourseCompletionPercent = Math.round(Number(course?.completionPercent ?? course?.progressPercent ?? 0));
     const roundedActiveLessonWatchPercent = Math.round(activeLessonWatchPercent);
+    const roundedActiveLessonProgressPercent = Math.round(activeLessonProgressPercent);
     const nextAvailableLesson = useMemo(() => {
         if (!course || !activeLessonId) {
             return null;
@@ -364,183 +299,40 @@ const CourseLearningArea = () => {
         }
     }, [t]);
 
-    const getKnownMaxReachedSeconds = (lesson: LearningLessonData, fallbackSeconds = 0) => Math.max(
-        maxReachedSecondsByLessonRef.current.get(lesson.id)
-            ?? normalizePlaybackSecond(lesson.progress.lastWatchedSeconds || fallbackSeconds),
-        0,
-    );
-
-    const recordPlaybackObservation = (lessonId: number, seconds: number) => {
-        lastPlaybackObservationByLessonRef.current.set(lessonId, {
-            seconds,
-            observedAt: Date.now(),
-        });
-    };
-
-    const syncPlaybackState = (lessonId: number, seconds: number, options?: { updateMaxReached?: boolean }) => {
-        watchedSecondsByLessonRef.current.set(lessonId, seconds);
-        currentTimeRef.current = seconds;
-        setCurrentTime(seconds);
-        recordPlaybackObservation(lessonId, seconds);
-
-        if (options?.updateMaxReached) {
-            maxReachedSecondsByLessonRef.current.set(
-                lessonId,
-                Math.max(maxReachedSecondsByLessonRef.current.get(lessonId) ?? 0, seconds),
-            );
-        }
-    };
-
-    function rollbackForwardSeek(lesson: LearningLessonData, attemptedSeconds: number) {
-        const rollbackSeconds = getKnownMaxReachedSeconds(lesson);
-        syncPlaybackState(lesson.id, rollbackSeconds);
-        setLessonNotice(t('seekBlocked'));
-        logInteractiveDebug('blocked-forward-seek', {
-            lessonId: lesson.id,
-            attemptedSeconds,
-            rollbackSeconds,
-        });
-
-        void playerRef.current?.setCurrentTime(rollbackSeconds).catch(() => undefined);
-        void maybeOpenInteractive(rollbackSeconds);
-    }
-
-    const shouldTreatAsForwardSkip = (lesson: LearningLessonData, nextSeconds: number) => {
-        const maxReachedSeconds = getKnownMaxReachedSeconds(lesson);
-        if (nextSeconds <= maxReachedSeconds) {
-            return false;
-        }
-
-        const lastObservation = lastPlaybackObservationByLessonRef.current.get(lesson.id);
-        if (!lastObservation) {
-            return nextSeconds > maxReachedSeconds + SEEK_AHEAD_TOLERANCE_SECONDS;
-        }
-
-        const elapsedSinceObservationSeconds = Math.max(
-            0,
-            (Date.now() - lastObservation.observedAt) / 1000,
-        );
-        const maxNaturalAdvanceSeconds = Math.max(
-            maxReachedSeconds,
-            lastObservation.seconds,
-        ) + Math.max(
-            SEEK_AHEAD_TOLERANCE_SECONDS,
-            Math.ceil(elapsedSinceObservationSeconds) + NATURAL_PLAYBACK_GRACE_SECONDS,
-        );
-
-        return nextSeconds > maxNaturalAdvanceSeconds;
-    };
-
-    const persistProgress = useCallback(async (lessonId: number, seconds: number, force = false) => {
-        const roundedSeconds = normalizePlaybackSecond(seconds);
-        watchedSecondsByLessonRef.current.set(lessonId, roundedSeconds);
-
-        const lastRequestedSeconds = lastRequestedSecondsByLessonRef.current.get(lessonId);
-        if (!force && lastRequestedSeconds !== undefined && Math.abs(roundedSeconds - lastRequestedSeconds) < 5) {
-            return;
-        }
-
-        lastRequestedSecondsByLessonRef.current.set(lessonId, roundedSeconds);
-        const requestVersion = (progressRequestVersionByLessonRef.current.get(lessonId) ?? 0) + 1;
-        progressRequestVersionByLessonRef.current.set(lessonId, requestVersion);
-
-        try {
-            const progress = await learningApi.updateLessonProgress(lessonId, roundedSeconds);
-            if (progressRequestVersionByLessonRef.current.get(lessonId) !== requestVersion) {
-                return;
-            }
-
-            setCourse((current) => {
-                if (!current) {
-                    return current;
-                }
-
-                return {
-                    ...current,
-                    lessons: current.lessons.map((item) =>
-                        item.id === lessonId
-                            ? {
-                                ...item,
-                                progress: {
-                                    ...item.progress,
-                                    lastWatchedSeconds: normalizePlaybackSecond(progress.lastWatchedSeconds),
-                                    isCompleted: progress.isCompleted,
-                                },
-                            }
-                            : item
-                    ),
-                };
-            });
-        } catch (error) {
-            const syncNotice = getProgressSyncNotice(error);
-            if (syncNotice) {
-                setLessonNotice(syncNotice);
-            }
-        }
-    }, []);
-
-    const loadCourseLearning = useCallback(async (options?: {
-        preferredLessonId?: number | null;
-        mode?: LoadCourseLearningMode;
-    }) => {
-        if (!courseId) {
-            setPageError(t('missingCourseId'));
-            setIsLoading(false);
-            return;
-        }
-
-        setIsLoading(true);
-        setPageError('');
-
-        try {
-            const learningData = await learningApi.getCourseLearning(courseId);
-            setCourse(learningData);
-
-            const selectedLesson = options?.mode === 'preserveSelectedLesson' && options.preferredLessonId
-                ? learningData.lessons.find((lesson) => (
-                    lesson.id === options.preferredLessonId && lesson.status !== 'locked'
-                ))
-                : null;
-            const serverLesson = learningData.lessons.find((lesson) => (
-                lesson.id === learningData.currentLessonId && lesson.status !== 'locked'
-            )) || learningData.lessons.find((lesson) => (
-                lesson.id === learningData.lastAccessedLessonId && lesson.status !== 'locked'
-            ));
-            const fallbackLesson = serverLesson || findFirstAvailableLesson(learningData.lessons);
-
-            setActiveLessonId(selectedLesson?.id || fallbackLesson?.id || null);
-        } catch (error) {
-            if (isUnauthorizedApiError(error)) {
-                router.push('/sign-in');
-                return;
-            }
-
-            setPageError(getApiErrorMessage(error, t('loadFailed')));
-        } finally {
-            setIsLoading(false);
-        }
-    }, [courseId, router, t]);
-
-    useEffect(() => {
-        if (isAuthLoading) {
-            return;
-        }
-
-        if (!isAuthenticated) {
-            router.push('/sign-in');
-            return;
-        }
-
-        void loadCourseLearning({ mode: 'followServerCurrentLesson' });
-    }, [isAuthenticated, isAuthLoading, loadCourseLearning, router]);
-
-    activeLessonRef.current = activeLesson;
     answeredIdsRef.current = answeredIds;
+
+    const {
+        activeLessonQuiz,
+        handleLessonQuizAnswerChange,
+        handleOpenLessonQuiz,
+        handleSubmitLessonQuiz,
+        isLessonQuizExhausted,
+        isLessonQuizPassed,
+        isLessonQuizReady,
+        isQuizLoading,
+        isQuizPanelOpen,
+        isQuizSubmitting,
+        lessonQuizAnswers,
+        lessonQuizError,
+        lessonQuizResult,
+        lessonQuizRuntime,
+        setIsQuizPanelOpen,
+    } = useLessonQuizFlow({
+        activeLesson,
+        currentTimeRef,
+        watchedSecondsByLessonRef,
+        roundedActiveLessonWatchPercent,
+        hasPendingInteractive: answeredInteractiveCount < (activeLesson?.interactiveQuestions.length ?? 0),
+        persistProgress,
+        pushRoute: router.push,
+        t,
+        setCourse,
+        setLessonNotice,
+    });
 
     useLayoutEffect(() => {
         const resolvedLessonSeconds = activeLesson
-            ? watchedSecondsByLessonRef.current.get(activeLesson.id)
-                ?? normalizePlaybackSecond(activeLesson.progress.lastWatchedSeconds || 0)
+            ? getTrackedLessonSeconds(activeLesson.id, activeLesson.progress.lastWatchedSeconds || 0)
             : 0;
 
         if (activeLesson) {
@@ -570,63 +362,7 @@ const CourseLearningArea = () => {
         setWrittenAnswer('');
         setSubmitError('');
         setLessonNotice('');
-        setIsQuizPanelOpen(false);
-        setIsQuizLoading(false);
-        setIsQuizSubmitting(false);
-        setLessonQuizRuntime(null);
-        setLessonQuizAnswers({});
-        setLessonQuizError('');
-        setLessonQuizResult(null);
-    }, [activeLesson?.id]);
-
-    useEffect(() => {
-        const lessonId = activeLesson?.id;
-
-        return () => {
-            if (!lessonId) {
-                return;
-            }
-
-            const trackedSeconds = watchedSecondsByLessonRef.current.get(lessonId)
-                ?? normalizePlaybackSecond(activeLesson?.progress.lastWatchedSeconds || 0);
-            void persistProgress(lessonId, trackedSeconds, true);
-        };
-    }, [activeLesson?.id, persistProgress]);
-
-    useEffect(() => {
-        if (!activeLesson || !playableVideo) {
-            return;
-        }
-
-        const pausePlaybackWhenPageIsHidden = () => {
-            const visibilityState = typeof document.visibilityState === 'string'
-                ? document.visibilityState
-                : (document.hidden ? 'hidden' : 'visible');
-            if (visibilityState === 'visible') {
-                return;
-            }
-
-            const trackedSeconds = watchedSecondsByLessonRef.current.get(activeLesson.id)
-                ?? normalizePlaybackSecond(currentTimeRef.current || activeLesson.progress.lastWatchedSeconds || 0);
-            void playerRef.current?.pause().catch(() => undefined);
-            void persistProgress(activeLesson.id, trackedSeconds, true);
-        };
-
-        const handlePageHide = () => {
-            const trackedSeconds = watchedSecondsByLessonRef.current.get(activeLesson.id)
-                ?? normalizePlaybackSecond(currentTimeRef.current || activeLesson.progress.lastWatchedSeconds || 0);
-            void playerRef.current?.pause().catch(() => undefined);
-            void persistProgress(activeLesson.id, trackedSeconds, true);
-        };
-
-        document.addEventListener('visibilitychange', pausePlaybackWhenPageIsHidden);
-        window.addEventListener('pagehide', handlePageHide);
-
-        return () => {
-            document.removeEventListener('visibilitychange', pausePlaybackWhenPageIsHidden);
-            window.removeEventListener('pagehide', handlePageHide);
-        };
-    }, [activeLesson, persistProgress, playableVideo]);
+    }, [activeLesson?.id, getTrackedLessonSeconds, recordPlaybackObservation]);
 
     useEffect(() => {
         setSelectedSupplementTab((currentTab) => resolveLessonSupplementTab(activeLesson, currentTab));
@@ -715,7 +451,24 @@ const CourseLearningArea = () => {
             return;
         }
 
+        if (lesson.id === activeLessonId) {
+            return;
+        }
+
+        const trackedSeconds = watchedSecondsByLessonRef.current.get(lesson.id)
+            ?? normalizePlaybackSecond(lesson.progress.lastWatchedSeconds || 0);
+        if (courseId) {
+            writeLearningProgressCache(
+                progressCacheUserKey,
+                courseId,
+                lesson.id,
+                trackedSeconds,
+                { lastAccessedLessonId: lesson.id },
+            );
+        }
+
         setActiveLessonId(lesson.id);
+        void persistProgress(lesson.id, trackedSeconds, true);
     };
 
     const handleSubmitInteractive = async () => {
@@ -814,177 +567,20 @@ const CourseLearningArea = () => {
         }
     };
 
+    // Auto-complete lesson when progress bar reaches 100%
+    useEffect(() => {
+        if (
+            roundedActiveLessonProgressPercent >= 100
+            && activeLesson
+            && !activeLesson.progress.isCompleted
+            && !isCompletingLesson
+        ) {
+            void maybeCompleteLesson();
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [roundedActiveLessonProgressPercent]);
+
     const isQuestionAnswered = (questionId: number) => answeredIds.has(questionId);
-    const hasPendingInteractive = answeredInteractiveCount < (activeLesson?.interactiveQuestions.length ?? 0);
-    const isLessonQuizReady = Boolean(
-        activeLesson
-        && canRenderLessonVideo(activeLesson.video)
-        && roundedActiveLessonWatchPercent >= 100
-        && !hasPendingInteractive
-    );
-
-    const handleOpenLessonQuiz = useCallback(async () => {
-        if (!activeLesson || !activeLesson.lessonQuiz) {
-            return;
-        }
-
-        if (isLessonQuizExhausted) {
-            setLessonNotice(t('quizAttemptsExhaustedNotice'));
-            return;
-        }
-
-        if (!isLessonQuizReady) {
-            setLessonNotice(
-                roundedActiveLessonWatchPercent < 100
-                    ? t('quizFinishLessonFirst')
-                    : t('quizInteractiveRequiredBeforeStart')
-            );
-            return;
-        }
-
-        setLessonNotice('');
-        setLessonQuizError('');
-        setLessonQuizResult(null);
-        setIsQuizPanelOpen(true);
-
-        if (lessonQuizRuntime && lessonQuizRuntime.lessonId === activeLesson.id) {
-            return;
-        }
-
-        setIsQuizLoading(true);
-        try {
-            const quizRuntime = await learningApi.getLessonQuizRuntime(activeLesson.id);
-            setLessonQuizRuntime(quizRuntime);
-            setLessonQuizAnswers({});
-        } catch (error) {
-            if (isUnauthorizedApiError(error)) {
-                router.push('/sign-in');
-                return;
-            }
-
-            const lessonQuizAccessNotice = getLessonQuizAccessNotice(error);
-            if (lessonQuizAccessNotice) {
-                setIsQuizPanelOpen(false);
-                setLessonNotice(lessonQuizAccessNotice);
-                return;
-            }
-
-            setLessonQuizError(getApiErrorMessage(error, t('quizLoadFailed')));
-        } finally {
-            setIsQuizLoading(false);
-        }
-    }, [activeLesson, isLessonQuizExhausted, isLessonQuizReady, lessonQuizRuntime, roundedActiveLessonWatchPercent, router, t]);
-
-    const handleLessonQuizAnswerChange = useCallback((questionId: number, answerGiven: string) => {
-        setLessonQuizAnswers((current) => ({
-            ...current,
-            [questionId]: answerGiven,
-        }));
-    }, []);
-
-    const handleSubmitLessonQuiz = useCallback(async () => {
-        if (!activeLesson || !lessonQuizRuntime) {
-            return;
-        }
-
-        const answers = lessonQuizRuntime.questions.map((question) => ({
-            questionId: question.id,
-            answerGiven: (lessonQuizAnswers[question.id] ?? '').trim(),
-        }));
-
-        if (answers.some((answer) => !answer.answerGiven)) {
-            setLessonQuizError(t('quizAnswerRequired'));
-            return;
-        }
-
-        setIsQuizSubmitting(true);
-        setLessonQuizError('');
-        setLessonNotice('');
-
-        try {
-            const attempt = await learningApi.submitLessonQuizAttempt(activeLesson.id, answers);
-
-            setLessonQuizResult(attempt);
-            setLessonQuizAnswers({});
-            setIsQuizPanelOpen(false);
-            setLessonNotice(
-                attempt.isPassed
-                    ? t('quizPassedReadyToComplete')
-                    : attempt.remainingAttempts === null || attempt.remainingAttempts === undefined
-                        ? t('quizRetryUnlimitedNotice')
-                    : attempt.remainingAttempts > 0
-                        ? t('quizRetryNotice', { count: attempt.remainingAttempts })
-                        : t('quizAttemptsExhaustedNotice')
-            );
-
-            setLessonQuizRuntime((current) => current && current.lessonId === activeLesson.id
-                ? {
-                    ...current,
-                    attemptsUsed: attempt.attemptsUsed,
-                    remainingAttempts: attempt.remainingAttempts ?? null,
-                    latestAttempt: {
-                        id: attempt.attemptId,
-                        attemptNumber: attempt.attemptNumber,
-                        scoreObtained: attempt.scoreObtained,
-                        totalScore: attempt.totalScore,
-                        scorePercent: attempt.scorePercent,
-                        isPassed: attempt.isPassed,
-                        finishedAt: attempt.finishedAt ?? null,
-                    },
-                }
-                : current
-            );
-
-            setCourse((current) => {
-                if (!current) {
-                    return current;
-                }
-
-                return {
-                    ...current,
-                    lessons: current.lessons.map((lesson) => {
-                        if (lesson.id !== activeLesson.id || !lesson.lessonQuiz) {
-                            return lesson;
-                        }
-
-                        return {
-                            ...lesson,
-                            lessonQuiz: {
-                                ...lesson.lessonQuiz,
-                                attemptsUsed: attempt.attemptsUsed,
-                                remainingAttempts: attempt.remainingAttempts ?? null,
-                                latestAttempt: {
-                                    id: attempt.attemptId,
-                                    attemptNumber: attempt.attemptNumber,
-                                    scoreObtained: attempt.scoreObtained,
-                                    totalScore: attempt.totalScore,
-                                    scorePercent: attempt.scorePercent,
-                                    isPassed: attempt.isPassed,
-                                    finishedAt: attempt.finishedAt ?? null,
-                                },
-                            },
-                        };
-                    }),
-                };
-            });
-        } catch (error) {
-            if (isUnauthorizedApiError(error)) {
-                router.push('/sign-in');
-                return;
-            }
-
-            const lessonQuizAccessNotice = getLessonQuizAccessNotice(error);
-            if (lessonQuizAccessNotice) {
-                setLessonNotice(lessonQuizAccessNotice);
-                setIsQuizPanelOpen(false);
-                return;
-            }
-
-            setLessonQuizError(getApiErrorMessage(error, t('quizSubmitFailed')));
-        } finally {
-            setIsQuizSubmitting(false);
-        }
-    }, [activeLesson, lessonQuizAnswers, lessonQuizRuntime, router, t]);
 
     const enrolledDateLabel = useMemo(() => {
         if (!course?.enrolledAt) {
@@ -1005,15 +601,15 @@ const CourseLearningArea = () => {
         : `${activeLessonDurationLabel}${(activeLesson?.documents.length ?? 0) > 0 ? ` • ${activeLesson?.documents.length} ${t('documentsUnit')}` : ''}`;
     const lessonStatePill = activeLesson?.progress.isCompleted
         ? {
-            label: t('lessonCompleted'),
+            label: t('progressBarCompleted'),
             className: 'border border-emerald-200 bg-emerald-50 text-emerald-700',
             icon: CheckCircle2,
         }
         : roundedActiveLessonWatchPercent < 100
             ? {
-                label: t('mustFinishVideo'),
-                className: 'border border-amber-200 bg-amber-50 text-amber-700',
-                icon: Flame,
+                label: t('videoWatchProgress', { percent: roundedActiveLessonWatchPercent }),
+                className: 'border border-teal-200 bg-teal-50 text-teal-700',
+                icon: Eye,
             }
             : activeLessonQuiz && !isLessonQuizPassed
                 ? {
@@ -1022,18 +618,12 @@ const CourseLearningArea = () => {
                     icon: BookOpen,
                 }
             : {
-                label: t('readyToComplete'),
-                className: 'border border-sky-200 bg-sky-50 text-sky-700',
-                icon: PlayCircle,
+                label: t('progressBarCompleted'),
+                className: 'border border-emerald-200 bg-emerald-50 text-emerald-700',
+                icon: CheckCircle2,
             };
     const LessonStateIcon = lessonStatePill.icon;
-    const shouldShowCompletionButton = (
-        activeLesson?.progress.isCompleted
-        || isCompletingLesson
-        || !canRenderLessonVideo(activeLesson?.video)
-        || (!activeLessonQuiz && roundedActiveLessonWatchPercent >= 100)
-        || Boolean(activeLessonQuiz && isLessonQuizPassed)
-    );
+    const shouldShowNextLessonButton = roundedActiveLessonProgressPercent >= 100 || activeLesson?.progress.isCompleted;
     const supplementTabs = [
         {
             id: 'documents' as const,
@@ -1099,7 +689,7 @@ const CourseLearningArea = () => {
                     <aside className="space-y-4 lg:w-[300px] lg:flex-none lg:sticky lg:top-6">
                         <div className="overflow-hidden rounded-[24px] border border-[#dcece6] bg-white shadow-[0_16px_40px_rgba(15,86,63,0.08)]">
                             <div className="border-b border-[#e6f3ef] px-5 py-5">
-                                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#6b8d84]">{t('courseProgress')}</p>
+                                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#6b8d84]">{t('progressBar')}</p>
                                 <div className="mt-4 flex items-center gap-4">
                                     <div className="relative flex h-20 w-20 items-center justify-center">
                                         <svg width="80" height="80" viewBox="0 0 80 80" className="-rotate-90">
@@ -1112,13 +702,13 @@ const CourseLearningArea = () => {
                                                 stroke="#1ec997"
                                                 strokeWidth="6"
                                                 strokeLinecap="round"
-                                                strokeDasharray={`${roundedCourseWatchPercent * 2.136} 213.6`}
+                                                strokeDasharray={`${roundedActiveLessonProgressPercent * 2.136} 213.6`}
                                                 className="transition-all duration-700"
                                             />
                                         </svg>
                                         <div className="absolute inset-0 flex items-center justify-center text-[#004736]">
                                             <div className="flex items-baseline justify-center leading-none">
-                                                <span className="text-[1.45rem] font-bold tabular-nums sm:text-[1.6rem]">{roundedCourseWatchPercent}</span>
+                                                <span className="text-[1.45rem] font-bold tabular-nums sm:text-[1.6rem]">{roundedActiveLessonProgressPercent}</span>
                                                 <span className="ml-0.5 text-[0.8rem] font-semibold">%</span>
                                             </div>
                                         </div>
@@ -1130,18 +720,56 @@ const CourseLearningArea = () => {
                                     </div>
                                 </div>
                             </div>
-                            <div className="space-y-4 px-5 py-5">
+                            <div className="space-y-5 px-5 py-5">
+                                {/* View Bar — Video Watching Progress */}
                                 <div>
-                                    <div className="flex items-center justify-between text-sm font-semibold text-slate-700">
-                                        <span>{t('progress')}</span>
-                                        <span className="text-[#004736]">{roundedCourseWatchPercent}%</span>
+                                    <div className="flex items-center justify-between text-sm font-semibold">
+                                        <span className="text-slate-700">{t('viewBar')}</span>
+                                        {roundedActiveLessonWatchPercent >= 100 ? (
+                                            <span className="text-emerald-600">{t('viewBarCompleted')}</span>
+                                        ) : (
+                                            <span className="text-teal-600">{roundedActiveLessonWatchPercent}%</span>
+                                        )}
+                                    </div>
+                                    <div className="mt-3 h-2.5 rounded-full bg-[#e0f2f1]">
+                                        <div
+                                            className={`h-2.5 rounded-full transition-all duration-500 ${
+                                                roundedActiveLessonWatchPercent >= 100
+                                                    ? 'bg-gradient-to-r from-emerald-400 to-emerald-500'
+                                                    : 'bg-gradient-to-r from-teal-400 to-cyan-500'
+                                            }`}
+                                            style={{ width: `${roundedActiveLessonWatchPercent}%` }}
+                                        />
+                                    </div>
+                                    {roundedActiveLessonWatchPercent >= 100 && activeLessonQuiz && !isLessonQuizPassed && (
+                                        <p className="mt-2 text-xs font-medium text-violet-600">{t('quizUnlocked')}</p>
+                                    )}
+                                </div>
+                                {/* Progress Bar — Overall Lesson Progress */}
+                                <div>
+                                    <div className="flex items-center justify-between text-sm font-semibold">
+                                        <span className="text-slate-700">{t('progressBar')}</span>
+                                        {roundedActiveLessonProgressPercent >= 100 ? (
+                                            <span className="text-emerald-600">{t('progressBarCompleted')}</span>
+                                        ) : (
+                                            <span className="text-[#004736]">{roundedActiveLessonProgressPercent}%</span>
+                                        )}
                                     </div>
                                     <div className="mt-3 h-2.5 rounded-full bg-[#e9f4f0]">
                                         <div
-                                            className="h-2.5 rounded-full bg-gradient-to-r from-[#14b886] to-[#1fd0a1] transition-all duration-500"
-                                            style={{ width: `${roundedCourseWatchPercent}%` }}
+                                            className={`h-2.5 rounded-full transition-all duration-500 ${
+                                                roundedActiveLessonProgressPercent >= 100
+                                                    ? 'bg-gradient-to-r from-emerald-400 to-emerald-500'
+                                                    : 'bg-gradient-to-r from-[#14b886] to-[#1fd0a1]'
+                                            }`}
+                                            style={{ width: `${roundedActiveLessonProgressPercent}%` }}
                                         />
                                     </div>
+                                    {activeLessonQuiz && !isLessonQuizPassed && roundedActiveLessonWatchPercent >= 100 && (
+                                        <p className="mt-2 text-xs font-medium text-amber-600">
+                                            {t('quizRequiredForProgress')}
+                                        </p>
+                                    )}
                                 </div>
                                 <div className="rounded-2xl bg-[#f5fbf8] px-4 py-3">
                                     <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">{t('learningSummary')}</p>
@@ -1284,7 +912,8 @@ const CourseLearningArea = () => {
                                             onTimeUpdate={(seconds) => {
                                                 const normalizedSeconds = normalizePlaybackSecond(seconds);
                                                 if (shouldTreatAsForwardSkip(activeLesson, normalizedSeconds)) {
-                                                    rollbackForwardSeek(activeLesson, normalizedSeconds);
+                                                    const rollbackSeconds = rollbackForwardSeek(activeLesson, normalizedSeconds);
+                                                    void maybeOpenInteractive(rollbackSeconds);
                                                     return;
                                                 }
 
@@ -1301,7 +930,8 @@ const CourseLearningArea = () => {
                                                 const maxAllowedSeconds = maxReachedSeconds + SEEK_AHEAD_TOLERANCE_SECONDS;
 
                                                 if (normalizedSeconds > maxAllowedSeconds) {
-                                                    rollbackForwardSeek(activeLesson, normalizedSeconds);
+                                                    const rollbackSeconds = rollbackForwardSeek(activeLesson, normalizedSeconds);
+                                                    void maybeOpenInteractive(rollbackSeconds);
                                                     return;
                                                 }
 
@@ -1332,7 +962,7 @@ const CourseLearningArea = () => {
                                     <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100">
                                         <PlayCircle className="h-8 w-8 text-slate-400" />
                                     </div>
-                                    <p className="text-sm font-medium text-slate-500">{getVideoAvailabilityMessage(activeLesson.video?.status, activeLesson.video?.duration, t)}</p>
+                                    <p className="text-sm font-medium text-slate-500">{activeLessonVideoAvailabilityMessage}</p>
                                 </div>
                                 </div>
                             )}
@@ -1346,10 +976,7 @@ const CourseLearningArea = () => {
                                         </span>
                                         <span className="inline-flex items-center gap-1.5 rounded-full border border-[#dbeee7] bg-white px-3.5 py-2 text-[13px] font-medium text-slate-600 sm:text-sm">
                                             <Eye className="h-4 w-4" />
-                                            {t('watchedSummary', {
-                                                duration: formatDuration(currentTime),
-                                                percent: roundedActiveLessonWatchPercent,
-                                            })}
+                                            {`${t('progress')} ${roundedActiveLessonProgressPercent}% • ${formatDuration(currentTime)}`}
                                         </span>
                                         <span className="inline-flex items-center gap-1.5 rounded-full border border-[#dbeee7] bg-white px-3.5 py-2 text-[13px] font-medium text-slate-600 sm:text-sm">
                                             <FileText className="h-4 w-4" />
@@ -1370,48 +997,20 @@ const CourseLearningArea = () => {
                                         )}
                                     </div>
                                     <div className="flex flex-col gap-2 sm:flex-row">
-                                        {nextAvailableLesson && nextAvailableLesson.id !== activeLesson.id && (
+                                        {shouldShowNextLessonButton && nextAvailableLesson && nextAvailableLesson.id !== activeLesson.id && (
                                             <button
                                                 type="button"
                                                 onClick={() => handleLessonSelect(nextAvailableLesson)}
                                                 className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#0f6f56] to-[#18a676] px-5 py-3 text-sm font-semibold text-white shadow-[0_16px_30px_rgba(15,111,86,0.22)] transition hover:shadow-[0_18px_34px_rgba(15,111,86,0.28)]"
                                             >
-                                                {t('nextLesson')}
+                                                {t('goToNextLesson')}
                                                 <ChevronRight className="h-4 w-4" />
                                             </button>
                                         )}
-                                        {shouldShowCompletionButton && (
-                                            <button
-                                                onClick={() => void maybeCompleteLesson()}
-                                                disabled={
-                                                    isCompletingLesson
-                                                    || activeLesson.progress.isCompleted
-                                                    || !canRenderLessonVideo(activeLesson.video)
-                                                    || roundedActiveLessonWatchPercent < 100
-                                                    || Boolean(activeLessonQuiz && !isLessonQuizPassed)
-                                                }
-                                                className={`inline-flex items-center justify-center gap-2 rounded-2xl px-5 py-3 text-sm font-semibold transition-all disabled:cursor-not-allowed disabled:opacity-50 ${
-                                                    activeLesson.progress.isCompleted
-                                                        ? 'border border-emerald-200 bg-emerald-50 text-emerald-700'
-                                                        : 'border border-[#d5eae2] bg-white text-slate-700 hover:border-[#0f6f56] hover:text-[#0f6f56]'
-                                                }`}
-                                            >
-                                                {activeLesson.progress.isCompleted
-                                                    ? t('completionDone')
-                                                    : isCompletingLesson
-                                                        ? t('completionSaving')
-                                                        : activeLesson.video?.status === 'PROCESSING' || Number(activeLesson.video?.duration ?? 0) <= 0
-                                                            ? t('completionProcessing')
-                                                            : activeLesson.video?.status === 'FAILED'
-                                                                ? t('completionFailed')
-                                                                : activeLessonQuiz && !isLessonQuizPassed
-                                                                    ? isLessonQuizExhausted
-                                                                        ? t('completionQuizExhausted')
-                                                                        : t('completionQuizLocked')
-                                                                : roundedActiveLessonWatchPercent < 100
-                                                                    ? t('completionLocked')
-                                                                    : t('completionCta')}
-                                            </button>
+                                        {shouldShowNextLessonButton && (
+                                            <span className="inline-flex items-center justify-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-3 text-sm font-semibold text-emerald-700">
+                                                {t('progressBarCompleted')}
+                                            </span>
                                         )}
                                     </div>
                                 </div>
@@ -1758,7 +1357,7 @@ const CourseLearningArea = () => {
                                             </div>
                                         ) : (
                                             <div className="rounded-2xl border border-amber-100 bg-amber-50 px-4 py-4 text-sm text-amber-700">
-                                                {t('quizLoadFailed')}
+                                                {lessonQuizError || t('quizLoadFailed')}
                                             </div>
                                         )}
                                     </div>
